@@ -23,9 +23,12 @@
 
 ## Requisitos
 
-   * Unity 2022.3+ (compatibildad con Unity 6 no validada)
+   * Unity 2022.3+ (compatibilidad con Unity 6 no validada)
 
-   * Dependencias (añadidas automáticamente)
+   * URP 3D (Universal Render Pipeline)
+El demo y varios materiales usan URP.
+
+   * Dependencias (se instalan automáticamente)
 
        * TextMeshPro (Demo)
 
@@ -38,27 +41,49 @@
 
 ## Instalación
 
-1. En tu proyecto de Unity, abre `Window / Package Manager`.
-2. Agrega paquete con git URL:
+1. En tu proyecto de Unity, abre `Window > Package Manager`.
+2. Selecciona Add package from Git URL…
 
 ```json
-  "com.burmuruk.rpg-starter-template"
+  "[com.burmuruk.rpg-starter-template](https://github.com/TuUsuario/RPGStarterTemplate.git)"
 ```
-3. Copiar el contenido de la carpeta "GameArchitecture" en tu proyecto, ya sea manualmente o aceptando el mensaje que saldrá al inicio:
-```json
-   "Do you want to copy the base files to Assets/GameArchitecture?"
-```
+3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar la arquitectura base.
+   Selecciona la ruta de tu preferencia.
+4. Selecciona Yes para importar los archivos necesarios.
+5. (Opcional) Importa la escena demo desde la sección Samples del Package Manager.
 
 ## Estructura
 
     ├── com.Burmuruk.RPG-Starter-Template/
 
-      ├── GameArchitecture/          # Copiar a Assets
+      ├── GameArchitecture/          # Base del juego (se copia a Assets/)
 
       ├── Tool/                      # Archivos de editor
 
-    └── Samples/                     # Escena de ejemplo
-    ├── Results/                     # Carpeta por defecto para ScriptableObjects y prefabs generados
+    └── Samples~//RPGStarterDemo/    # Escena y contenido de demostración
+    ├── RPGResults/                     # Carpeta por defecto para ScriptableObjects y prefabs generados
 
     ├── StreamingAssets/             # Archivos de navegación generados
 
+
+### Known Issues
+
+- **Pérdida de datos al editar diálogos**
+  Al abrir un mismo archivo de diálogo varias veces, el editor limpia ciertos campos y los cambios pueden perderse.
+  
+  *solución alternativa:* cerrar y volver a abrir la ventana antes de editar de nuevo.
+
+- **Datos del inventario se sobrescriben**
+  Si se realizan acciones que recargan datos sin guardar, la información actual puede sobrescribirse.
+  
+  *solución alternativa:* asegúrate de guardar los cambios antes de ejecutar operaciones que recarguen datos.
+
+- **Modificar enums no actualiza referencias existentes**
+  Renombrar, eliminar o reordenar valores de enums usados por el sistema puede causar pérdida de referencias en ScriptableObjects y escenas.
+  
+  *solución alternativa:* modificar enums únicamente al inicio del proyecto o solo agregar nuevos valores, no reordenarlos.
+
+- **Limitación en sistema de Buffs**
+  Solo puede estar activo un buff del mismo tipo por caller.
+  (Comportamiento actual por diseño; sujeto a expansión futura.)
+  
