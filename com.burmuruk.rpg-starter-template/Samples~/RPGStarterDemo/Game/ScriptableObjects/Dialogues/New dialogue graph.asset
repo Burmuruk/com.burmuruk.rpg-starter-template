@@ -1,0 +1,152 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-4536080479036206179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f1f43ebb8f0054d89a8c377983f2df, type: 3}
+  m_Name: 3fe0bf91-8cf1-4bbc-9fbb-51662107e3cc
+  m_EditorClassIdentifier: 
+  characterID: 1849476b-1cfb-4de8-b090-baf965a8eecf
+  dialogueName: ul
+  isPlayerSpeaking: 0
+  _isStartNode: 0
+  _isPinned: 0
+  _expanded: 1
+  _position: {x: 358.4, y: 84.8}
+  _children:
+  - 3543065f-a51e-4203-a1bf-ef6acac2bc98
+  _isExecutable: 1
+  onEnterAction: 
+  onExitAction: 
+  _text: "Logr\xE9 conseguir reclutar a un soldado capacitado para que lo asista"
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c6635eff4b35d4d9ca5888678160b2, type: 3}
+  m_Name: New dialogue graph
+  m_EditorClassIdentifier: 
+  _pins: []
+  _selectedNode: {fileID: -4536080479036206179}
+  characters:
+  - id: 2b639101-56d4-4c3f-8cae-3973e3ba276e
+    name: Merch
+    Color: {r: 0, g: 0, b: 0, a: 0}
+  - id: 1849476b-1cfb-4de8-b090-baf965a8eecf
+    name: Mer
+    Color: {r: 0.7433963, g: 0.19496614, b: 0.19496614, a: 0.69411767}
+  - id: 84bb82e2-0aad-438f-9eae-e220510c8bee
+    name: mechi
+    Color: {r: 0, g: 0, b: 0, a: 0}
+  dialogueGUID: 80523f5101cad874585608f91fcf27da
+--- !u!114 &262521033551049283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f1f43ebb8f0054d89a8c377983f2df, type: 3}
+  m_Name: 52e62457-96ff-4918-8b70-0f782febbe15
+  m_EditorClassIdentifier: 
+  characterID: 1849476b-1cfb-4de8-b090-baf965a8eecf
+  dialogueName: bienvenida
+  isPlayerSpeaking: 0
+  _isStartNode: 1
+  _isPinned: 0
+  _expanded: 1
+  _position: {x: 99.2, y: 100}
+  _children:
+  - 3fe0bf91-8cf1-4bbc-9fbb-51662107e3cc
+  _isExecutable: 1
+  onEnterAction: 
+  onExitAction: 
+  _text: "Bienvenido se\xF1or\nEstamos teniendo problemas para rescatar a los civiles
+    atrapados"
+--- !u!114 &990846469182883621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f1f43ebb8f0054d89a8c377983f2df, type: 3}
+  m_Name: 95c25d1c-a618-498f-a341-d4ba93e21b99
+  m_EditorClassIdentifier: 
+  characterID: 84bb82e2-0aad-438f-9eae-e220510c8bee
+  dialogueName: nono
+  isPlayerSpeaking: 0
+  _isStartNode: 1
+  _isPinned: 0
+  _expanded: 1
+  _position: {x: 132, y: 364}
+  _children: []
+  _isExecutable: 0
+  onEnterAction: 
+  onExitAction: 
+  _text: a
+--- !u!114 &2883518746484907832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f1f43ebb8f0054d89a8c377983f2df, type: 3}
+  m_Name: 3543065f-a51e-4203-a1bf-ef6acac2bc98
+  m_EditorClassIdentifier: 
+  characterID: 1849476b-1cfb-4de8-b090-baf965a8eecf
+  dialogueName: ul
+  isPlayerSpeaking: 0
+  _isStartNode: 0
+  _isPinned: 0
+  _expanded: 1
+  _position: {x: 625.6, y: 100}
+  _children: []
+  _isExecutable: 1
+  onEnterAction: 
+  onExitAction: addPlayer
+  _text: "No hay nada que temer realmente tiene un buen rango. V\xE9alo por usted
+    mismo"
+--- !u!114 &6307413035432931739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62f1f43ebb8f0054d89a8c377983f2df, type: 3}
+  m_Name: d400de0a-fa22-4fe2-9d50-d3b9f4e1b3bf
+  m_EditorClassIdentifier: 
+  characterID: 84bb82e2-0aad-438f-9eae-e220510c8bee
+  dialogueName: bm
+  isPlayerSpeaking: 0
+  _isStartNode: 1
+  _isPinned: 0
+  _expanded: 1
+  _position: {x: 359.2, y: 380}
+  _children:
+  - 3543065f-a51e-4203-a1bf-ef6acac2bc98
+  _isExecutable: 1
+  onEnterAction: 
+  onExitAction: 
+  _text: "Bienvenido se\xF1or. Aqu\xED hay un soldado para que lo asista en su misi\xF3n"

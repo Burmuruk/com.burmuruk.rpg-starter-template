@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/EnumChangerStyle.uss?fileID=7433441132597879392&amp;guid=d89d88e232dfef84f9c698e0862bfb91&amp;type=3#EnumChangerStyle" />
+    <ui:VisualElement name="EnumModifier" class="EnumChanger" style="flex-grow: 0;">
+        <ui:VisualElement name="EnumLine" class="LineContainer" style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="Value" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lblName" style="flex-basis: 118px; flex-shrink: 1;" />
+            <ui:EnumField type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" value="Center" name="ddfCharaterType" class="LineField" />
+            <ui:Button text="Edit" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnEditValue" class="LineExtraButton" />
+            <ui:Button text="-" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnRemoveValue" class="LineExtraButton" />
+            <ui:Button text="+" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnAddValue" class="LineExtraButton" />
+        </ui:VisualElement>
+        <ui:VisualElement name="NewElementLine" class="LineContainer Disable" style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="New value" parse-escape-sequences="true" display-tooltip-when-elided="true" />
+            <ui:TextField picking-mode="Ignore" name="txtNewEnumValue" class="LineField" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

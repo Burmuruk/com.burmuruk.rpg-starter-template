@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c3e54cf44c798e47b97f54a3813d8f8, type: 3}
+  m_Name: Dash
+  m_EditorClassIdentifier: 
+  m_name: Dash
+  m_description: Moves fast
+  _type: 2
+  m_sprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  pickup: {fileID: 643253036281322976, guid: 5238de9c738cc9e4fb9908bd027fcfb4, type: 3}
+  m_capacity: 1
+  _id: 28790
+  type: 1
+  speed: 10
+  mode: 0
+  isHuman: 1
+  coolDown: 0.8

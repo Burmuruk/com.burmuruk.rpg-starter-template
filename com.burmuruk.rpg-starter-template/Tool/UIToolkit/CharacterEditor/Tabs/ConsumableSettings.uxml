@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="ItemInfoBase" src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/ItemInfoBase.uxml?fileID=9197481963319205126&amp;guid=dacdd60a09810114da73bac9f6c71cd6&amp;type=3#ItemInfoBase" />
+    <ui:Template name="GenericList" src="project://database/Assets\com.burmuruk.rpg-starter-template\Tool\UIToolkit\GeneralElements/GenericList.uxml?fileID=9197481963319205126&amp;guid=a986ab12f2ae54949b267be8d37ce8bc&amp;type=3#GenericList" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/ItemInfoStyle.uss?fileID=7433441132597879392&amp;guid=abef978023d5de849b0b907b5baeef9d&amp;type=3#ItemInfoStyle" />
+    <ui:Instance template="ItemInfoBase" />
+    <ui:Label tabindex="-1" text="Attributes" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" />
+    <ui:Instance template="GenericList" name="GenericList" />
+    <ui:VisualElement name="DataContainer" style="flex-grow: 0; flex-shrink: 0;">
+        <ui:FloatField label="Consumption Time" value="0" name="ffConsumptionTime" class="BasicSize BasicText" />
+        <ui:FloatField label="Area Radious" value="0" name="ffAreaRadious" class="BasicSize BasicText" />
+    </ui:VisualElement>
+</ui:UXML>

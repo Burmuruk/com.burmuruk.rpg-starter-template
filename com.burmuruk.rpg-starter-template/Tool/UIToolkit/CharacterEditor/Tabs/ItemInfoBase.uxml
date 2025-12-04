@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/ItemInfoStyle.uss?fileID=7433441132597879392&amp;guid=abef978023d5de849b0b907b5baeef9d&amp;type=3#ItemInfoStyle" />
+    <ui:Label tabindex="-1" text="General" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="-unity-text-align: middle-left; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+    <ui:VisualElement name="DataContainer" style="flex-grow: 1;">
+        <ui:TextField picking-mode="Ignore" label="Description" name="txtDescription" class="BasicText" />
+        <uie:ObjectField label="Sprite" name="opSprite" class="BasicText" />
+        <uie:ObjectField label="Pickup" name="opPickup" class="BasicText" />
+        <ui:UnsignedIntegerField label="Capacity" value="99" name="txtCapacity" class="BasicText" />
+    </ui:VisualElement>
+</ui:UXML>

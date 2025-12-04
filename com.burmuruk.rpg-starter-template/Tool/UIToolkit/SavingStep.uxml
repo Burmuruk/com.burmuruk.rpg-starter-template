@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <ui:VisualElement class="LineContainer" style="flex-grow: 1;">
+        <ui:Label tabindex="-1" text="0" parse-escape-sequences="true" display-tooltip-when-elided="true" />
+        <ui:TextField picking-mode="Ignore" value="filler text" style="max-width: 60%; max-height: 40px; font-size: 12px;" />
+    </ui:VisualElement>
+</ui:UXML>

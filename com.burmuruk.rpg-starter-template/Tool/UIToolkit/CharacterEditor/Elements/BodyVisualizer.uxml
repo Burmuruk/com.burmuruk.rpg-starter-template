@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement class="LineContainer" style="flex-grow: 1;">
+        <ui:Label tabindex="-1" text="Body" parse-escape-sequences="true" display-tooltip-when-elided="true" class="ElementTag" style="flex-shrink: 1; max-width: 50px; min-width: 50px;" />
+        <uie:ObjectField style="flex-grow: 1; flex-shrink: 1;" />
+    </ui:VisualElement>
+    <ui:TreeView focusable="true" auto-expand="true" />
+</ui:UXML>

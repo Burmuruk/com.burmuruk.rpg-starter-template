@@ -1,0 +1,7 @@
+.DefaultLabelSize Label {
+    min-width: 150px;
+}
+
+#DataContainer * {
+    max-height: 20px;
+}

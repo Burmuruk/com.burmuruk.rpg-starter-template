@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="TypeAdder" src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/GeneralElements/TypeAdder.uxml?fileID=9197481963319205126&amp;guid=3faecc087fcc4f34b874fda6335d50fc&amp;type=3#TypeAdder" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:Button text="&lt;-  " parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnGoBack" class="MidButton" style="min-width: 10%; max-width: 20px;" />
+        <ui:VisualElement name="infoBodySplit" style="flex-grow: 1; flex-shrink: 0;" />
+        <ui:Label tabindex="-1" text="Initial equipment" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="-unity-text-align: lower-left; margin-top: 8px; -unity-font-style: bold;" />
+        <ui:VisualElement name="infoComponents" class="FieldColour BaseBorder" style="flex-grow: 1; min-height: 200px; max-height: 200px; flex-shrink: 0;">
+            <ui:VisualElement class="LineElements" style="flex-grow: 1;">
+                <ui:Label tabindex="-1" text="Name" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+                <ui:Label tabindex="-1" text="Equipped" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+                <ui:Label tabindex="-1" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+            </ui:VisualElement>
+            <ui:ScrollView name="componentsConatiner" style="flex-grow: 1;" />
+        </ui:VisualElement>
+        <ui:Label tabindex="-1" text="Add body places" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="-unity-text-align: lower-left; margin-top: 16px; -unity-font-style: bold;" />
+        <ui:Instance template="TypeAdder" name="TypeAdder" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/Node.uss?fileID=7433441132597879392&amp;guid=1c7a9ec9ca23a9448940524cf01bc1e8&amp;type=3#Node" />
+    <ui:VisualElement style="flex-grow: 1; min-width: 80px;">
+        <ui:Button text="Button" parse-escape-sequences="true" display-tooltip-when-elided="true" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+        <ui:Button text="Button" parse-escape-sequences="true" display-tooltip-when-elided="true" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+    </ui:VisualElement>
+</ui:UXML>

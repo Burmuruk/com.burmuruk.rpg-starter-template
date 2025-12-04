@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b77ef1b6c010ebe438dded9187084dbd, type: 3}
+  m_Name: ElectricSword
+  m_EditorClassIdentifier: 
+  m_name: Knight Sword
+  m_description: The ultimate sword.
+  _type: 4
+  m_sprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  pickup: {fileID: 3636312307774390648, guid: ddd3a47c894ceae4eab13698fd000154, type: 3}
+  m_capacity: 99
+  _id: 28759
+  m_bodyPart: 4
+  weaponType: 1
+  m_damage: 10
+  m_rateDamage: 1
+  m_minDistance: 1
+  m_maxDistance: 1.5
+  reloadTime: 0
+  maxAmmo: 0
+  _buffs:
+  - name: Paralysis
+    stat: 2
+    value: 10
+    duration: 0
+    rate: 0
+    percentage: 1
+    probability: 0
+  equipment:
+    body: {fileID: 0}
+    spawnPoints: []

@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-9029789305236054342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31168052f5af1b642a930f7c1b126564, type: 3}
+  m_Name: bienvenida
+  m_EditorClassIdentifier: 
+  dialogueNode:
+    Id: 52e62457-96ff-4918-8b70-0f782febbe15
+    characterName: Mer
+    Message: "Bienvenido se\xF1or\nEstamos teniendo problemas para rescatar a los
+      civiles atrapados"
+    Children:
+    - Id: 3fe0bf91-8cf1-4bbc-9fbb-51662107e3cc
+      characterName: Mer
+      Message: "Logr\xE9 conseguir reclutar a un soldado capacitado para que lo asista"
+      Children:
+      - Id: 3543065f-a51e-4203-a1bf-ef6acac2bc98
+        characterName: Mer
+        Message: "No hay nada que temer realmente tiene un buen rango. V\xE9alo por
+          usted mismo"
+        Children: []
+        onEnterAction: 
+        onExitAction: addPlayer
+      onEnterAction: 
+      onExitAction: 
+    onEnterAction: 
+    onExitAction: 
+  id: 52e62457-96ff-4918-8b70-0f782febbe15
+  characters:
+  - Mer
+--- !u!114 &-4847233040523658836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31168052f5af1b642a930f7c1b126564, type: 3}
+  m_Name: bm
+  m_EditorClassIdentifier: 
+  dialogueNode:
+    Id: d400de0a-fa22-4fe2-9d50-d3b9f4e1b3bf
+    characterName: mechi
+    Message: "Bienvenido se\xF1or. Aqu\xED hay un soldado para que lo asista en su
+      misi\xF3n"
+    Children:
+    - Id: 3543065f-a51e-4203-a1bf-ef6acac2bc98
+      characterName: Mer
+      Message: "No hay nada que temer realmente tiene un buen rango. V\xE9alo por
+        usted mismo"
+      Children: []
+      onEnterAction: 
+      onExitAction: addPlayer
+    onEnterAction: 
+    onExitAction: 
+  id: d400de0a-fa22-4fe2-9d50-d3b9f4e1b3bf
+  characters:
+  - mechi
+  - Mer
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c545672f6c926b7449d618f255ab4b99, type: 3}
+  m_Name: New dialogue
+  m_EditorClassIdentifier: 
+  dialogueNode:
+    Id: 
+    characterName: 
+    Message: 
+    Children: []
+    onEnterAction: 
+    onExitAction: 
+  id: 
+  characters: []
+  dialogues:
+  - id: 52e62457-96ff-4918-8b70-0f782febbe15
+    dialogue: {fileID: -9029789305236054342}
+    name: 
+    characters: []
+  - id: d400de0a-fa22-4fe2-9d50-d3b9f4e1b3bf
+    dialogue: {fileID: -4847233040523658836}
+    name: 
+    characters: []

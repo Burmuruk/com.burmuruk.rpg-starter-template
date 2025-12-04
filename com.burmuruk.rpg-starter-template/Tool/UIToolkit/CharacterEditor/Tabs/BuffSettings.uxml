@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/ItemInfoStyle.uss?fileID=7433441132597879392&amp;guid=abef978023d5de849b0b907b5baeef9d&amp;type=3#ItemInfoStyle" />
+    <ui:VisualElement name="DataContainer" class="InfoContainer" style="flex-grow: 1;">
+        <ui:FloatField label="Value" value="0" name="ffValue" />
+        <ui:FloatField label="Duration" value="0" name="ffDuration" />
+        <ui:FloatField label="Rate" value="0" name="ffRate" />
+        <ui:Toggle label="Percentage" name="ffPercentage" />
+        <ui:FloatField label="Probability" value="0" name="ffProbability" />
+        <ui:EnumField label="Stat" type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" value="Center" name="ffStat" />
+    </ui:VisualElement>
+</ui:UXML>

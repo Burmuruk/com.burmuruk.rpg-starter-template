@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <ui:VisualElement name="Pins" style="flex-grow: 1; flex-basis: 120px; background-color: rgba(0, 0, 0, 0.75); align-self: auto; max-height: 120px; margin-right: 5%; margin-left: 5%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; flex-direction: row; padding-top: 10px; padding-bottom: 10px; padding-right: 10px; padding-left: 10px;">
+        <ui:Button text="Dialogue&#10;id..." parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-basis: 60px;" />
+    </ui:VisualElement>
+</ui:UXML>

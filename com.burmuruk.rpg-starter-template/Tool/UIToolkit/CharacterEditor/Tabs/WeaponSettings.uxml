@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Template name="ItemInfoBase" src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/ItemInfoBase.uxml?fileID=9197481963319205126&amp;guid=dacdd60a09810114da73bac9f6c71cd6&amp;type=3#ItemInfoBase" />
+    <ui:Template name="TypeAdder" src="project://database/Assets\com.burmuruk.rpg-starter-template\Tool\UIToolkit\GeneralElements/TypeAdder.uxml?fileID=9197481963319205126&amp;guid=3faecc087fcc4f34b874fda6335d50fc&amp;type=3#TypeAdder" />
+    <ui:Template name="GenericList" src="project://database/Assets\com.burmuruk.rpg-starter-template\Tool\UIToolkit\GeneralElements/GenericList.uxml?fileID=9197481963319205126&amp;guid=a986ab12f2ae54949b267be8d37ce8bc&amp;type=3#GenericList" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/ItemInfoStyle.uss?fileID=7433441132597879392&amp;guid=abef978023d5de849b0b907b5baeef9d&amp;type=3#ItemInfoStyle" />
+    <ui:Instance template="ItemInfoBase" name="ItemInfoBase" />
+    <ui:VisualElement name="DataContainer" style="flex-grow: 0; flex-shrink: 0;">
+        <ui:Label tabindex="-1" text="Equipment" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" />
+        <ui:EnumField label="Body Part" type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" value="Center" name="efBodyPart" />
+        <ui:Label tabindex="-1" text="Settings" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Label" class="Title" />
+    </ui:VisualElement>
+    <ui:Instance template="TypeAdder" name="TypeAdderWeapon" class="DefaultLabelSize" />
+    <ui:VisualElement name="DataContainer" style="flex-grow: 0; flex-shrink: 0;">
+        <ui:UnsignedIntegerField label="Damage" value="0" name="txtDamage" class="BasicSize BasicText" />
+        <ui:FloatField label="Damage Rate" value="0" name="txtRateDamage" class="BasicSize BasicText" />
+        <ui:FloatField label="Min Distance" value="0" name="MinDistance" class="BasicSize BasicText" />
+        <ui:FloatField label="Max Distance" value="0" name="MaxDistance" class="BasicSize BasicText" />
+        <ui:FloatField label="Reload Time" value="0" name="txtReloadTime" class="BasicSize BasicText" />
+        <ui:IntegerField label="Max Ammo" value="0" name="txtMaxAmmo" class="BasicSize BasicText" />
+    </ui:VisualElement>
+    <ui:Instance template="GenericList" name="GenericList" />
+    <ui:VisualElement name="divBuffs" style="flex-grow: 1;" />
+    <ui:VisualElement name="divModifications" style="flex-grow: 1;" />
+</ui:UXML>

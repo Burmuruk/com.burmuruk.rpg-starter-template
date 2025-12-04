@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="TypeAdder" src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/GeneralElements/TypeAdder.uxml?fileID=9197481963319205126&amp;guid=3faecc087fcc4f34b874fda6335d50fc&amp;type=3#TypeAdder" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement name="variablesAdder" style="flex-grow: 0; flex-shrink: 0;">
+        <ui:Label tabindex="-1" text="New basic stats" parse-escape-sequences="true" display-tooltip-when-elided="true" name="statsTittle" class="Title" />
+        <ui:Button text="Add basic stat" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnCancel" class="LineElements" style="flex-grow: 1;" />
+        <ui:VisualElement name="PNewValueControls" style="flex-grow: 1; margin-top: 10px;">
+            <ui:DropdownField label="Header" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="DDFHeader" class="LineElements" />
+            <ui:TextField picking-mode="Ignore" value="Header" name="txtHeader" class="LineElements" style="flex-grow: 1; flex-shrink: 1; flex-basis: 70%;" />
+            <ui:VisualElement class="LineElements" style="flex-grow: 0; flex-direction: row; flex-shrink: 0;">
+                <ui:EnumField type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" value="Center" name="EnumField" style="flex-basis: 118px; flex-grow: 0; flex-shrink: 1;" />
+                <ui:TextField picking-mode="Ignore" value="Name" name="txtName" style="flex-grow: 1; flex-shrink: 1; flex-basis: 70%;" />
+            </ui:VisualElement>
+            <ui:Label tabindex="-1" text="* Press enter to add variable" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="margin-top: 2px; margin-bottom: 6px; -unity-text-align: upper-center;" />
+            <ui:VisualElement class="LineContainer" style="flex-grow: 1; margin-bottom: 0;">
+                <ui:Toggle label="Modify with buff" tooltip="Allow buffs to modify this value." name="tglEditStat" class="LineElements" />
+            </ui:VisualElement>
+            <ui:Instance template="TypeAdder" name="TypeAdder" />
+            <ui:VisualElement name="componentsConatiner" style="flex-grow: 1; margin-top: 16px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

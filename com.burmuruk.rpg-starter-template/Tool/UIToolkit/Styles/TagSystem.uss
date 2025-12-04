@@ -1,0 +1,4 @@
+.Tag {
+    max-height: 30px;
+    flex-direction: row;
+}

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f733031752a68064f97a591c9fd1fd19, type: 3}
+  m_Name: CharacterTag
+  m_EditorClassIdentifier: 
+  characters: []
+  mainElementChange: 0
+  defaultElements: 030000000200000009000000070000000800000004000000
+  serializedCreations:
+  - type: 0
+    items: []
+  - type: 2
+    items: []
+  - type: 9
+    items:
+    - name: fe843603-73b4-4c4d-b615-c5e1003da8d8
+      data:
+        rid: 483078699998773288
+  - type: 7
+    items: []
+  - type: 8
+    items: []
+  - type: 3
+    items: []
+  - type: 4
+    items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 483078699998773288
+      type: {class: BuffUserCreationData, ns: Burmuruk.RPGStarterTemplate.Editor,
+        asm: Assembly-CSharp-Editor}
+      data:
+        Name: consu
+        Data: {fileID: 0}

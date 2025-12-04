@@ -1,0 +1,65 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:VisualElement name="StatusContainer" class="Success" style="flex-direction: column; flex-grow: 0; padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 5px; margin-top: 5px; margin-right: 5px; margin-bottom: 15px; margin-left: 5px;">
+            <ui:Label tabindex="-1" text="Status" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="margin-bottom: 10px;" />
+            <ui:VisualElement class="LineElements">
+                <ui:Label tabindex="-1" text="Scene:" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Label" style="flex-basis: 120px;" />
+                <ui:Label tabindex="-1" text="main scene" parse-escape-sequences="true" display-tooltip-when-elided="true" name="LblSceneName" style="flex-grow: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement class="LineElements">
+                <ui:Label tabindex="-1" text="Octree:" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Label" style="flex-basis: 120px;" />
+                <ui:Label tabindex="-1" text="None" parse-escape-sequences="true" display-tooltip-when-elided="true" name="LblOctreeState" style="flex-grow: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement class="LineElements">
+                <ui:Label tabindex="-1" text="NavMesh:" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Label" style="flex-basis: 120px;" />
+                <ui:Label tabindex="-1" text="None" parse-escape-sequences="true" display-tooltip-when-elided="true" name="LblMeshState" style="flex-grow: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement class="LineElements" style="margin-top: 6px;">
+                <ui:Label tabindex="-1" text="Saved:" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Label" style="flex-basis: 120px;" />
+                <ui:Label tabindex="-1" text="False" parse-escape-sequences="true" display-tooltip-when-elided="true" name="LblSaved" style="flex-grow: 1;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="margin-bottom: 10px;">
+            <ui:Label tabindex="-1" text="General Settings" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="margin-bottom: 6px;" />
+            <ui:VisualElement name="layer" class="LineElements" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Layer" parse-escape-sequences="true" display-tooltip-when-elided="true" style="width: 120px; flex-basis: 118px;" />
+                <ui:UnsignedIntegerField value="9" name="UILayer" style="flex-grow: 1; flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="checkBox" class="LineElements" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Auto detect size" parse-escape-sequences="true" display-tooltip-when-elided="true" style="width: 120px;" />
+                <ui:Toggle name="TglDetectSize" value="true" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ShowArea" class="LineElements" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Show area" parse-escape-sequences="true" display-tooltip-when-elided="true" tooltip="Enable if there are agents that can fly." style="width: 120px;" />
+                <ui:Toggle name="TglShowArea" />
+            </ui:VisualElement>
+            <ui:VisualElement name="PointsContainer" style="flex-grow: 1;" />
+            <ui:VisualElement name="checkBox" class="LineElements" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Octree" parse-escape-sequences="true" display-tooltip-when-elided="true" tooltip="Enable if there are agents that can fly." style="width: 120px;" />
+                <ui:Toggle name="TglIs3D" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; margin-bottom: 10px;">
+                <ui:VisualElement class="LineElements" style="flex-grow: 1;">
+                    <ui:Label tabindex="-1" text="Min node size" parse-escape-sequences="true" display-tooltip-when-elided="true" tooltip="Limit the subdivitions when this size is reached." style="flex-basis: 118px;" />
+                    <ui:FloatField value="5" name="FFMinSize" style="flex-grow: 1;" />
+                </ui:VisualElement>
+                <ui:VisualElement class="LineElements" style="flex-grow: 1;">
+                    <ui:Label tabindex="-1" text="Max depth" parse-escape-sequences="true" display-tooltip-when-elided="true" tooltip="Number of subdivitions. The greater the value the greater the precision." style="flex-basis: 118px;" />
+                    <ui:IntegerField value="16" name="IFMaxDepth" style="flex-grow: 1;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="checkBox" class="LineElements" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="NavMesh" parse-escape-sequences="true" display-tooltip-when-elided="true" style="width: 120px;" />
+                <ui:Toggle name="TglMesh" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="OctreeControls" style="margin-bottom: 8px;">
+            <ui:Label tabindex="-1" text="Octree Settings" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="margin-bottom: 10px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="MeshControls" style="margin-bottom: 8px;">
+            <ui:Label tabindex="-1" text="NavMesh Settings" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="margin-bottom: 10px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

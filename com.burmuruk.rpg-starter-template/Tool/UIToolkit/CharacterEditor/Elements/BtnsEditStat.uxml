@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement style="flex-grow: 1; flex-direction: column-reverse;">
+        <ui:VisualElement name="EditButtons" style="flex-grow: 0; flex-direction: row; flex-shrink: 0;">
+            <ui:Button text="0" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnEditStat" class="LineExtraButton" style="background-image: url(&apos;project://database/Assets/com.burmuruk.rpg-starter-template/Tool/Scripts/Editor/CharacterEditor/Art/Edit.png?fileID=2800000&amp;guid=cd928752de7c5144c919267be084b08e&amp;type=3#Edit&apos;); -unity-background-scale-mode: scale-to-fit; -unity-slice-left: 1; -unity-slice-top: 1; -unity-slice-right: 1; -unity-slice-bottom: 1; -unity-background-image-tint-color: rgb(196, 196, 196); color: rgba(231, 228, 228, 0); -unity-slice-scale: 2px;" />
+            <ui:Button text="x" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnRemoveStat" class="LineExtraButton" style="-unity-font-style: bold;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

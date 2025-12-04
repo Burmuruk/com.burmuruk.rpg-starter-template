@@ -1,0 +1,71 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="TypeAdder" src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/GeneralElements/TypeAdder.uxml?fileID=9197481963319205126&amp;guid=3faecc087fcc4f34b874fda6335d50fc&amp;type=3#TypeAdder" />
+    <ui:Template name="GenericList" src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/GeneralElements/GenericList.uxml?fileID=9197481963319205126&amp;guid=a986ab12f2ae54949b267be8d37ce8bc&amp;type=3#GenericList" />
+    <ui:Template name="VariblesAdder" src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Controls/VariblesAdder.uxml?fileID=9197481963319205126&amp;guid=9478a5a6bc3eaa64da95c9ea3fd3ac95&amp;type=3#VariblesAdder" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:VisualElement name="PBaseClass" class="LineContainer" style="flex-grow: 1;" />
+        <ui:Label tabindex="-1" text="Saving" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Label" class="Title" style="margin-top: 20px;" />
+        <ui:Toggle label="Connect to saving system" name="TglSave" style="margin-top: 6px;" />
+        <ui:VisualElement name="VisualElement" class="Title" style="flex-grow: 1; max-height: 25px; min-height: 25px; padding-left: 5px; margin-top: 20px;">
+            <ui:Label tabindex="-1" text="Components" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" />
+        </ui:VisualElement>
+        <ui:VisualElement name="infoComponents" class="FieldColour BaseBorder" style="flex-grow: 1; min-height: 150px; max-height: 200px; flex-shrink: 0;">
+            <ui:VisualElement class="LineElements" style="flex-grow: 0; flex-shrink: 0;">
+                <ui:Label tabindex="-1" text="Name" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+                <ui:Label tabindex="-1" text="Remove" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+                <ui:Label tabindex="-1" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+            </ui:VisualElement>
+            <ui:ScrollView name="componentsConatiner" style="flex-grow: 1;" />
+            <ui:VisualElement class="LineElements" style="flex-grow: 0; flex-shrink: 0;">
+                <ui:Label tabindex="-1" text="Add component" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; font-size: 12px; color: rgb(192, 192, 192);" />
+                <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" name="ddfElement" style="flex-grow: 0.8; font-size: 12px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Instance template="TypeAdder" name="TypeAdder" style="margin-top: 10px;" />
+        <ui:VisualElement name="ddfEnemyTag" class="LineContainer" style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="EnemyTag" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="flex-basis: 118px;" />
+            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" style="flex-grow: 1; flex-shrink: 1;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="txtTagName" class="LineContainer Disable" style="flex-grow: 1; flex-direction: row-reverse;">
+            <ui:TextField picking-mode="Ignore" value="New tag" class="LineElements" style="flex-grow: 0; flex-shrink: 1; flex-basis: 80%;" />
+        </ui:VisualElement>
+        <ui:VisualElement class="LineContainer" style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="Model" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="flex-basis: 118px;" />
+            <uie:ObjectField name="ofModel" allow-scene-objects="false" class="LineElements" style="flex-shrink: 1; flex-grow: 0;" />
+        </ui:VisualElement>
+        <ui:Instance template="GenericList" name="GenericList">
+            <AttributeOverrides element-name="mainFoldOut" text="Drops" tooltip="Items to drop when character dies." />
+        </ui:Instance>
+        <ui:Label tabindex="-1" text="Stats" parse-escape-sequences="true" display-tooltip-when-elided="true" class="Title" style="margin-bottom: 0; margin-top: 22px;" />
+        <ui:VisualElement name="Hr" style="flex-grow: 1; flex-direction: row; flex-shrink: 1; justify-content: center; align-self: center; align-items: center; margin-top: 10px;">
+            <ui:VisualElement name="HR" style="flex-grow: 1; flex-direction: column; flex-basis: 98%; flex-shrink: 1; background-color: rgb(242, 242, 242); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; min-height: 1px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Progression" style="flex-grow: 1; flex-direction: row; margin-top: 26px;">
+            <ui:Label tabindex="-1" text="Level" parse-escape-sequences="true" display-tooltip-when-elided="true" style="margin-right: 6px;" />
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+                <ui:Button text="Base" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnBaseInfo" tooltip="Set the starting stats of the character" class="LineExtraButton" style="min-width: 36px;" />
+                <ui:VisualElement class="LineExtraButton" style="flex-grow: 0; flex-direction: row; flex-shrink: 0; max-width: none; min-width: auto;">
+                    <ui:Button text="All" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnGeneralProgression" tooltip="Define a constant increment value for all levels" class="LineExtraButton" style="margin-right: 0;" />
+                    <ui:Toggle name="tglApplyAll" class="LineExtraButton" style="margin-bottom: 1px; padding-left: 5px; background-color: rgb(56, 56, 56);" />
+                </ui:VisualElement>
+                <ui:ScrollView name="levelButtons" vertical-scroller-visibility="Hidden" mode="Horizontal" horizontal-scroller-visibility="Auto" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 0; flex-direction: row; flex-shrink: 0;">
+                <ui:Button text="-" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnRemoveLevel" class="LineExtraButton" />
+                <ui:Button text="+" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnAddLevel" class="LineExtraButton" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="LineContainer" style="flex-grow: 1; margin-top: 8px; font-size: 12px; -unity-font-style: normal;">
+            <ui:Label tabindex="-1" text="* Check the stats that can be modified by buffs or mods." parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements Title" />
+        </ui:VisualElement>
+        <ui:VisualElement name="statsContainer" style="flex-grow: 1;">
+            <ui:VisualElement name="infoStats" style="flex-grow: 1;" />
+            <ui:Instance template="VariblesAdder" name="VariblesAdder" style="margin-top: 40px;" />
+            <ui:VisualElement style="flex-grow: 0; justify-content: center; margin-top: 16px; margin-bottom: 10px; flex-direction: row;">
+                <ui:Button text="Apply changes in stats" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnApplyStats" class="Disable" style="border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; background-color: rgb(118, 118, 255); color: rgb(226, 226, 226); -unity-font-style: bold;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

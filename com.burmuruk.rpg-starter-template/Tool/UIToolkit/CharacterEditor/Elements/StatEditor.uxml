@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <ui:VisualElement style="flex-grow: 0; flex-shrink: 0; margin-bottom: 8px;">
+        <ui:VisualElement class="LineContainer" style="flex-grow: 1; flex-direction: row;">
+            <ui:Label tabindex="-1" text="New name" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="min-width: 60px;" />
+            <ui:TextField picking-mode="Ignore" value="New name" name="txtStatName" class="LineElements" style="flex-grow: 1; flex-shrink: 1;" />
+        </ui:VisualElement>
+        <ui:Label tabindex="-1" text="*Press enter to register change" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="-unity-text-align: upper-center;" />
+    </ui:VisualElement>
+</ui:UXML>

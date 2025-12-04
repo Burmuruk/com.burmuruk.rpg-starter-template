@@ -1,0 +1,47 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement style="flex-grow: 1; flex-basis: 1000px;">
+        <ui:VisualElement name="tabHeaderContainer" class="TabsContainer" style="flex-grow: 0; flex-direction: row; flex-shrink: 0;">
+            <ui:Button text="Navigation" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnNavigation" class="Tabs" />
+            <ui:Button text="Interactables" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnInteractions" class="Tabs Disable" />
+            <ui:Button text="Missions" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnMissions" class="Tabs Disable" />
+            <ui:Button text="Saving" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnSaving" class="Tabs" />
+        </ui:VisualElement>
+        <ui:VisualElement name="navContainer" class="InfoContainer" style="flex-grow: 1;">
+            <ui:VisualElement style="flex-grow: 1;">
+                <ui:ScrollView name="navInfoContainer" />
+            </ui:VisualElement>
+            <ui:VisualElement name="navButtonsContainer" style="flex-grow: 0; flex-direction: row; justify-content: center; align-items: center; max-height: 35px; margin-top: 5px; flex-shrink: 0;">
+                <ui:Button text="Create" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BtnGenerate" class="MidButton" />
+                <ui:Button text="Delete" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BtnDelete" class="MidButton" />
+                <ui:Button text="Save" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BtnSaveNavigation" class="MidButton" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="savingContainer" class="InfoContainer">
+            <ui:VisualElement class="LineContainer" style="flex-grow: 0; margin-bottom: 20px; margin-top: 6px; flex-shrink: 0;">
+                <ui:Label tabindex="-1" text="Order in wich the element&apos;s data is going to be loaded." parse-escape-sequences="true" display-tooltip-when-elided="true" style="font-size: 12px;" />
+            </ui:VisualElement>
+            <ui:ScrollView name="savingInfoCont" style="padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 5px; flex-grow: 1; flex-shrink: 1; margin-left: 8px;">
+                <ui:VisualElement class="LineContainer">
+                    <ui:Label tabindex="-1" text="0" parse-escape-sequences="true" display-tooltip-when-elided="true" />
+                    <ui:TextField picking-mode="Ignore" value="filler text" name="TextField" style="max-width: 50%;" />
+                    <ui:EnumField label="Enum" type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" value="Center" style="max-width: 90px;" />
+                </ui:VisualElement>
+            </ui:ScrollView>
+            <ui:VisualElement name="SavingButtons" class="LineContainer" style="margin-bottom: 6px; margin-top: 18px; justify-content: center; margin-right: 0; margin-left: 0; min-height: auto; max-height: 50px; align-self: center; align-items: center; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; flex-shrink: 0;">
+                <ui:Button text="Acept" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AceptButton" class="MidButton ClickableBtn" />
+                <ui:Button text="Cancel" parse-escape-sequences="true" display-tooltip-when-elided="true" name="CancelButton" class="MidButton ClickableBtn" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1;">
+                <ui:Toggle label="Encrypt save file" value="true" name="TglEncryptSaving" class="LineElements" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 0; max-height: 100px; margin-top: 20px; min-height: 90px; flex-shrink: 0;">
+                <ui:Label text="Note: This saving system just works for elements with persistent data between game sessions. For persistent elements just betweens scenes use the component &quot;Persistent saver&quot;.&#10;" parse-escape-sequences="true" display-tooltip-when-elided="true" class="HighlightBorder" style="white-space: normal; text-overflow: clip; padding-left: 4px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="notifications" class="Notification" style="flex-shrink: 0;">
+            <ui:Label tabindex="-1" text="Notification" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lblNotifications" class="NotificationTxt" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

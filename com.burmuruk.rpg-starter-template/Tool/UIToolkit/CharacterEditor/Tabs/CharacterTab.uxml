@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/TagSystem.uss?fileID=7433441132597879392&amp;guid=200e951062ff83b43af80ebe6829b030&amp;type=3#TagSystem" />
+    <ui:VisualElement style="flex-grow: 1; flex-basis: 1000px;">
+        <ui:VisualElement name="infoMainContainer" class="InfoContainer" style="flex-grow: 1; flex-basis: 100%; min-height: auto;" />
+        <ui:VisualElement name="notifications" class="Notification" style="flex-grow: 0; flex-shrink: 0;">
+            <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lblNotifications" class="NotificationTxt" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

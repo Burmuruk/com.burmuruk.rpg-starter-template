@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <ui:VisualElement name="Settings" style="flex-grow: 0; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgba(163, 156, 156, 0); border-right-color: rgba(163, 156, 156, 0); border-top-color: rgba(163, 156, 156, 0); border-bottom-color: rgba(163, 156, 156, 0); background-color: rgba(0, 0, 0, 0.75); padding-top: 10px; padding-bottom: 10px; max-width: 200px;">
+        <ui:VisualElement name="OFCharacter" style="flex-grow: 1;" />
+        <ui:TextField picking-mode="Ignore" label="ID" name="txtId" readonly="true" style="flex-basis: 20px;" />
+        <ui:TextField picking-mode="Ignore" label="Character name" name="txtNickName" tooltip="Replaces id on nodes with the given value." style="flex-basis: 20px;" />
+        <ui:VisualElement name="NodeColour" style="flex-grow: 1;" />
+        <ui:TextField picking-mode="Ignore" label="Dialogue name" name="txtDialogueName" tooltip="Name that of the dialogue that starts at this point." class="Disable" style="flex-basis: 20px; margin-top: 6px;" />
+    </ui:VisualElement>
+</ui:UXML>

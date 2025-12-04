@@ -1,0 +1,187 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &8735570463149936255
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 510198339536785829, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_Name
+      value: EnemyDistance Horde
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 913958280856589663, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2785978298475701983, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3204290459126204707, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_stats
+      value: 
+      objectReference: {fileID: 11400000, guid: 67d09d08f9a8ce940bcf8fe7d549ac25,
+        type: 2}
+    - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: _hp
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: _maxHp
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 7197814264841399882, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: shouldGetClose
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7197814264841399882, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: detectionRadious
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8130546791557357396, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: initialWeapon
+      value: 
+      objectReference: {fileID: 11400000, guid: 1d4668583dbdb284c89aed484e05052e,
+        type: 2}
+    - target: {fileID: 9070186933416403932, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: wanderRadious
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9070186933416403932, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: m_slowingRadious
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 9070186933416403932, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: wanderDisplacement
+      value: 2
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 510198339536785829, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7111335557637284665}
+  m_SourcePrefab: {fileID: 100100000, guid: 8309bf9444a004e4b854038f1c57a905, type: 3}
+--- !u!4 &2023578390689724229 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7291269379491494202, guid: 8309bf9444a004e4b854038f1c57a905,
+    type: 3}
+  m_PrefabInstance: {fileID: 8735570463149936255}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6886904939871021216 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2785978298475701983, guid: 8309bf9444a004e4b854038f1c57a905,
+    type: 3}
+  m_PrefabInstance: {fileID: 8735570463149936255}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &9092325241726164954 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 510198339536785829, guid: 8309bf9444a004e4b854038f1c57a905,
+    type: 3}
+  m_PrefabInstance: {fileID: 8735570463149936255}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7111335557637284665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9092325241726164954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24fd7c1e7d15bfe45943a728765e48d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  farPercept: {fileID: 6886904939871021216}
+  closePercept: {fileID: 2023578390689724229}
+  shaders: []
+  hasFarPerception: 1
+  hasClosePerception: 1
+  enemyTag: Player
+  characterType: 4
+  stats:
+    speed: 5
+    damage: 3
+    damageRate: 1.5
+    color: {r: 0, g: 0, b: 0, a: 0}
+    Name: 0
+    farDectection: 5
+    closeDetection: 3
+    minDistance: 5
+    poder: 0
+  mover: {fileID: 0}
+  fighter: {fileID: 0}
+  itemsToDrop: []
+  patrolController: {fileID: 0}
+  playerAction: 0
+  attackState: 0
+  playerDistance: 0
+  playerState: 0
+  rageState: 0
+  awareness: 0
+  curOrder: 0
+  horde: {fileID: 0}
+  coolDownHorde: 5
+  hordeInvokeTime: 1

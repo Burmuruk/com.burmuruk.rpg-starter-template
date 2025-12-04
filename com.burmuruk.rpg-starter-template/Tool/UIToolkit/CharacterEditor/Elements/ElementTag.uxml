@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <ui:VisualElement class="LineElements">
+        <ui:Button text="P" parse-escape-sequences="true" display-tooltip-when-elided="true" name="txtElement" class="ElementTag" style="-unity-text-align: middle-left;" />
+        <ui:Button text="P" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnPin" class="LineExtraButton" style="background-image: url(&apos;project://database/Assets/com.burmuruk.rpg-starter-template/Tool/Scripts/Editor/CharacterEditor/Art/Pin.png?fileID=2800000&amp;guid=5c2a49a4d65e6814ca850390f1e465ef&amp;type=3#Pin&apos;); -unity-background-scale-mode: scale-to-fit; -unity-slice-left: 1; -unity-slice-top: 1; -unity-slice-right: 1; -unity-slice-bottom: 1; -unity-slice-scale: 2px;" />
+        <ui:Button text="X" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnDelete" class="LineExtraButton" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,28 @@
+{
+  "name": "com.burmuruk.rpg-starter-template",
+  "version": "1.0.0",
+  "displayName": "RPG Starter Template",
+  "description": "Basic mechanics starter template for RPG games using Unity.",
+  "unity": "2022.3",
+  "author": {
+    "name": "Burmuruk / David Santoyo Herrera",
+    "email": "santoyo.herrera.david@gmail.com",
+    "url": "https://github.com/Burmuruk/RPGStarterTemplate.git"
+  },
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.textmeshpro": "3.0.6",
+    "com.unity.shadergraph": "14.0.9",
+    "com.unity.inputsystem": "1.7.0",
+    "com.unity.cinemachine": "2.9.5"
+  },
+  "samples": [
+    {
+      "displayName": "Demo Scene",
+      "description": "Example of a basic RPG setup using this template.",
+      "path": "Samples~/RPGStarterDemo"
+    }
+  ],
+  "keywords": [ "RPG", "template", "starter", "unity", "toolkit" ],
+  "category": "Templates"
+}

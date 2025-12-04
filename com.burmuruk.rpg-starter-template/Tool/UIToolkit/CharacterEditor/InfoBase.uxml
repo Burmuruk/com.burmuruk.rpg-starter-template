@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <ui:VisualElement style="flex-grow: 1; min-height: auto; flex-basis: 1000px;">
+        <ui:VisualElement name="stateContainer" style="flex-grow: 0; align-items: center; padding-bottom: 8px; flex-shrink: 0; justify-content: center; flex-basis: 28px;">
+            <ui:Button text="Button" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnState" class="ClickableBtn Title MidButton" style="-unity-text-align: middle-center; flex-basis: 20px; margin-bottom: 4px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="VisualElement" style="flex-grow: 0; max-height: 50px; flex-direction: column; margin-bottom: 10px; flex-shrink: 1;">
+            <ui:VisualElement style="flex-grow: 1; max-height: 30px; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Name" parse-escape-sequences="true" display-tooltip-when-elided="true" style="min-width: 70px; font-size: 12px; -unity-text-align: middle-left; margin-left: 10px; max-width: 70px;" />
+                <ui:TextField picking-mode="Ignore" name="txtName" style="flex-grow: 100;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ColourContainer" class="Disable" style="flex-grow: 1; max-height: 30px; flex-direction: row; flex-basis: 100%;">
+                <ui:Label tabindex="-1" text="Colour&#10;" parse-escape-sequences="true" display-tooltip-when-elided="true" style="min-width: 70px; font-size: 12px; margin-left: 10px; max-width: 70px; padding-top: 0;" />
+                <uie:ColorField value="RGBA(0.000, 1.000, 1.000, 1.000)" name="cfSettingColour" style="flex-grow: 1;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:ScrollView name="infoContainer" class="InfoContainer" style="flex-grow: 1;" />
+        <ui:VisualElement name="btnContainer" class="LineContainer" style="flex-grow: 0; max-height: 40px; margin-top: 15px; justify-content: center; padding-top: 0; flex-shrink: 0; padding-left: 0; padding-right: 0; padding-bottom: 0;">
+            <ui:Button text="Create" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnSettingAccept" class="MidButton ClickableBtn" style="font-size: 14px;" />
+            <ui:Button text="Cancel" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnSettingCancel" class="MidButton ClickableBtn" style="font-size: 14px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

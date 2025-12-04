@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:Label tabindex="-1" text="Body spawn points" parse-escape-sequences="true" display-tooltip-when-elided="true" style="-unity-font-style: bold; margin-bottom: 8px;" />
+    <ui:VisualElement class="LineContainer" style="flex-grow: 1;">
+        <ui:Label tabindex="-1" text="Body type" parse-escape-sequences="true" display-tooltip-when-elided="true" class="ElementTag" />
+        <ui:EnumField type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" value="Center" name="efBodyType" style="flex-grow: 1; flex-shrink: 1; font-size: 12px; margin-left: 1px;" />
+    </ui:VisualElement>
+    <ui:ListView focusable="true" style="flex-grow: 1;" />
+</ui:UXML>

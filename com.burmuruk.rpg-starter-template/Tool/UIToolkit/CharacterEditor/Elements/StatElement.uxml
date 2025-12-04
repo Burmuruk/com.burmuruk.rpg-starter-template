@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement class="LineElements" style="flex-grow: 1;">
+        <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lbHeader" tooltip="Stat header" class="ElementTag" style="min-width: 50px; -unity-text-align: middle-left; padding-right: 5px; flex-shrink: 1;" />
+        <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lbType" tooltip="Variable type" class="ElementTag" style="min-width: 50px; -unity-text-align: middle-left; flex-shrink: 1; padding-right: 5px;" />
+        <ui:Button text="Button" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnName" class="ElementTag" style="align-items: flex-start; min-width: 50px; flex-shrink: 1; flex-grow: 3; -unity-text-align: middle-left;" />
+        <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lbModification" tooltip="Buff modification" class="ElementTag" style="min-width: 50px; -unity-text-align: middle-left; flex-shrink: 1; padding-right: 5px;" />
+        <ui:Button text="X" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnRemove" tooltip="Remove element" class="LineExtraButton LightBorder" style="-unity-font-style: bold;" />
+    </ui:VisualElement>
+</ui:UXML>

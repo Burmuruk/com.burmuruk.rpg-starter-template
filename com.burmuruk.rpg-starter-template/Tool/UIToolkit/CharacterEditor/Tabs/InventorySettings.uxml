@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:Button text="&lt;-  " parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnGoBack" class="MidButton" style="min-width: 10%; max-width: 20px; margin-bottom: 12px;" />
+    <ui:Toggle label="Set component in character" name="tglAddInventory" value="true" class="LineElements" style="-unity-text-align: middle-left;" />
+    <ui:Label tabindex="-1" text="The character will start with no items on it." parse-escape-sequences="true" display-tooltip-when-elided="true" name="lblWarning" class="Disable" style="color: rgb(230, 180, 12); -unity-font-style: bold; font-size: 12px; white-space: normal;" />
+    <ui:VisualElement style="flex-grow: 0; height: 15px; flex-shrink: 0;" />
+    <ui:VisualElement name="infoComponents" class="FieldColour BaseBorder" style="flex-grow: 1; min-height: 200px; flex-shrink: 0;">
+        <ui:VisualElement class="LineElements" style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="Name" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+            <ui:Label tabindex="-1" text="Amount" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+            <ui:Label tabindex="-1" text="Remove" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; color: rgb(204, 204, 204); -unity-font-style: normal; font-size: 12px; align-self: center; flex-grow: 1;" />
+        </ui:VisualElement>
+        <ui:ScrollView name="componentsConatiner" style="flex-grow: 1;" />
+        <ui:VisualElement class="LineElements" style="flex-grow: 1; bottom: 0;">
+            <ui:Label tabindex="-1" text="Add component" parse-escape-sequences="true" display-tooltip-when-elided="true" style="padding-bottom: 0; padding-top: 1px; max-height: 20px; margin-top: 2px; font-size: 12px; color: rgb(192, 192, 192);" />
+            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" name="ddfType" style="flex-grow: 0.8; font-size: 12px; max-width: 40%;" />
+            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" name="ddfElement" style="flex-grow: 0.8; font-size: 12px; max-width: 40%;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

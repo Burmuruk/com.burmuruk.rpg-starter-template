@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement class="LineElements pinnable--element" style="flex-grow: 1; transition-property: translate, border-width; transition-duration: 0.5s, 0.3s;">
+        <ui:Button text="Button" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnEditComponent" class="ElementTag" style="-unity-text-align: middle-left;" />
+        <ui:Toggle class="LineExtraButton LightBorder" style="-unity-background-image-tint-color: rgb(99, 98, 98); background-color: rgb(81, 81, 81); justify-content: center; align-items: center; padding-left: 5px;" />
+        <ui:EnumField type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" value="Center" class="Disable" style="max-width: 120px; margin-right: 0; margin-left: 0;" />
+        <ui:IntegerField value="42" name="txtAmount" class="Disable" style="margin-right: 0; margin-left: 0; min-width: 120px;" />
+        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnPin" class="LineExtraButton LightBorder Disable" style="-unity-font-style: bold; background-image: url(&apos;project://database/Assets/com.burmuruk.rpg-starter-template/Tool/Scripts/Editor/CharacterEditor/Art/Pin.png?fileID=2800000&amp;guid=5c2a49a4d65e6814ca850390f1e465ef&amp;type=3#Pin&apos;); -unity-background-scale-mode: scale-to-fit; -unity-slice-left: 1; -unity-slice-top: 1; -unity-slice-right: 1; -unity-slice-bottom: 1; -unity-slice-scale: 2px; -unity-background-image-tint-color: rgb(231, 228, 228);" />
+        <ui:Button text="X" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnRemove" class="LineExtraButton LightBorder" style="-unity-font-style: bold;" />
+    </ui:VisualElement>
+</ui:UXML>
