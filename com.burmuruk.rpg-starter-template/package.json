@@ -7,7 +7,7 @@
   "author": {
     "name": "Burmuruk / David Santoyo Herrera",
     "email": "santoyo.herrera.david@gmail.com",
-    "url": "https://github.com/Burmuruk/RPGStarterTemplate.git"
+    "url": "https://github.com/Burmuruk/com.burmuruk.rpg-starter-template.git"
   },
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1",

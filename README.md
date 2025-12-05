@@ -45,7 +45,7 @@ El demo y varios materiales usan URP.
 2. Selecciona Add package from Git URL…
 
 ```json
-  "[com.burmuruk.rpg-starter-template](https://github.com/TuUsuario/RPGStarterTemplate.git)"
+  "https://github.com/Burmuruk/com.burmuruk.rpg-starter-template.git"
 ```
 3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar la arquitectura base.
    Selecciona la ruta de tu preferencia.
