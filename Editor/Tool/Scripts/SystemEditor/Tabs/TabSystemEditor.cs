@@ -29,7 +29,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             [SerializeField] public Controls.NavGenerator navGenerator;
         }
 
-        [MenuItem("RPGTemplate/System")]
+        [MenuItem("RPGTemplate/System", priority = 1)]
         public static void ShowWindow()
         {
             TabSystemEditor window = GetWindow<TabSystemEditor>();

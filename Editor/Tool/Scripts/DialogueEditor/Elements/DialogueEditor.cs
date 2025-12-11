@@ -29,7 +29,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         private EditorCoroutine _notificationRoutine;
         private IVisualElementScheduledItem _firstNodeSchedule;
 
-        [MenuItem("RPGTemplate/Dialogue Editor")]
+        [MenuItem("RPGTemplate/Dialogue Editor", priority = 1)]
         public static void ShowEditorWindow()
         {
             window = GetWindow<DialogueEditor>(false, "Dialogue Editor");

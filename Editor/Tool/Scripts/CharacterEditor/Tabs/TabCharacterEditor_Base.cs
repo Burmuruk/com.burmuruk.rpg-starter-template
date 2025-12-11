@@ -34,7 +34,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         SearchBar searchBar;
         (ElementType type, int idx) currentSettingTag = (ElementType.None, -1);
 
-        [MenuItem("RPGTemplate/Creation")]
+        [MenuItem("RPGTemplate/Creation", priority = 1)]
         public static void ShowWindow()
         {
             TabCharacterEditor window = GetWindow<TabCharacterEditor>();
