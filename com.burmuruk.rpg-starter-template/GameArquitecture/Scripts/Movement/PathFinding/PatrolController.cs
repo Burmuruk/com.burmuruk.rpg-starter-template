@@ -191,7 +191,7 @@ namespace Burmuruk.WorldG.Patrol
 
         public void StartPatrolling()
         {
-            if (state != PatrolState.None) return;
+            if (state != PatrolState.None || Mover == null) return;
 
             mover.OnFinished += ContinueTasks;
 

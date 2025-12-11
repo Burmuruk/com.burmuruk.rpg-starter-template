@@ -14,7 +14,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
     public class EquipmentSettings : SubWindow, IUIListContainer<BaseCreationInfo>
     {
         const string INFO_EQUIPMENT_SETTINGS_NAME = "EquipmentSettings";
-        Equipment? _changes = null;
+        Equipment _changes = null;
         ComponentsListUI<ElementCreation> _inventory;
         Queue<string> _itemsIds = new();
         bool _isLoading = false;
@@ -48,7 +48,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             RegisterToChanges();
         }
 
-        private void VerifyEquippedItems(List<string> list)
+        private void VerifyEquippedItems(List<string> placesTaken)
         {
             if (_isLoading) return;
 
@@ -62,7 +62,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 {
                     var requiredPlace = (EquipmentType)equipable.GetEquipLocation();
 
-                    if (requiredPlace != EquipmentType.None && list.Contains(requiredPlace.ToString()))
+                    if (requiredPlace != EquipmentType.None && placesTaken.Contains(requiredPlace.ToString()))
                     {
                         Set_Tooltip(item.element, _highlighted, "There's no spawn point for: " + requiredPlace.ToString(), true);
                         Notify(item.element.tooltip, BorderColour.HighlightBorder);
@@ -259,6 +259,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             var spawnFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/BodySpawnPoint.uxml");
             UIParts = new EquipmentSpawnsList(spawnFile.Instantiate());
             OFModel = leftSide.Q<ObjectField>();
+
             TVBodyParts = leftSide.Q<TreeView>();
             Setup_LeftSide(leftSide);
             Setup_TreeView();
@@ -287,6 +288,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             if (model == OFModel.value) return;
 
             OFModel.value = model;
+
+            if (_changes != null)
+                Update_SpawnPoints(_changes, model);
+            else
+                UIParts.TxtCount.value = 0;
         }
 
         //private void StopScroll(WheelEvent evt, ScrollView scroll)
@@ -467,14 +473,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             if (!OFModel.value) return null;
 
-            if (t.gameObject == model)
+            if (t != null ? t.gameObject : null == model)
                 return "";
 
             int i = 0;
             string path = t.name;
             var cur = t.parent;
 
-            while (cur.gameObject != null && cur.gameObject != model && i < 10)
+            while (cur != null ? cur.gameObject : null != null && cur.gameObject != model && i < 10)
             {
                 path = cur.name + "/" + path;
                 cur = cur.parent;
@@ -537,7 +543,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             OFModel.value = model;
 
-            if (equipment.spawnPoints != null)
+            if (equipment?.spawnPoints != null)
             {
                 var transform = model.transform;
                 UIParts.UpdateUIData(equipment.spawnPoints.Select(p => (FindChildByPath(transform, p.path), p.type)).ToList());
@@ -565,14 +571,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                     }
                 }
 
-                Action<ElementCreation> EditData = (e) =>
+                void EditData(ElementCreation e)
                 {
                     if (equipFound.HasValue)
                     {
                         e.EnumField.SetValueWithoutNotify(equipFound.Value.place);
                         e.Toggle.SetValueWithoutNotify(equipFound.Value.equipped);
                     }
-                };
+                }
 
                 MClEquipmentElements.AddElementExtraData += EditData;
 

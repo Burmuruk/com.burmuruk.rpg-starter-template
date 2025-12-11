@@ -11,7 +11,6 @@ namespace Burmuruk.AI.PathFinding
         IPathNode start;
         IPathNode end;
         bool pathCalculated = false;
-        bool endReached = false;
 
         public LinkedList<IPathNode> shortestPath;
         private Dictionary<uint, Vector3> weights;
@@ -167,7 +166,6 @@ namespace Burmuruk.AI.PathFinding
         public void Clear()
         {
             pathCalculated = false;
-            endReached = false;
             shortestPath = null;
         }
 

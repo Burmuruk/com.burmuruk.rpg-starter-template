@@ -47,6 +47,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
         public void UpdateInfo(EquipmentType type)
         {
             m_bodyPart = type;
+            _type = ItemType.Armor;
         }
 
         public void Copy(ArmourElement original)

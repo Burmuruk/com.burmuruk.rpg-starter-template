@@ -259,26 +259,6 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
                 MeshControls.Add(new InspectorElement(nodesList));
                 EnableContainer(MeshControls, true);
-                var assets = AssetDatabase.LoadAllAssetsAtPath("Assets/com.burmuruk.rpg-starter-template/Tool/Prefabs/Editor/Navigation/Node.prefab");
-
-                if (assets == null)
-                    Debug.Log("Object not found");
-                else if (assets.Length > 0)
-                {
-                    foreach (var node in assets)
-                    {
-                        if ((node as GameObject) != null)
-                        {
-                            nodesList.debugNode = node as GameObject;
-                        }
-                    }
-                }
-
-                if (nodesList.debugNode == null)
-                {
-                    Notify("Node prefab is missing!", BorderColour.Error, NotificationType.System);
-                    return;
-                }
             }
             else
                 MeshControls.Clear();
@@ -354,8 +334,6 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 {
                     nodesList = ScriptableObject.CreateInstance<NodesList>();
                 }
-
-                result &= isValid = nodesList.debugNode != null;
                 //Highlight(nodesList, !isValue, BorderColour.Error);
             }
 

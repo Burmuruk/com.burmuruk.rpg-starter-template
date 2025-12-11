@@ -21,10 +21,10 @@ namespace Burmuruk.RPGStarterTemplate.Movement
     [RequireComponent(typeof(Rigidbody))]
     public class Movement : MonoBehaviour, IScheduledAction
     {
-        [SerializeField] float m_maxVel;
-        [SerializeField] float m_maxSteerForce;
-        [SerializeField] float m_threshold;
-        [SerializeField] float m_slowingRadious;
+        [SerializeField] float m_maxVel = 7;
+        [SerializeField] float m_maxSteerForce = 5;
+        [SerializeField] float m_threshold = 1;
+        [SerializeField] float m_slowingRadious = 1.5f;
 
         Rigidbody m_rb;
         Func<BasicStats> stats;

@@ -42,7 +42,6 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         const float closeDistance = 3;
         const float freeDistance = 6;
         const float farDistance = 9;
-        bool detachRotation = false;
 
         public event Action OnEnemyDetected;
         public  event Action OnFormationChanged;
@@ -85,7 +84,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                 <= closeDistance => PlayerDistance.Close,
                 <= freeDistance => PlayerDistance.Free,
                 <= farDistance => PlayerDistance.Far,
-                > farDistance => PlayerDistance.FarAway
+                _ => PlayerDistance.FarAway
             };
 
             base.FixedUpdate();
@@ -95,7 +94,6 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         {
             if (playerState == PlayerState.Combat && !isTargetFar && !isTargetClose)
             {
-                Collider closest = null;
                 List<(Component enemy, float distance)> closestEnemies = new();
 
                 foreach (Character character in Fellows)

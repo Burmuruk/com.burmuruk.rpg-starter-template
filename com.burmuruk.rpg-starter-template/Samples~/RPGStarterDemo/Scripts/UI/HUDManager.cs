@@ -227,7 +227,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
 
         private void UpdateHealthPosition()
         {
-            if (playersLife.Count <= 0) return;
+            if (playersLife == null || playersLife.Count <= 0) return;
 
             foreach (var player in playerManager.Players)
             {
@@ -256,7 +256,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             hasInitialized = true;
 
             UpdateSubscripttions();
-            DontDestroyOnLoad(transform.parent.gameObject);
+            DontDestroyOnLoad(transform.root);
         }
 
         public void RestartPlayersTags()
@@ -527,7 +527,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
                 return;
             else if (progress >= 1)
             {
-                Invoke("StopSavingNotification", 2);
+                Invoke("StopSavingNotification", .5f);
                 return;
             }
             

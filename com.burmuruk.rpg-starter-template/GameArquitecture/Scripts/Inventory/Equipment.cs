@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Burmuruk.RPGStarterTemplate.Inventory
 {
     [Serializable]
-    public struct Equipment
+    public class Equipment
     {
         [SerializeField] GameObject body;
         [SerializeField] SpawnPointData[] spawnPoints;
@@ -23,7 +23,10 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
                 if (_parts == null)
                     Initilize();
 
-                return _parts.ContainsKey(part) ? _parts[part].equipables[0] : default;
+                if (_parts.ContainsKey(part) && _parts[part].equipables.Count > 0)
+                    return _parts[part].equipables[0];
+
+                return default;
             }
         }
 
@@ -36,10 +39,17 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
 
         public void Initilize()
         {
-            _parts = new Dictionary<int, (Transform spawnPoint, GameObject item, List<EquipeableItem> equipeables)>()
+            _parts = new Dictionary<int, (Transform spawnPoint, GameObject item, List<EquipeableItem> equipeables)>();
+
+            if (spawnPoints != null)
             {
-                { 0, (null, body, null) }
-            };
+                foreach (var spawnPoint in spawnPoints)
+                {
+                    _parts[spawnPoint.spawnType] = (spawnPoint.spawnPoint, null, new());
+                }
+            }
+
+            _parts[0] = (null, body, null);
         }
 
         public void Equip(int part, GameObject item, params EquipeableItem[] equipables)

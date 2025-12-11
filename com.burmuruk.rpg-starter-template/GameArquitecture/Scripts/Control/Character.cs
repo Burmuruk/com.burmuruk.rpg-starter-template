@@ -375,7 +375,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 int partId = (int)part;
                 var items = equipper.Equipped.GetItems(partId);
 
-                if (items != null)
+                if (items != null && items.Count > 0)
                 {
                     equipmentData[partId.ToString()] = items[0].ID;
                 }

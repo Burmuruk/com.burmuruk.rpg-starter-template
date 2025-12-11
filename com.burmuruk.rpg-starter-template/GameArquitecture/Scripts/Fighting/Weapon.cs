@@ -87,6 +87,8 @@ namespace Burmuruk.RPGStarterTemplate.Combat
         {
             (m_bodyPart, weaponType, m_damage, m_rateDamage, m_minDistance, m_maxDistance, this.reloadTime, this.maxAmmo, _buffs) =
                 (bodyPart, subType, damage, rateDamage, minDistance, maxDistance, reloadTime, maxAmmo, data);
+
+            _type = ItemType.Weapon;
         }
 
         public override object GetSubType()

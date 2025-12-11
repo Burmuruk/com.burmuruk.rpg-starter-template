@@ -24,7 +24,6 @@ namespace Burmuruk.WorldG.Patrol
         bool isAlive = true;
 
         public PatrolPath<PatrolNode> path { get; private set; }
-        private bool isAdded = true;
         #endregion
 
         #region Unity methods

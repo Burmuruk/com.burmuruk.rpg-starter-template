@@ -27,7 +27,6 @@ namespace Burmuruk.RPGStarterTemplate.Interaction
         {
             var pickups = FindObjectsOfType<Pickup>();
             items.Clear();
-            int i = 0;
 
             foreach (var pickup in pickups)
             {

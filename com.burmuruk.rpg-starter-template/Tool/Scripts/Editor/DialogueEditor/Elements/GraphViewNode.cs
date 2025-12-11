@@ -17,9 +17,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         public event Action OnConnect;
         public event Action OnDisconnect;
 
-        private readonly Color unreachableColor = new Color(0.8235294f, 0.8235294f, 0.8235294f, 1);
-        private readonly float unreachableRadious = 5f;
-        private Button collapseButton;
+        private readonly Color unreachableColor = new (0.8235294f, 0.8235294f, 0.8235294f, 1);
         private bool collapsed = false;
         private DialogueGraphView graph;
 
@@ -128,8 +126,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private Button MakeColorButton(Color color, string tooltip)
         {
-            var button = new Button();
-            button.tooltip = tooltip;
+            var button = new Button
+            {
+                tooltip = tooltip
+            };
             button.style.borderTopColor = color;
             button.style.borderBottomColor = color;
             button.style.borderLeftColor = color;
@@ -147,9 +147,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private Button MakePinButton()
         {
-            var button = new Button();
-            button.tooltip = "Pin node";
-            button.name = PIN_BUTTON_NAME;
+            var button = new Button
+            {
+                tooltip = "Pin node",
+                name = PIN_BUTTON_NAME
+            };
             Texture2D pinIcon = (Texture2D)AssetDatabase.LoadAssetAtPath("Assets/com.burmuruk.rpg-starter-template/Tool/Art/Editor/Pin.png", typeof(Texture2D));
             button.style.backgroundImage = new StyleBackground(pinIcon);
             button.style.unityBackgroundImageTintColor = new Color(0.5169811f, 0.5169811f, 0.5169811f);

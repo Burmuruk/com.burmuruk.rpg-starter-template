@@ -201,7 +201,7 @@ namespace Burmuruk.RPGStarterTemplate.Utilities
                 actionStatus.tasks[0]?.Invoke();
                 curTask = 1;
             }
-            catch (NullReferenceException n)
+            catch (NullReferenceException)
             {
 
                 throw;

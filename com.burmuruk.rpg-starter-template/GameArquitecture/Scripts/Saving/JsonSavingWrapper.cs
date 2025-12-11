@@ -22,7 +22,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
         public event Action<float> OnSaving;
         public event Action<float> OnLoading;
-        public event Action<JObject> OnLoaded;
+        public event Action<SlotData> OnLoaded;
         public UnityEvent OnSavingUI;
         public UnityEvent OnLoadingUI;
         public UnityEvent OnLoadedUI;
@@ -42,27 +42,25 @@ namespace Burmuruk.RPGStarterTemplate.Saving
                 FindObjectOfType<GameManager>()?.SetState(GameManager.State.Loading);
             };
 
-            saver.onSceneLoaded += () =>
+            saver.onSlotLoaded += () =>
             {
-                Movement.PathFindig.NavSaver.Restart();
-                Movement.PathFindig.NavSaver.LoadNavMesh();
+                LoadNavigationMap();
                 TemporalSaver.RemoveAllData();
-
-                if (_lastBuildIdx == 0)
-                {
-                    GetComponent<PersistentObjSpawner>().TrySpawnObjects();
-                }
+                
+                FindObjectOfType<PersistentObjSpawner>()?.TrySpawnObjects();
             };
 
-            OnLoaded += (args) =>
-            {
-                RestoreSlotData(args);
-                FindObjectOfType<GameManager>()?.SetState(GameManager.State.Playing);
-            };
+            OnLoaded += LoadFinalElements;
             OnLoadingStateFinished += LoadStage;
 
             DontDestroyOnLoad(gameObject);
             PersistentObjects.Register(gameObject);
+        }
+
+        protected virtual void LoadNavigationMap()
+        {
+            Movement.PathFindig.NavSaver.Restart();
+            Movement.PathFindig.NavSaver.LoadNavMesh();
         }
 
         /// <summary>
@@ -74,15 +72,10 @@ namespace Burmuruk.RPGStarterTemplate.Saving
         {
             OnSaving?.Invoke(0);
 
-            StartCoroutine(CaptureScreenshot(slot, slotData));
+            StartCoroutine(ManualSave(slot, slotData));
         }
 
-        /// <summary>
-        /// Captura un screenshot de la pantalla actual y devuelve:
-        /// - base64: string PNG en Base64 para guardar en JSON
-        /// - pngBytes: bytes del PNG para guardar en archivo físico
-        /// </summary>
-        private IEnumerator CaptureScreenshot(int slot, JObject slotData)
+        private IEnumerator ManualSave(int slot, JObject slotData)
         {
             yield return new WaitForEndOfFrame();
 
@@ -99,16 +92,16 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
             UnityEngine.Object.Destroy(tex);
 
-            slotData["Image"] = base64;
+            slotData[SlotData.ImageKey] = base64;
 
             GetComponent<JsonSavingSystem>().Save(DEFAULT_SAVEFILE, slot, slotData);
-            TakeSlotPicture(slot, png);
+            //TakeSlotPicture(slot, png);
 
             OnSaving?.Invoke(1);
             yield break;
         }
 
-        private IEnumerator CaptureScreenshotAuto(JObject slotData, bool overrideManualSave)
+        private IEnumerator AutoSave(JObject slotData, bool overrideManualSave)
         {
             yield return new WaitForEndOfFrame();
 
@@ -116,12 +109,12 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             var data = saver.LoadSave(DEFAULT_SAVEFILE);
             JObject newSave = new JObject();
 
-            if (slotData == null || !slotData.ContainsKey("Slot"))
+            if (slotData == null || !slotData.ContainsKey(SlotData.SlotKey))
             {
                 slotData = CreateDefaultSlotData(1);
             }
 
-            int manualSlotIndex = slotData["Slot"].ToObject<int>();
+            int manualSlotIndex = slotData[SlotData.SlotKey].ToObject<int>();
 
             int w = Screen.width;
             int h = Screen.height;
@@ -134,7 +127,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             string base64 = Convert.ToBase64String(png);
 
             UnityEngine.Object.Destroy(tex);
-            slotData["Image"] = base64;
+            slotData[SlotData.ImageKey] = base64;
 
             foreach (var kvp in data)
             {
@@ -162,7 +155,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
                 RenameSlotPicture(i, newIndex);
             }
 
-            var curDataState = saver.LoadCurrentSlot(DEFAULT_SAVEFILE, slotData);
+            var curDataState = saver.GetCurrentSlotData(DEFAULT_SAVEFILE, slotData);
             string slotIdxKey = manualSlotIndex.ToString();
 
             if (curDataState.ContainsKey(slotIdxKey))
@@ -173,12 +166,12 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             {
                 JObject fallbackState = new JObject
                 {
-                    ["SlotData"] = slotData
+                    [SlotData.SlotKey] = slotData
                 };
                 newSave["-1"] = fallbackState;
             }
 
-            TakeSlotPicture(-1, png);
+            //TakeSlotPicture(-1, png);
 
             if (overrideManualSave)
             {
@@ -187,7 +180,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
                     newSave[slotIdxKey] = curDataState[slotIdxKey];
                 }
 
-                TakeSlotPicture(-1, png);
+                //TakeSlotPicture(-1, png);
             }
 
             saver.OverwriteSave(DEFAULT_SAVEFILE, newSave);
@@ -201,9 +194,9 @@ namespace Burmuruk.RPGStarterTemplate.Saving
         {
             JObject slotData = new JObject
             {
-                ["Slot"] = slot,
-                ["BuildIdx"] = SceneManager.GetActiveScene().buildIndex,
-                ["TimePlayed"] = 0f
+                [SlotData.SlotKey] = slot,
+                [SlotData.BuildIndexKey] = SceneManager.GetActiveScene().buildIndex,
+                [SlotData.TimePlayedKey] = 0f
             };
 
             return slotData;
@@ -242,10 +235,19 @@ namespace Burmuruk.RPGStarterTemplate.Saving
                 Application.persistentDataPath,
                 DEFAULT_IMAGE_NAME + newSlot.ToString() + DEFAULT_IMAGE_EXTENTION);
 
-            if (File.Exists(oldPath))
-            {
-                File.Move(oldPath, newPath);
-            }
+            if (!File.Exists(oldPath))
+                return;
+
+            if (File.Exists(newPath))
+                File.Delete(newPath);
+
+            File.Move(oldPath, newPath);
+        }
+
+        protected virtual void LoadFinalElements(SlotData data)
+        {
+            SetSlotData(data);
+            FindObjectOfType<GameManager>()?.SetState(GameManager.State.Playing);
         }
 
         /// <summary>
@@ -255,11 +257,46 @@ namespace Burmuruk.RPGStarterTemplate.Saving
         public void Load(int slot)
         {
             _lastBuildIdx = SceneManager.GetActiveScene().buildIndex;
-            OnLoading?.Invoke(0);
+            OnLoading?.Invoke(slot);
             OnLoadingUI?.Invoke();
             FindObjectOfType<BuffsManager>()?.RemoveAllBuffs();
 
             Task.Delay(50).GetAwaiter().OnCompleted(() => LoadWithoutFade(slot));
+        }
+
+        public void LoadScene(string name)
+        {
+            _lastBuildIdx = SceneManager.GetActiveScene().buildIndex;
+            OnLoading?.Invoke(1);
+            OnLoadingUI?.Invoke();
+
+            StartCoroutine(ChangeScene(name));
+        }
+
+        private IEnumerator ChangeScene(string name)
+        {
+            yield return new WaitForSeconds(1f);
+
+            yield return SceneManager.LoadSceneAsync(name, LoadSceneMode.Single);
+
+            LoadNavigationMap();
+            var spawner = GetComponent<PersistentObjSpawner>();
+            spawner.TrySpawnObjects();
+            spawner.enabled = false;
+            OnLoaded?.Invoke(new SlotData(1, 0, 0, 1));
+            OnLoadedUI?.Invoke();
+        }
+
+        private SlotData GetSlotData(JObject slotData)
+        {
+            var data = new SlotData(
+                slotData[SlotData.SlotKey].ToObject<int>(),
+                slotData[SlotData.BuildIndexKey].ToObject<int>(),
+                slotData[SlotData.TimePlayedKey].ToObject<float>(),
+                0
+            );
+
+            return data;
         }
 
         public void DeleteSlot(int idx)
@@ -270,16 +307,16 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
         private void LoadWithoutFade(int slot)
         {
+            OnLoading?.Invoke(slot);
+
             GetComponent<JsonSavingSystem>().Load(
                 DEFAULT_SAVEFILE,
                 slot,
                 (args) =>
                 {
-                    OnLoaded?.Invoke(args);
+                    OnLoaded?.Invoke(GetSlotData(args));
                     OnLoadedUI?.Invoke();
                 });
-
-            OnLoading?.Invoke(1);
         }
 
         /// <summary>
@@ -294,7 +331,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
         {
             OnSaving?.Invoke(0);
 
-            StartCoroutine(CaptureScreenshotAuto(slotData, overrideManualSave));
+            StartCoroutine(AutoSave(slotData, overrideManualSave));
         }
 
         public List<(int id, JObject slotData)> FindAvailableSlots(out List<(int id, Sprite sprite)> images)
@@ -307,7 +344,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
             foreach (var slot in slots)
             {
-                if (TryLoadSlotImage(slot.id, out Sprite newSprite))
+                if (TryLoadSlotImage(slot.id, slot.slotData, out Sprite newSprite))
                 {
                     (images ??= new()).Add((slot.id, newSprite));
                 }
@@ -316,17 +353,9 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             return slots;
         }
 
-        private bool TryLoadSlotImage(int slot, out Sprite sprite)
+        private bool TryLoadSlotImage(int slot, JObject slotData, out Sprite sprite)
         {
-            sprite = null;
-            string path = Path.Combine(
-                Application.persistentDataPath,
-                DEFAULT_IMAGE_NAME + slot.ToString() + DEFAULT_IMAGE_EXTENTION);
-
-            if (!File.Exists(path))
-                return false;
-
-            byte[] data = File.ReadAllBytes(path);
+            byte[] data = Convert.FromBase64String(slotData[SlotData.ImageKey].ToObject<string>());
 
             Texture2D tex = new Texture2D(2, 2);
             ImageConversion.LoadImage(tex, data);
@@ -339,13 +368,8 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             return true;
         }
 
-        private void RestoreSlotData(JObject slotData)
+        protected void SetSlotData(SlotData data)
         {
-            var data = new SlotData(
-                slotData["Slot"].ToObject<int>(),
-                slotData["BuildIdx"].ToObject<int>(),
-                slotData["TimePlayed"].ToObject<float>());
-
             FindObjectOfType<LevelManager>().SaveSlotData(data);
         }
 

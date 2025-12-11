@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,18 +27,16 @@ namespace Burmuruk.RPGStarterTemplate.Control
         List<GameObject> itemsToDestroy = new();
 
         private int slotIdx = 1;
-        private bool initialized = false;
 
         //public static List<Coroutine> activeCoroutines = new();
         public event Action OnNavmeshLoaded;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             savingWrapper = FindObjectOfType<JsonSavingWrapper>();
             //playerManager.OnPlayerAdded += SetPathToCharacter;
 
-            NavSaver.Restart();
-            NavSaver.LoadNavMesh();
+            LoadNavigationMap();
             FindObjectOfType<PickupSpawner>().RegisterCurrentItems();
         }
 
@@ -55,10 +54,9 @@ namespace Burmuruk.RPGStarterTemplate.Control
             };
 
             StartCoroutine(Autosave());
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject.transform.root);
 
-            NavSaver.Restart();
-            NavSaver.LoadNavMesh();
+            LoadNavigationMap();
             FindAnyObjectByType<LevelManager>().SetPaths();
             UpdatePlayerPosition();
         }
@@ -77,8 +75,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         private void OnLevelWasLoaded(int level)
         {
-            NavSaver.Restart();
-            NavSaver.LoadNavMesh();
+            LoadNavigationMap();
             FindAnyObjectByType<LevelManager>().SetPaths();
             UpdatePlayerPosition();
         }
@@ -135,6 +132,12 @@ namespace Burmuruk.RPGStarterTemplate.Control
             gameManager.ExitGame();
         }
 
+        protected virtual void LoadNavigationMap()
+        {
+            NavSaver.LoadNavMesh();
+            FindAnyObjectByType<LevelManager>().SetPaths();
+        }
+
         protected virtual void VerifyScene(Scene scene, LoadSceneMode mode) { }
 
         private void RestoreScene(Scene scene)
@@ -156,7 +159,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
             {
                 if (gameManager.Continue())
                 {
-                    pauseMenu.gameObject.SetActive(false);
+                    pauseMenu?.gameObject.SetActive(false);
                     Time.timeScale = 1;
                     HideSavingOptions();
                 }
@@ -165,7 +168,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
             {
                 if (gameManager.PauseGame())
                 {
-                    pauseMenu.gameObject.SetActive(true);
+                    pauseMenu?.gameObject.SetActive(true);
                     Time.timeScale = 0;
                 }
             }
@@ -185,7 +188,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
             {
                 if (slot.id == -1 || slot.id == 1)
                 {
-                    if (slot.slotData["TimePlayed"].ToObject<float>() is var t && t > max.time)
+                    if (slot.slotData[SlotData.TimePlayedKey].ToObject<float>() is var t && t > max.time)
                         max = (slot.id, t);
                 }
             }
@@ -193,25 +196,12 @@ namespace Burmuruk.RPGStarterTemplate.Control
             savingWrapper.Load(max.idx == 0 ? slotIdx : max.idx);
         }
 
-        public void Resume()
+        public virtual void Resume()
         {
             if (gameManager.Continue())
             {
-                pauseMenu.gameObject.SetActive(false);
                 Time.timeScale = 1;
-
-                HideSavingOptions();
-            }
-            else if (pauseMenu.gameObject.activeSelf)
-            {
-                pauseMenu.gameObject.SetActive(false);
-                Time.timeScale = 1;
-
-                HideSavingOptions();
-            }
-
-            if (gameManager.GameState == GameManager.State.Pause)
-            {
+                pauseMenu?.gameObject.SetActive(false);
             }
         }
 
@@ -220,7 +210,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
         public void RestoreFromJToken(JToken state)
         {
             //SceneManager.LoadScene(state.)
-            slotIdx = state["Slot"].ToObject<int>();
+            slotIdx = state[SlotData.SlotKey].ToObject<int>();
         }
 
         public SlotData GetSlotData()
@@ -228,13 +218,15 @@ namespace Burmuruk.RPGStarterTemplate.Control
             SlotData slotData = new SlotData(
                 slotIdx,
                 SceneManager.GetActiveScene().buildIndex,
-                Time.realtimeSinceStartup);
+                Time.realtimeSinceStartup,
+                TryGetComponent<PlayerManager>(out var pm) ? pm.Players.Count : 0
+            );
 
             return slotData;
         }
 
         public void SaveSlotData(SlotData slotData)
-        {
+        { 
             slotIdx = slotData.Id;
         }
 
@@ -262,15 +254,15 @@ namespace Burmuruk.RPGStarterTemplate.Control
             var slotData = GetSlotData();
 
             JObject data = new JObject();
-            data["Slot"] = slotData.Id;
-            data["BuildIdx"] = slotData.BuildIdx;
-            data["TimePlayed"] = slotData.PlayedTime;
-            data["MembersCount"] = FindObjectOfType<PlayerManager>().Players.Count;
+            data[SlotData.SlotKey] = slotData.Id;
+            data[SlotData.BuildIndexKey] = slotData.BuildIdx;
+            data[SlotData.TimePlayedKey] = slotData.PlayedTime;
+            data[SlotData.MembersAmountKey] = FindObjectOfType<PlayerManager>().Players.Count;
 
             return data;
         }
 
-        IEnumerator Autosave()
+        protected IEnumerator Autosave()
         {
             yield break;
             //while (true)

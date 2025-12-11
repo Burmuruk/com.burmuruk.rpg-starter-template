@@ -143,8 +143,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                             var buffUserData = creation.Value as BuffUserCreationData;
                             var (buffUser, cArgs) = (buffUserData.Data, buffUserData.Names);
 
-                            InventoryItem newBuff = CloneFakeScriptable(buffUser);
                             ItemDataConverter.Update_BuffsInfo(buffUser as IBuffUser, cArgs);
+                            InventoryItem newBuff = CloneFakeScriptable(buffUser);
 
                             _creationSaver.SavetItem(newBuff, cArgs);
                             elementCreated = true;

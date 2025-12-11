@@ -146,6 +146,12 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             savingWrapper.Load(curSlots + 1);
         }
 
+        public void LoadScene(string name)
+        {
+            ShowMenu(false);
+            savingWrapper.LoadScene(name);
+        }
+
         public void DeleteSlot(int idx)
         {
 

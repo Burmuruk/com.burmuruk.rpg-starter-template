@@ -1,4 +1,5 @@
 ﻿using Burmuruk.RPGStarterTemplate.Editor.Dialogue;
+using Burmuruk.RPGStarterTemplate.Inventory;
 using Burmuruk.RPGStarterTemplate.Stats;
 using System;
 using System.Collections;
@@ -1417,6 +1418,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             {
                 case ComponentType.Equipment:
                     Load_InventoryItemsInEquipment();
+                    var equipment = (EquipmentSettings)subTabs[CharacterTab.Equipment];
+                    equipment.Set_Model((GameObject)OFModel.value);
                     break;
 
                 case ComponentType.Dialogue:
@@ -1598,7 +1601,6 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             //var inventory = (subTabs[CharacterTab.Inventory] as InventorySettings).GetInventory();
             var equipment = ((EquipmentSettings)subTabs[CharacterTab.Equipment]);
             equipment.Load_EquipmentFromList(items);
-            equipment.Set_Model((GameObject)OFModel.value);
         }
 
         public CharacterData GetInfo()

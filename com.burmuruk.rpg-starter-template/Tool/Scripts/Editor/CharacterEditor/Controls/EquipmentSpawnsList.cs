@@ -21,18 +21,21 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             {
                 element.place.choices = GetChoices();
                 element.place.value = EquipmentType.None.ToString();
-                element.place.RegisterValueChangedCallback(evt =>
-                {
-                    var newChoices = GetChoices();
-                    
-                    foreach (var item in _enabledElements)
-                    {
-                        item.place.choices = newChoices;
-                    }
-
-                    OnChoicesChanged?.Invoke(newChoices);
-                });
+                element.place.RegisterValueChangedCallback(_ => UpdatePlaceChoices());
             };
+            OnElementRemoved += _ => UpdatePlaceChoices();
+        }
+
+        private void UpdatePlaceChoices()
+        {
+            var placesTaken = GetChoices();
+
+            foreach (var item in _enabledElements)
+            {
+                item.place.choices = placesTaken;
+            }
+
+            OnChoicesChanged?.Invoke(placesTaken);
         }
 
         public new List<(Transform transform, EquipmentType type)> GetInfo()

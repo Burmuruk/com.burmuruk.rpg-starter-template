@@ -30,8 +30,6 @@ namespace Burmuruk.AI
 
         [Header("Debug Settings")]
         [Space]
-        [SerializeField] public GameObject debugNode;
-        [SerializeField] bool debugNodes = false;
         [SerializeField] bool drawMesh = false;
         [HideInInspector] public Vector3 x1;
         [HideInInspector] public Vector3 x2;
@@ -108,10 +106,13 @@ namespace Burmuruk.AI
             {
                 Destroy_Nodes();
                 meshState = pState.running;
-                if (debugNodes) 
-                    _nodesParent = new GameObject("Nodes");
                 Create_PathMesh();
 
+                if (drawMesh)
+                {
+                    _nodesParent = new GameObject("NodesDrawer", typeof(DebugNode));
+                    _nodesParent.GetComponent<DebugNode>().SetNodes(nodes);
+                }
                 //if (addDynamicObjs)
                 //    DisableDynamicObjects();
             }
@@ -566,38 +567,30 @@ namespace Burmuruk.AI
         private void Create_Node(in Vector3 position, out NodeData node)
         {
             node = new NodeData(nodeCount++, position);
-
-            if (!debugNodes) return;
-
-            var newNode = GameObject.Instantiate(debugNode, position, Quaternion.identity, _nodesParent.transform);
-            newNode.transform.position = position;
-            newNode.transform.name = "Node " + node.ID.ToString();
-            var nodeCs = newNode.GetComponent<DebugNode>();
-            nodeCs.SetNode(in node);
         }
 
         public void Draw_Mesh()
         {
-            if (_nodesParent == null || !drawMesh) return;
+            //if (_nodesParent == null || !drawMesh) return;
 
-            var nodes = _nodesParent.GetComponentsInChildren<IPathNode>();
+            //var nodes = _nodesParent.GetComponentsInChildren<IPathNode>();
 
-            for (int i = 0; i < nodes.Length; i++)
-            {
-                var cur = nodes[i];
+            //for (int i = 0; i < nodes.Length; i++)
+            //{
+            //    var cur = nodes[i];
 
-                for (int j = i + 1; j < nodes.Length; j++)
-                {
-                    if (Get_Magnitud(cur, nodes[j]) is var m && m <= nodeDistance)
-                    {
-                        bool hitted1 = Detect_OjbstaclesBetween(cur, nodes[j], out _);
-                        bool hitted2 = Detect_OjbstaclesBetween(nodes[j], cur, out _);
+            //    for (int j = i + 1; j < nodes.Length; j++)
+            //    {
+            //        if (Get_Magnitud(cur, nodes[j]) is var m && m <= nodeDistance)
+            //        {
+            //            bool hitted1 = Detect_OjbstaclesBetween(cur, nodes[j], out _);
+            //            bool hitted2 = Detect_OjbstaclesBetween(nodes[j], cur, out _);
 
-                        if (!hitted1 && !hitted2)
-                            Debug.DrawLine(cur.Position + new Vector3(0, 1.5f, 0), (nodes[j].Position) + new Vector3(0, 1.5f, 0), Color.red, 10);
-                    }
-                }
-            }
+            //            if (!hitted1 && !hitted2)
+            //                Debug.DrawLine(cur.Position + new Vector3(0, 1.5f, 0), (nodes[j].Position) + new Vector3(0, 1.5f, 0), Color.red, 10);
+            //        }
+            //    }
+            //}
         }
 
         private void DisableDynamicObjects()
@@ -645,8 +638,6 @@ namespace Burmuruk.AI
             }
 
             memoryFreed = pState.None;
-            //Destroy_Nodes();
-
             memoryFreed = pState.deleting;
             meshState = pState.None;
             connectionsState = pState.None;
@@ -665,13 +656,6 @@ namespace Burmuruk.AI
             int length = 0;
             (connections, length) = FreeMemory();
 
-            //var nodeList = new NodeListSuplier(connections);
-            //SerializedObject serializedObj = new UnityEditor.SerializedObject(Path);
-            //SerializedProperty myList = serializedObj.FindProperty("m_nodeList");
-
-            //nodeList.SetTarget(pRadious, nodDistance, MaxAngle);
-
-            //myList.managedReferenceValue = nodeList;
             NavSaver.SaveExtraData(playerRadious, nodeDistance, MaxAngle);
             NavSaver.SaveList(connections, length);
         }

@@ -11,7 +11,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
         [Header("Information")]
         [SerializeField] string m_name;
         [SerializeField] string m_description;
-        [SerializeField] ItemType _type;
+        [SerializeField] protected ItemType _type;
         [SerializeField] Sprite m_sprite;
         [SerializeField] Pickup pickup;
         [SerializeField] int m_capacity;

@@ -767,7 +767,6 @@ GameObject:
   m_Component:
   - component: {fileID: 71509252}
   - component: {fileID: 71509251}
-  - component: {fileID: 71509253}
   - component: {fileID: 71509254}
   m_Layer: 0
   m_Name: Directional Light
@@ -853,18 +852,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!114 &71509253
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 71509250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a68c43fe1f2a47cfa234b5eeaa98012, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &71509254
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3163,10 +3150,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 326100392}
-  - component: {fileID: 326100395}
   - component: {fileID: 326100396}
   - component: {fileID: 326100390}
   - component: {fileID: 326100393}
+  - component: {fileID: 326100397}
   m_Layer: 0
   m_Name: LoadingSystem
   m_TagString: Untagged
@@ -3255,21 +3242,6 @@ MonoBehaviour:
   btnAddMore: {fileID: 7138779873054831798}
   btnLoad: {fileID: 5907456648659472139}
   testImage: {fileID: 0}
---- !u!114 &326100395
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 326100389}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c60cca84177bbf48bd1cb2d182007c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  persistentObjectsPref:
-  - {fileID: 5583744468729511784, guid: 3d51ff316519f984fafa3ea07537b3ea, type: 3}
-  _id: 4723502b-6f5a-4b43-abce-1a2dcc7564d1
 --- !u!114 &326100396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3315,6 +3287,21 @@ MonoBehaviour:
           m_StringArgument: FadeOut
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &326100397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 326100389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c60cca84177bbf48bd1cb2d182007c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  persistentObjectsPref:
+  - {fileID: 5583744468729511784, guid: 3d51ff316519f984fafa3ea07537b3ea, type: 3}
+  _id: 
 --- !u!1 &338727436
 GameObject:
   m_ObjectHideFlags: 0
@@ -20081,15 +20068,16 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 326100393}
-        m_TargetAssemblyTypeName: SavingUI, Assembly-CSharp
-        m_MethodName: AddSlot
-        m_Mode: 1
+        m_TargetAssemblyTypeName: Burmuruk.RPGStarterTemplate.UI.Samples.SavingUI,
+          Assembly-CSharp
+        m_MethodName: LoadScene
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: OutdoorsScene
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2241272249039426007
@@ -20413,7 +20401,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'RPG Starter Template
+  m_text: 'David Santoyo Herrera
 
 
 
@@ -20423,7 +20411,10 @@ MonoBehaviour:
 
 
 
-    David Santoyo Herrera
+    RPG Starter Template
+
+
+
 
 
 

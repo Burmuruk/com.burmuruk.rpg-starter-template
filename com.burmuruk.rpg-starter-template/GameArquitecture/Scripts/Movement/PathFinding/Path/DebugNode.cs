@@ -1,28 +1,47 @@
-﻿using Burmuruk.WorldG.Patrol;
+﻿using Burmuruk.Collections;
+using Burmuruk.WorldG.Patrol;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Burmuruk.AI
 {
     public class DebugNode : MonoBehaviour
     {
-        [SerializeField] NodeData node;
+        private List<Vector3> lineBuffer;
+        LinkedGrid<IPathNode> nodes;
 
-        public ref NodeData GetNode() => ref node;
-
-        public void SetNode(in NodeData node)
+        public void SetNodes(LinkedGrid<IPathNode> nodes)
         {
-            this.node = node;
+            if (nodes == null) return;
+            this.nodes = nodes;
         }
 
         private void OnDrawGizmosSelected()
         {
-            if (node.NodeConnections == null || node.NodeConnections.Count <= 0) return;
+#if UNITY_EDITOR
 
-            foreach (var connection in node.NodeConnections)
+            if (nodes == null || nodes.Count <= 0) return;
+
+            Handles.color = Color.blue;
+
+            if (lineBuffer == null || lineBuffer.Count <= 0)
             {
-                if (connection.connectionType == ConnectionType.BIDIMENSIONAL)
-                    Debug.DrawRay(node.Position, connection.node.Position - node.Position, Color.blue);
+                lineBuffer = new();
+
+                var enumerator = (LinkedGridEnumerator<IPathNode>)nodes.GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    foreach (var connection in enumerator.Current.NodeConnections)
+                    {
+                        lineBuffer.Add(enumerator.Current.Position);
+                        lineBuffer.Add(connection.node.Position);
+                    }
+                }
             }
+
+            Handles.DrawLines(lineBuffer.ToArray());
+#endif
         }
     }
 }

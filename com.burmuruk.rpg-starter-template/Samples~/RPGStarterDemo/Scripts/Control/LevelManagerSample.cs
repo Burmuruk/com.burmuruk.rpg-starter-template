@@ -1,6 +1,8 @@
+using Burmuruk.RPGStarterTemplate.Movement.PathFindig;
 using Burmuruk.RPGStarterTemplate.Saving;
 using Burmuruk.RPGStarterTemplate.UI;
 using Burmuruk.RPGStarterTemplate.UI.Samples;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,7 +17,8 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
         protected override void Start()
         {
             base.Start();
-            AddItemToDestroy(FindObjectOfType<SavingUI>().gameObject);
+            AddItemToDestroy(FindObjectOfType<SavingUI>(true).gameObject);
+            FindObjectOfType<HUDManager>()?.Init();
         }
 
         public void Update()
@@ -61,6 +64,56 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
 
             gameManager.ExitUI();
             Task.Delay(200).GetAwaiter().OnCompleted(() => savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), false));
+        }
+
+        //public override void Pause()
+        //{
+        //    if (gameManager.Continue())
+        //    {
+        //        pauseMenu.gameObject.SetActive(false);
+        //        Time.timeScale = 1;
+
+        //        HideSavingOptions();
+        //    }
+        //    else if (pauseMenu.gameObject.activeSelf)
+        //    {
+        //        pauseMenu.gameObject.SetActive(false);
+        //        Time.timeScale = 1;
+
+        //        HideSavingOptions();
+        //    }
+        //}
+
+        protected override void LoadNavigationMap()
+        {
+#if UNITY_EDITOR
+            NavSaver.Restart();
+            string assetsSamplePath = Path.Combine(
+                Directory.GetParent(Application.dataPath).FullName,
+                "Assets/com.burmuruk.rpg-starter-template/Samples/RPGStarterDemo/NavigationMaps"
+            );
+
+            if (!Directory.Exists(assetsSamplePath))
+            {
+                assetsSamplePath = Path.Combine(
+                  Directory.GetParent(Application.dataPath).FullName,
+                  "Packages/com.burmuruk.rpg-starter-template/Samples~/RPGStarterDemo/NavigationMaps"
+                );
+            }
+
+            if (!Directory.Exists(assetsSamplePath))
+            {
+                assetsSamplePath = Path.Combine(
+                    Application.dataPath,
+                    "Samples/RPGStarterDemo/NavigationMaps"
+                );
+            }
+
+            if (!Directory.Exists(assetsSamplePath)) return;
+
+            NavSaver.LoadNavMesh(assetsSamplePath);
+            FindAnyObjectByType<LevelManager>()?.SetPaths();
+#endif
         }
 
         protected override void VerifyScene(Scene scene, LoadSceneMode mode)

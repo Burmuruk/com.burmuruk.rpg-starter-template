@@ -19,7 +19,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
         [SerializeField] protected string curPlayerName;
 
         protected GameObject playersParent;
-        protected List<AIGuildMember> players;
+        protected List<AIGuildMember> players = new();
         protected PlayerController playerController;
         protected int? m_CurPlayer;
         protected (Formation value, object args) curFormation = default;
@@ -47,7 +47,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 return players[m_CurPlayer.Value].Inventory;
             }
         }
-        public IInventory MainInventory { get; private set; }
+        public IInventory MainInventory { get; protected set; }
         public AIGuildMember CurPlayer
         {
             get
@@ -78,8 +78,6 @@ namespace Burmuruk.RPGStarterTemplate.Control
         protected virtual void Awake()
         {
             playerController = FindObjectOfType<PlayerController>();
-            var mainInventory = GetComponent<Inventory.Inventory>();
-            MainInventory = mainInventory;
 
             DestroyPlayers();
             var member = CreatePlayer();
@@ -105,7 +103,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
             }
         }
 
-        public void SetPlayerControl(int idx)
+        public virtual void SetPlayerControl(int idx)
         {
             if (players != null && idx < players.Count)
             {
@@ -119,6 +117,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 m_CurPlayer = idx;
                 curPlayerName = players[idx].name;
 
+                MainInventory = players[idx].GetComponent<Inventory.Inventory>();
                 OnPlayerChanged?.Invoke();
             }
         }
@@ -155,10 +154,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
             return player;
         }
 
-        private void SetUpPlayer(AIGuildMember player)
+        protected virtual void SetUpPlayer(AIGuildMember player)
         {
-            (player.Inventory as InventoryEquipDecorator).SetInventory((Inventory.Inventory)MainInventory);
-
             //var lastColor = member.stats.color;
             var stats = progress.GetDataByLevel(CharacterType.Player, 0);
             if (stats.HasValue)
@@ -167,7 +164,6 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 player.SetDefaultStats();
             //member.stats.color = lastColor;
 
-            SetColor(player);
             player.SetUpMods();
         }
 
@@ -261,47 +257,6 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 if (players.Count <= 0)
                     m_CurPlayer = null;
             }
-        }
-
-        private void SetColor(AIGuildMember member)
-        {
-            if (customization.DefaultColors.Length <= 0) return;
-
-            Color? newColor = default;
-
-            foreach (var color in customization.DefaultColors)
-            {
-                bool hasColor = false;
-
-                foreach (var player in players)
-                {
-                    if (player.stats.color == color)
-                    {
-                        hasColor = true;
-                        break;
-                    }
-                }
-
-                if (!hasColor)
-                {
-                    newColor = color;
-                    break;
-                }
-            }
-
-            if (!newColor.HasValue) return;
-
-            member.stats.color = newColor.Value;
-
-            //List<Color> usedColors = new();
-
-            //checkedPlayers.ForEach(p => usedColors.AddVariable(p.statsList.Color));
-
-            //var availableColors = (from color in playerColors where !usedColors.Contains(color) select color).ToList();
-
-            //var selectedColorIdx = UnityEngine.Random.Range(0, availableColors.MaxCount);
-
-            //member.statsList.Color = playerColors[selectedColorIdx];
         }
 
         public JToken CaptureAsJToken(out SavingExecution execution)

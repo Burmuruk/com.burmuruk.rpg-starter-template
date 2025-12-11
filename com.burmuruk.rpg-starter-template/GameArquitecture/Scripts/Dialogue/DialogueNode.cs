@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Dialogue
 {
@@ -9,6 +10,7 @@ namespace Burmuruk.RPGStarterTemplate.Dialogue
         public string Id;
         public string characterName;
         public string Message;
+        [SerializeReference]
         public List<DialogueNode> Children = new ();
         public string onEnterAction;
         public string onExitAction;

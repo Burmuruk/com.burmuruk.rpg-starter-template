@@ -27,7 +27,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         public class StatsVisualizer : ScriptableObject
         {
-            [SerializeField] public BasicStats stats;
+            public BasicStats stats;
         }
 
         private void Create_BaseSettingsTab()

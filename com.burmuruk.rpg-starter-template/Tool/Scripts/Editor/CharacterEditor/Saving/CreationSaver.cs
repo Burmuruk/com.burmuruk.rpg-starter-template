@@ -161,7 +161,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         private void SetPickUpModel(in ItemDataArgs args, GameObject parent)
         {
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>(args.PickupPath);
+            //var model = AssetDatabase.LoadAssetAtPath<GameObject>(args.PickupPath);
+            var model = args.GetPickupPrefab();
 
             if (model == null) return;
             GameObject modelInstance = GameObject.Instantiate(model, parent.transform);
@@ -405,8 +406,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                     Setup_Equipment(player, equipment, (Inventory)character.components[ComponentType.Inventory]);
                     break;
 
-                //case ComponentType.Dialogue:
-                //    break;
+                case ComponentType.Dialogue:
+
+                    if (character.characterType != CharacterType.Player)
+                        player.AddComponent<RPGStarterTemplate.Dialogue.AIConversant>();
+                    break;
 
                 //case ComponentType.Patrolling:
                 //    break;
@@ -476,11 +480,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             }
 
             initialItemsF.SetValue(inventoryComp, initalItems.ToArray());
+            var itemsListF = typeof(RPGStarterTemplate.Inventory.Inventory).GetField("m_ItemsList", BindingFlags.Instance | BindingFlags.NonPublic);
+            itemsListF.SetValue(inventoryComp, this.ItemsList);
         }
 
         private void Setup_Equipment(GameObject instance, Equipment equipment, in Inventory inventory)
         {
-            var equipper = instance.GetComponent<InventoryEquipDecorator>();
+            var equipperComp = instance.GetComponent<InventoryEquipDecorator>();
 
             FieldInfo initialItemsF = typeof(InventoryEquipDecorator).GetField("_initialItems", BindingFlags.Instance | BindingFlags.NonPublic);
             List<InitalEquipedItemData> initialItems = new();
@@ -506,9 +512,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                 }
             }
 
-            initialItemsF.SetValue(equipper, initialItems);
-
-            SetPlayerModel(instance, equipper, in equipment);
+            initialItemsF.SetValue(equipperComp, initialItems);
+            SetPlayerModel(instance, equipperComp, in equipment);
         }
 
 
@@ -529,11 +534,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             FieldInfo bodyF = typeof(RPGStarterTemplate.Inventory.Equipment).GetField("body", BindingFlags.Instance | BindingFlags.NonPublic);
             FieldInfo spawnPointsF = typeof(RPGStarterTemplate.Inventory.Equipment).GetField("spawnPoints", BindingFlags.Instance | BindingFlags.NonPublic);
             FieldInfo equipmentF = typeof(InventoryEquipDecorator).GetField("_equipment", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo inventoryF = typeof(InventoryEquipDecorator).GetField("_inventory", BindingFlags.Instance | BindingFlags.NonPublic);
             RPGStarterTemplate.Inventory.Equipment newEquipment = new();
 
             bodyF.SetValue(newEquipment, body);
             spawnPointsF.SetValue(newEquipment, spawnPoints.ToArray());
             equipmentF.SetValue(inventory, newEquipment);
+            inventoryF.SetValue(inventory, player.GetComponent<RPGStarterTemplate.Inventory.Inventory>());
         }
 
         private List<SpawnPointData> GetSpawnPoints(GameObject model, Dictionary<string, EquipmentType> names)

@@ -6,7 +6,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
     [RequireComponent(typeof(Animator), typeof(Image))]
     public class Fader : MonoBehaviour
     {
-        [SerializeField] bool autoFadeoutOnStart = false;
+        [SerializeField] bool autoFadeoutOnStart = true;
 
         public void FadeOut()
         {
@@ -21,7 +21,8 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
 
         private void OnLevelWasLoaded(int level)
         {
-            FadeOut();
+            if (autoFadeoutOnStart)
+                FadeOut();
         }
     }
 }

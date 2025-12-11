@@ -35,6 +35,8 @@ namespace Burmuruk.RPGStarterTemplate.Stats
         {
             (this._buffs, this.consumptionTime, this.areaRadious) =
             (buffs, consumptionTime, areaRadious);
+
+            _type = ItemType.Consumable;
         }
 
         public virtual void Use(Character character, object args, Action callback)

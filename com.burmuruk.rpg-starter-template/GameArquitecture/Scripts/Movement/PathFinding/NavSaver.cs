@@ -56,7 +56,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
                 int sizeX = nodes.Length;
                 writer.WriteLine($"NODES {sizeX}");
 
-                // Guardar dimensiones reales
+                // Save dimensions
                 for (int x = 0; x < sizeX; x++)
                 {
                     int sizeY = nodes[x].Length;
@@ -65,7 +65,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
                     writer.WriteLine($"DIM {sizeY} {sizeZ}");
                 }
 
-                // Guardar nodos
+                // Save nodes
                 for (int x = 0; x < sizeX; x++)
                 {
                     for (int y = 0; y < nodes[x].Length; y++)
@@ -78,7 +78,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
                     }
                 }
 
-                // Guardar conexiones
+                // Save connections
                 for (int x = 0; x < sizeX; x++)
                 {
                     for (int y = 0; y < nodes[x].Length; y++)
@@ -167,13 +167,30 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
             NodeList.SetTarget(radious, distance, maxAngle);
         }
 
+        public static void LoadNavMesh(string basePath)
+        {
+            if (Loaded || working) return;
+
+            working = true;
+            string sceneName = SceneManager.GetActiveScene().name;
+            string path = Path.Combine(basePath, FILE_NAME + "_" + sceneName + ".txt");
+
+            SetNodeList(GenerateNodesArray(path));
+
+            Loaded = true;
+            working = false;
+        }
+
         public static void LoadNavMesh()
         {
             if (Loaded || working) return;
 
             working = true;
-            SynchronizationContext context = SynchronizationContext.Current;
-            SetNodeList(GenerateNodesArray());
+            //SynchronizationContext context = SynchronizationContext.Current;
+            string sceneName = SceneManager.GetActiveScene().name;
+            string path = Path.Combine(Application.streamingAssetsPath, FILE_NAME + "_" + sceneName + ".txt");
+
+            SetNodeList(GenerateNodesArray(path));
 
             Loaded = true;
             working = false;
@@ -189,22 +206,21 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
             //}, TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        private static IPathNode[][][] GenerateNodesArray()
+        private static IPathNode[][][] GenerateNodesArray(string path)
         {
             addedNodes = new();
             nodesWaiting = new();
 
-            string sceneName = SceneManager.GetActiveScene().name;
-            string path = Path.Combine(Application.streamingAssetsPath, FILE_NAME + "_" + sceneName + ".txt");
+            if (!File.Exists(path)) return null;
 
             string[] lines = File.ReadAllLines(path);
             int lineIndex = 0;
 
-            // Leer cantidad X
+            // Read amount of X
             string[] header = lines[lineIndex++].Split(' ');
             int sizeX = int.Parse(header[1]);
 
-            // Leer las dimensiones Y,Z de cada X
+            // Read real dimensions
             int[] sizeY = new int[sizeX];
             int[] sizeZ = new int[sizeX];
 
@@ -215,7 +231,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
                 sizeZ[x] = int.Parse(dim[2]);
             }
 
-            // Crear la matriz real
+            // Create nodes array
             IPathNode[][][] nodes = new IPathNode[sizeX][][];
 
             for (int x = 0; x < sizeX; x++)
@@ -230,7 +246,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
 
             int cx = 0, cy = 0, cz = 0;
 
-            // Leer nodos
+            // read nodes
             for (; lineIndex < lines.Length; lineIndex++)
             {
                 if (lines[lineIndex].StartsWith("NODE"))
@@ -260,7 +276,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
                 else break;
             }
 
-            // Leer conexiones
+            // Read connections
             for (; lineIndex < lines.Length; lineIndex++)
             {
                 if (lines[lineIndex].StartsWith("CONN"))
