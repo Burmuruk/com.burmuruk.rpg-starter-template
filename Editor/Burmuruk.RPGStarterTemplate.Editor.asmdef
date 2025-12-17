@@ -1,0 +1,7 @@
+{
+  "name": "Burmuruk.RPGStarterTemplate.Editor",
+  "references": [
+    "Burmuruk.RPGStarterTemplate.Runtime"
+  ],
+  "includePlatforms": [ "Editor" ]
+}

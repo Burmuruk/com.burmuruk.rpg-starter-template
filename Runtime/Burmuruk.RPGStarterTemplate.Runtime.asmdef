@@ -1,9 +1,3 @@
 {
-  "name": "Burmuruk.RPGStarterTemplate.Runtime",
-  "references": [],
-  "includePlatforms": [],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": false,
-  "autoReferenced": true
+  "name": "Burmuruk.RPGStarterTemplate.Runtime"
 }
