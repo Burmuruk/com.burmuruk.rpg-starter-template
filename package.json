@@ -1,6 +1,6 @@
 {
   "name": "com.burmuruk.rpg-starter-template",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "displayName": "RPG Starter Template",
   "description": "Basic mechanics starter template for RPG games using Unity.",
   "unity": "2022.3",

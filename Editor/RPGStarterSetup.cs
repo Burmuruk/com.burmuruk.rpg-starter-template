@@ -6,7 +6,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 {
     public class RPGStarterSetupMenu : EditorWindow
     {
-        [MenuItem("RPGTemplate/Copy Architecture", priority = 15)]
+        [MenuItem("RPGTemplate/Copy Core Assets", priority = 15)]
         public static void ShowWindow()
         {
             RPGStarterSetup.CopyFiles();
@@ -18,41 +18,48 @@ namespace Burmuruk.RPGStarterTemplate.Editor
     public static class RPGStarterSetup
     {
         public const string copyPref = "CopyRPGFiles";
-        static readonly string sourcePath = "Packages/com.Burmuruk.RPG-Starter-Template/GameArchitecture";
+        static string SourcePath
+        {
+            get
+            {
+                var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(RPGStarterSetup).Assembly);
+                return Path.Combine(package.assetPath, "CoreAssets");
+            }
+        }
 
-        public static string TargetPath { get => Path.Combine(Application.dataPath, "GameArchitecture"); }
+        public static string TargetPath { get => Path.Combine(Application.dataPath, "CoreAssets"); }
 
         static RPGStarterSetup()
         {
             Debug.Log("Initialized");
 
-            if (!Directory.Exists(TargetPath))
+            if (!Directory.Exists(TargetPath) && (!EditorPrefs.HasKey(copyPref) || !EditorPrefs.GetBool(copyPref)))
             {
-                EditorApplication.delayCall += CopyFiles;
+                EditorApplication.delayCall += StartCopy;
             }
 
         }
 
-        public static void CopyFiles()
+        private static void StartCopy()
         {
-            if (EditorPrefs.HasKey(copyPref))
+            if (!Directory.Exists(TargetPath) && (!EditorPrefs.HasKey(copyPref) || !EditorPrefs.GetBool(copyPref)))
             {
-                EditorPrefs.DeleteKey(copyPref);
-                Debug.Log("RPG Starter Template: Copy preference reset. You can copy the files again from the RPGTemplate menu.");
-            }
-
-            if (EditorUtility.DisplayDialog("RPG Starter Template",
-                    "Do you want to copy the base files to Assets/GameArchitecture?",
-                    "yes, copy", "No"))
-            {
-                FileUtil.CopyFileOrDirectoryFollowSymlinks(sourcePath, TargetPath);
-                AssetDatabase.Refresh();
+                CopyFiles();
                 EditorPrefs.SetBool(copyPref, true);
-                Debug.Log("RPG Starter Template: GameArchitecture copied to Assets/");
             }
             else
+                EditorApplication.delayCall -= StartCopy;
+        }
+
+        public static void CopyFiles()
+        {
+            if (EditorUtility.DisplayDialog("RPG Starter Template",
+                    "Do you want to copy the base files to Assets/CoreAssets?",
+                    "yes, copy", "No"))
             {
-                EditorPrefs.SetBool(copyPref, false);
+                FileUtil.CopyFileOrDirectoryFollowSymlinks(SourcePath, TargetPath);
+                AssetDatabase.Refresh();
+                Debug.Log("RPG Starter Template: CoreAssets copied to Assets/");
             }
         }
     }
