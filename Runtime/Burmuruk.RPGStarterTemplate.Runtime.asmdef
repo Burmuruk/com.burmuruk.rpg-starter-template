@@ -1,3 +1,12 @@
 {
-  "name": "Burmuruk.RPGStarterTemplate.Runtime"
+  "name": "Burmuruk.RPGStarterTemplate.Runtime",
+  "references": [
+    "Unity.InputSystem",
+    "Cinemachine"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "autoReferenced": true
 }

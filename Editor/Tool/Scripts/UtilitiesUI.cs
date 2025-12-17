@@ -1,11 +1,8 @@
-﻿using Burmuruk.RPGStarterTemplate.Utilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
-using static UnityEditor.Rendering.FilterWindow;
 
 namespace Burmuruk.RPGStarterTemplate.Editor.Utilities
 {
@@ -140,7 +137,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Utilities
         public static void Set_Tooltip(VisualElement element, Dictionary<VisualElement, string> highlights, string message = "", bool highlight = true, BorderColour colour = BorderColour.HighlightBorder)
         {
             Highlight(element, highlight, colour);
-            
+
             if (highlight)
             {
                 element.tooltip = message;
