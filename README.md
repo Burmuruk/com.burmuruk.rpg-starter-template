@@ -31,6 +31,8 @@ El demo y varios materiales usan URP.
    * Dependencias (se instalan automáticamente)
 
        * TextMeshPro (Demo)
+    
+       * Shader Graph (Demo)
 
        * Cinemachine (Demo)
 
@@ -47,26 +49,12 @@ El demo y varios materiales usan URP.
 ```json
   "https://github.com/Burmuruk/com.burmuruk.rpg-starter-template.git"
 ```
-3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar la arquitectura base.
-   Selecciona la ruta de tu preferencia.
-4. Selecciona Yes para importar los archivos necesarios.
+3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar los assets básicos.
+4. Seleccionar Yes si se desea copiar los archivos muestra
 5. (Opcional) Importa la escena demo desde la sección Samples del Package Manager.
 
-## Estructura
 
-    ├── com.Burmuruk.RPG-Starter-Template/
-
-      ├── GameArchitecture/          # Base del juego (se copia a Assets/)
-
-      ├── Tool/                      # Archivos de editor
-
-    └── Samples~//RPGStarterDemo/    # Escena y contenido de demostración
-    ├── RPGResults/                     # Carpeta por defecto para ScriptableObjects y prefabs generados
-
-    ├── StreamingAssets/             # Archivos de navegación generados
-
-
-### Known Issues
+### Errores conocidos
 
 - **Pérdida de datos al editar diálogos**
   Al abrir un mismo archivo de diálogo varias veces, el editor limpia ciertos campos y los cambios pueden perderse.
