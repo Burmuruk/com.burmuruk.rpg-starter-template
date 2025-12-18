@@ -43,15 +43,24 @@ El demo y varios materiales usan URP.
 
 ## Instalación
 
-1. En tu proyecto de Unity, abre `Window > Package Manager`.
+1. En tu proyecto de Unity, abre `Window > Package Manager`
 2. Selecciona Add package from Git URL…
 
 ```json
   "https://github.com/Burmuruk/com.burmuruk.rpg-starter-template.git"
 ```
-3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar los assets básicos.
+3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar los assets básicos
 4. Seleccionar Yes si se desea copiar los archivos muestra
-5. (Opcional) Importa la escena demo desde la sección Samples del Package Manager.
+5. (Opcional) Importa la escena demo desde la sección Samples del Package Manager
+
+
+## Ejecución de escena demo
+
+Para abrir es demo incluido debes seguir los siguientes pasos:
+
+1. Importar el demo desde el Package Manager
+2. Dar clic en RPGTemplate > Setup > Add Demo Scenes to Build
+3. Dentro de la carpeta de samples, abrir la escena "MainMenuSample"
 
 
 ### Errores conocidos
