@@ -40,7 +40,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         public void CreateGUI()
         {
             container = rootVisualElement;
-            VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/SystemEditor/SystemTab.uxml");
+            VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/SystemEditor/SystemTab.uxml");
             container.Add(visualTree.Instantiate());
             BaseStyleSheets.ForEach(styleSheet => { container.styleSheets.Add(styleSheet); });
 

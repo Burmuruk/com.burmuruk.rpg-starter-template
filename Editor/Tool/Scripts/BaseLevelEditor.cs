@@ -48,10 +48,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         public List<StyleSheet> BaseStyleSheets =>
             new List<StyleSheet>()
             {
-                AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss"),
-                AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/TagSystem.uss"),
-                AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BorderColours.uss"),
-                AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss"),
+                AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss"),
+                AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/TagSystem.uss"),
+                AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BorderColours.uss"),
+                AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss"),
             };
 
         protected void GetNotificationSection()

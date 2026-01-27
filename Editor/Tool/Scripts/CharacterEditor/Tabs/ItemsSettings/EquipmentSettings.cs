@@ -254,9 +254,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             splitView.fixedPaneInitialDimension = 215;
             splitView.AddToClassList("SplitViewStyle");
 
-            var bodVis = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/BodyVisualizer.uxml");
+            var bodVis = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/BodyVisualizer.uxml");
             var leftSide = bodVis.Instantiate();
-            var spawnFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/BodySpawnPoint.uxml");
+            var spawnFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/BodySpawnPoint.uxml");
             UIParts = new EquipmentSpawnsList(spawnFile.Instantiate());
             OFModel = leftSide.Q<ObjectField>();
 

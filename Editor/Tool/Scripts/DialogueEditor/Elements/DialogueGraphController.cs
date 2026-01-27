@@ -224,7 +224,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void CreateSettingsTab()
         {
-            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/DialogueEditor/Elements/Node.uxml");
+            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/DialogueEditor/Elements/Node.uxml");
             var instance = visualTree.Instantiate();
             instance.style.position = Position.Absolute;
             //instance.style.right = 4;
@@ -442,7 +442,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void CreatePinsTab()
         {
-            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/DialogueEditor/PinsTab.uxml");
+            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/DialogueEditor/PinsTab.uxml");
             var instance = visualTree.Instantiate();
             instance.style.position = Position.Absolute;
             instance.style.right = 10;
@@ -453,7 +453,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void CreateSaveButton()
         {
-            //var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/DialogueEditor/PinsTab.uxml");
+            //var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/DialogueEditor/PinsTab.uxml");
             //var instance = visualTree.Instantiate();
             Button button = new Button(Save);
             button.style.position = Position.Absolute;

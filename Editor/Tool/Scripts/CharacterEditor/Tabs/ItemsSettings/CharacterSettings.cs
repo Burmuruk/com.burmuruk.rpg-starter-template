@@ -277,7 +277,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         private void Create_StatEditor()
         {
-            VisualTreeAsset element = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/StatEditor.uxml");
+            VisualTreeAsset element = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/StatEditor.uxml");
             StatEditorContainer = element.Instantiate();
             TextField textField = StatEditorContainer.Q<TextField>("txtStatName");
             textField.RegisterCallback<KeyUpEvent>(evt =>
@@ -577,7 +577,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         private void Create_StatModifier()
         {
-            VisualTreeAsset element = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/GeneralElements/TypeAdder.uxml");
+            VisualTreeAsset element = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/GeneralElements/TypeAdder.uxml");
             EMStatType = new EnumModifierUI<ModifiableStat>(element.Instantiate());
             EMStatType.EnumField.RegisterValueChangedCallback(OnSelected_StatType);
             EMStatType.Name.text = "Modification name";
@@ -982,7 +982,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         private void Add_EditButtons(VisualElement row, int idx)
         {
-            VisualTreeAsset editButtons = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/BtnsEditStat.uxml");
+            VisualTreeAsset editButtons = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/BtnsEditStat.uxml");
             VisualElement buttonsContainer = editButtons.Instantiate();
             buttonsContainer.style.flexGrow = 1;
             buttonsContainer.style.maxWidth = new Length(45, LengthUnit.Pixel);

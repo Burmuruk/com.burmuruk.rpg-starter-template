@@ -11,7 +11,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 {
     public class VariablesAdderUI : IClearable
     {
-        const string _elementPath = "Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/StatElement.uxml";
+        const string _elementPath = "Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/StatElement.uxml";
         Dictionary<string, StatNameData> _statsNames;
         List<string> _headers = new();
         List<StatDataUI> newVariables = new();

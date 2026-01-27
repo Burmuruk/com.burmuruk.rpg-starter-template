@@ -55,7 +55,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         public void CreateGUI()
         {
             container = rootVisualElement;
-            VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/CharacterTab.uxml");
+            VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/CharacterTab.uxml");
             rootTab = visualTree.Instantiate();
             container.Add(rootTab);
             //rootTab.style.height = new StyleLength(StyleKeyword.;
@@ -115,10 +115,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             {
                 foreach (var containerData in names)
                 {
-                    VisualElement newContainer = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/{containerData.name}.uxml").Instantiate();
-                    StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss");
-                    StyleSheet styleSheetColour = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BorderColours.uss");
-                    StyleSheet styleSheetBasic = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss");
+                    VisualElement newContainer = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/{containerData.name}.uxml").Instantiate();
+                    StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss");
+                    StyleSheet styleSheetColour = AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BorderColours.uss");
+                    StyleSheet styleSheetBasic = AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss");
                     newContainer.styleSheets.Add(styleSheet);
                     newContainer.styleSheets.Add(styleSheetColour);
                     newContainer.styleSheets.Add(styleSheetBasic);
@@ -136,9 +136,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         private void CreateTagsContainer()
         {
-            VisualTreeAsset tagsContainer = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/TagsContainer.uxml");
-            StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss");
-            StyleSheet styleSheetColour = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BorderColours.uss");
+            VisualTreeAsset tagsContainer = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/TagsContainer.uxml");
+            StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss");
+            StyleSheet styleSheetColour = AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BorderColours.uss");
 
             container.styleSheets.Add(styleSheet);
             container.styleSheets.Add(styleSheetColour);
@@ -209,7 +209,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
             infoRight = rightPanel.Q<VisualElement>("elementsContainer");
 
-            infoSetup = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/{INFO_SETUP_NAME}.uxml").Instantiate();
+            infoSetup = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/{INFO_SETUP_NAME}.uxml").Instantiate();
             nameSettings = CreateInstance<CreationsBaseInfo>();
             nameSettings.Initialize(infoSetup);
             nameSettings.CreationsStateChanged += NameSettings_CreationsStateChanged;

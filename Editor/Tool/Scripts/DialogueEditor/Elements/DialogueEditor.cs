@@ -156,7 +156,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         #region Start
         private void CreateGraphView()
         {
-            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss");
+            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss");
             rootVisualElement.styleSheets.Add(styleSheet);
             graphView = new DialogueGraphView
             {

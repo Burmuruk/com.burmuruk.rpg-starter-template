@@ -10,8 +10,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 {
     public static class SavingSystem
     {
-        //const string DATA_PATH = "Assets/com.burmuruk.rpg-starter-template/Tool/Data";
-        const string DATA_PATH = "Assets/com.burmuruk.rpg-starter-template/Tool/Data";
+        //const string DATA_PATH = "Packages/com.burmuruk.rpg-starter-template/Tool/Data";
+        const string DATA_PATH = "Packages/com.burmuruk.rpg-starter-template/Tool/Data";
         public static CreationDatabase Data { get; private set; } = null;
         public static event Action<ModificationTypes, ElementType, string, CreationData> OnCreationModified;
 

@@ -15,7 +15,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
     public class ComponentsList<T> : ComponentsList, IClearable where T : ElementCreationUI, new()
     {
-        const string DEFAULT_ELEMENT_PATH = "Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/ElementComponent.uxml";
+        const string DEFAULT_ELEMENT_PATH = "Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/ElementComponent.uxml";
         List<int> _amounts;
 
         public Action<int> OnComponentClicked = delegate { };

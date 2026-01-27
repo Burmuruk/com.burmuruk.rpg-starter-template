@@ -50,7 +50,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public void Initialize(VisualElement container, VisualElement buttonsContainer)
         {
-            VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/SystemEditor/Tabs/NavGeneration.uxml");
+            VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/SystemEditor/Tabs/NavGeneration.uxml");
             container.Add(visualTree.Instantiate());
             Initialize(container);
 

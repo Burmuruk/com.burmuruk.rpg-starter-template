@@ -16,7 +16,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 {
     public class CreationSaver
     {
-        const string BASE_PICKUP_PATH = "Assets/com.burmuruk.rpg-starter-template/GameArquitecture/Game/Prefabs/Pickables/PickUpBase.prefab";
+        const string BASE_PICKUP_PATH = "Packages/com.burmuruk.rpg-starter-template/GameArquitecture/Game/Prefabs/Pickables/PickUpBase.prefab";
         const string ITEMS_LIST_NAME = "GeneralItemsList.asset";
         const string PROGRESS_NAME = "CharactersProgress.asset";
         const string ASSET_EXTENSION = ".asset";

@@ -323,7 +323,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Utilities
 
         public static VisualElement CreateDefaultTab(string fileName)
         {
-            VisualElement newContainer = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/{fileName}.uxml").Instantiate();
+            VisualElement newContainer = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Tabs/{fileName}.uxml").Instantiate();
             return newContainer;
         }
     }

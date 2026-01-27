@@ -152,7 +152,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 tooltip = "Pin node",
                 name = PIN_BUTTON_NAME
             };
-            Texture2D pinIcon = (Texture2D)AssetDatabase.LoadAssetAtPath("Assets/com.burmuruk.rpg-starter-template/Tool/Art/Editor/Pin.png", typeof(Texture2D));
+            Texture2D pinIcon = (Texture2D)AssetDatabase.LoadAssetAtPath("Packages/com.burmuruk.rpg-starter-template/Tool/Art/Editor/Pin.png", typeof(Texture2D));
             button.style.backgroundImage = new StyleBackground(pinIcon);
             button.style.unityBackgroundImageTintColor = new Color(0.5169811f, 0.5169811f, 0.5169811f);
             button.style.marginLeft = 1;
