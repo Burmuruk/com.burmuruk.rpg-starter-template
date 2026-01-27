@@ -52,7 +52,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             foreach (var entry in newMods)
             {
-                var newLine = $"            ModsList.AddVariable((Character)this, ModifiableStat.{entry.ModifiableStat}, () => stats.{entry.VariableName}, (value) => {{ stats.{entry.VariableName} = value; }});";
+                string floatCast = entry.isFloat ? "" : "(int)";
+                var newLine = $"            ModsList.AddVariable((Character)this, ModifiableStat.{entry.ModifiableStat}, () => stats.{entry.VariableName}, (value) => {{ stats.{entry.VariableName} = {floatCast}value; }});";
                 bool containsLine = false;
 
                 foreach (var line in bodyLines)
@@ -118,7 +119,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             foreach (ModChange change in changes)
             {
-                result = Regex.Replace(result, $@"\b{Regex.Escape(change.OldName)}\b", change.NewName); 
+                result = Regex.Replace(result, $@"\bstats.{Regex.Escape(change.OldName)}\b", "stats." + change.NewName); 
             }
 
             return result;
@@ -129,6 +130,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
     {
         public string VariableName;
         public string ModifiableStat;
+        public bool isFloat;
 
         public override string ToString() => $"{VariableName} => {ModifiableStat}";
     }

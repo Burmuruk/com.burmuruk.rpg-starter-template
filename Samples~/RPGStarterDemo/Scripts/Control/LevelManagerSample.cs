@@ -11,6 +11,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
 {
     public class LevelManagerSample : LevelManager
     {
+        [SerializeField] GameObject endScreen;
         [SerializeField] public string sceneName;
         protected UIMenuCharacters menuCharacters;
 
@@ -64,6 +65,17 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
 
             gameManager.ExitUI();
             Task.Delay(200).GetAwaiter().OnCompleted(() => savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), false));
+        }
+
+        public void EndGame()
+        {
+            if (gameManager.GameState != GameManager.State.Playing) return;
+
+            if (gameManager.PauseGame())
+            {
+                endScreen?.SetActive(true);
+                Time.timeScale = 0;
+            }
         }
 
         //public override void Pause()

@@ -45,6 +45,12 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         private void Start()
         {
+            SetEnemyMods();
+            
+        }
+
+        private void SetEnemyMods()
+        {
             inventory = FindObjectOfType<LevelManager>().gameObject.GetComponent<Inventory.Inventory>();
 
             if (inventory == null || m_enemies == null) return;

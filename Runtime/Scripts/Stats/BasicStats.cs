@@ -19,7 +19,6 @@ namespace Burmuruk.RPGStarterTemplate.Stats
         [SerializeField] public float damageRate;
         [Utilities.DisallowNegative]
         [SerializeField] public Color color;
-        [SerializeField] public int Name;
 
         [Space(), Header("Detection")]
         [Utilities.DisallowNegative]
@@ -28,10 +27,6 @@ namespace Burmuruk.RPGStarterTemplate.Stats
         [SerializeField] public float closeDetection;
         [Utilities.DisallowNegative]
         [SerializeField] public float minDistance;
-
-        
-        [Space(), Header("Mis variables")]
-        [SerializeField] public int poder;
 
 [Serializable]
         public struct Slot

@@ -430,12 +430,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                         Header = stat.Header,
                     });
 
-                    if (stat.Type != ModifiableStat.None && stat.VariableType == VariableType.@float)
+                    if (stat.Type != ModifiableStat.None && (stat.VariableType == VariableType.@float || stat.VariableType == VariableType.@int))
                     {
                         mods.add.Add(new ModEntry
                         {
                             VariableName = stat.NewName,
                             ModifiableStat = stat.Type.ToString(),
+                            isFloat = stat.VariableType == VariableType.@float
                         });
                     }
                 }
@@ -806,7 +807,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 string content = File.ReadAllText(path);
 
-                if (content.Contains($"public class {className}"))
+                Regex reg = new Regex($@"\b(public\b*?\b)?\s*(partial\s+)?class\s+{className}\b[\s\S]*?\{{");
+                if (reg.IsMatch(content))
                 {
                     return path;
                 }

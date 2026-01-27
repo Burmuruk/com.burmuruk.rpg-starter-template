@@ -19,6 +19,8 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         List<AIEnemyController> hordeMembers = new();
         bool troopsDeployed;
 
+        public event Action OnTroopsDeployed;
+
         protected override void Awake()
         {
             base.Awake();
@@ -133,7 +135,6 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         private void EnableHorde()
         {
-            troopsDeployed = true;
             horde.SetActive(true);
 
             for (int i = 0; i < horde.transform.childCount; i++)
@@ -144,6 +145,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                 enemy.SetLeader(this);
                 //enemy.SetOrder(LeaderOrder.Follow);
             }
+
+            troopsDeployed = true;
+            OnTroopsDeployed?.Invoke();
         }
 
         protected override void Dead()
