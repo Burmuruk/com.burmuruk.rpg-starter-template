@@ -119,7 +119,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             foreach (ModChange change in changes)
             {
-                result = Regex.Replace(result, $@"\bstats.{Regex.Escape(change.OldName)}\b", "stats." + change.NewName); 
+                string regFind = $@"\b(?'stats'(stats|basicStats)\.){Regex.Escape(change.OldName)}\b";
+                string replacement = "${stats}" + change.NewName;
+                result = Regex.Replace(result, regFind, replacement);
             }
 
             return result;

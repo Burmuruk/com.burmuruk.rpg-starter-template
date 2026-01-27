@@ -766,6 +766,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             var classes = new List<string>()
             {
                 "Character",
+                "CreationSaver"
             };
 
             if (PUBaseClass.value != "Character")
