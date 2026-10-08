@@ -4,17 +4,13 @@ namespace Burmuruk.RPGStarterTemplate.Interaction.Samples
 {
     public class CheckPointSample : CheckPoint
     {
-        new LevelManagerSample levelManager;
-
-        override protected void Start()
-        {
-            base.Start();
-            levelManager = FindObjectOfType<LevelManagerSample>();
-        }
-
         override public void Interact()
         {
-            levelManager.ChangeMenu();
+            if (!RefreshReferences() || !gameManager.CanChangeToUI()) 
+                return;
+
+            if (levelManager is LevelManagerSample currentLevel)
+                currentLevel.ChangeMenu();
         }
     }
 }

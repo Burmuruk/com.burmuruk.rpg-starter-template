@@ -47,7 +47,7 @@ namespace Burmuruk.RPGStarterTemplate.Interaction
 
         public JToken CaptureAsJToken(out SavingExecution execution)
         {
-            execution = SavingExecution.General;
+            execution = SavingExecution.References;
             JObject state = new JObject();
             List<PickupItemData> pickups = new();
             int i = 0;

@@ -19,10 +19,10 @@ namespace Burmuruk.RPGStarterTemplate.Control
             get => state;
             private set
             {
-                if (state != value)
-                    onStateChange?.Invoke(value);
+                if (state == value) return;
 
                 state = value;
+                onStateChange?.Invoke(value);
             }
         }
 

@@ -1,40 +1,31 @@
-﻿using System;
+﻿using Burmuruk.RPGStarterTemplate.Editor.Controls;
+using System;
 using UnityEngine.UIElements;
 
 namespace Burmuruk.RPGStarterTemplate.Editor
 {
-    public class ElementComponent : ElementCreationUI
+    public class ElementComponent2 : ListElement<ComponentType>
     {
-        private ComponentType _type = ComponentType.None;
+        public DynamicEnumField EnumField { get; private set; }
 
-        public override Enum Type { get => _type; set => _type = (ComponentType)value; }
-
-        public ElementComponent()
-        {
-
-        }
-
-        public ElementComponent(VisualElement container, int idx) : base(container, idx)
-        {
-            EnumField.Init(ComponentType.None);
-        }
 
         public override void Initialize(VisualElement container, int idx)
         {
-            base.Initialize(container, idx);
+            EnumField ??= new DynamicEnumField();
+            EnumField.Init(container, typeof(ComponentType), EnumRegistry.NoneId);
 
-            EnumField.Init(ComponentType.None);
+            base.Initialize(container, idx);
         }
 
-        public override void SetType(string value)
+        public override void SetType(string name)
         {
-            Type = Enum.Parse<ComponentType>(value);
+            Type = registry.GetId<ComponentType>(name);
         }
 
         public override void Clear()
         {
             base.Clear();
-            Type = default(ComponentType);
+            Type = EnumRegistry.NoneId;
         }
     }
 }

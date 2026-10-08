@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
     <ui:VisualElement style="flex-grow: 1; min-height: auto; flex-basis: 1000px;">
         <ui:VisualElement name="stateContainer" style="flex-grow: 0; align-items: center; padding-bottom: 8px; flex-shrink: 0; justify-content: center; flex-basis: 28px;">
             <ui:Button text="Button" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnState" class="ClickableBtn Title MidButton" style="-unity-text-align: middle-center; flex-basis: 20px; margin-bottom: 4px;" />

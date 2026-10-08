@@ -61,8 +61,10 @@ namespace Burmuruk.RPGStarterTemplate.Control
             levelManager = GetComponent<LevelManager>();
         }
 
-        void FixedUpdate()
+        protected virtual void FixedUpdate()
         {
+            if (!player) return;
+
             if (m_shouldMove && player && GameManager.Instance.GameState == GameManager.State.Playing)
             {
                 try
@@ -93,7 +95,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
             DetectInteractables();
         }
 
-        public void SetPlayer(Character player)
+        public virtual void SetPlayer(Character player)
         {
             var vollider = player.GetComponent<CapsuleCollider>();
             this.player = player;
@@ -251,20 +253,6 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 case AbilityType.Jump:
                     break;
             }
-        }
-
-        protected void ConsumeItem()
-        {
-            var items = (player.Inventory as InventoryEquipDecorator).Equipped.GetItems((int)EquipmentLocation.Items);
-
-            if (items == null || items.Count == 0) return;
-
-            (items[0] as ConsumableItem).Use(player, null, null);
-        }
-
-        protected void ChangeItem(int v)
-        {
-            throw new NotImplementedException();
         }
 
         protected Collider DetectEnemyInMouse()

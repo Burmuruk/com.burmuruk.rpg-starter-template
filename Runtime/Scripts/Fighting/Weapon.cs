@@ -1,12 +1,13 @@
 ﻿using Burmuruk.RPGStarterTemplate.Control;
 using Burmuruk.RPGStarterTemplate.Inventory;
 using Burmuruk.RPGStarterTemplate.Stats;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Combat
 {
     [CreateAssetMenu(fileName = "Stats", menuName = "ScriptableObjects/Weapon", order = 1)]
-    public class Weapon : EquipeableItem, IBuffUser
+    public class Weapon : EquipableItem, IBuffUser
     {
         [Header("Equipment")]
         [SerializeField] EquipmentType m_bodyPart;
@@ -23,6 +24,8 @@ namespace Burmuruk.RPGStarterTemplate.Combat
         [Space(), Header("Modifications")]
         [SerializeField] Equipment equipment;
 
+        private readonly Dictionary<Character, (BuffsManager manager, System.Guid id)> damageBuffs = new();
+
         public int Damage { get => m_damage; }
         public float DamageRate { get => m_rateDamage; }
         public float MinDistance { get => m_minDistance; }
@@ -33,28 +36,32 @@ namespace Burmuruk.RPGStarterTemplate.Combat
         public float ReloadTime { get => reloadTime; }
         public BuffData[] Buffs { get => _buffs; }
 
-        public bool TryGetBuff(out BuffData? buffData)
+        public bool TryGetBuffs(out List<BuffData> buffsData)
         {
-            buffData = null;
+            buffsData = new List<BuffData>();
 
-            if (_buffs == null || _buffs.Length == 0) return false;
+            if (_buffs == null || _buffs.Length == 0) 
+                return false;
 
-            int idx = Random.Range(0, _buffs.Length);
+            buffsData.AddRange(_buffs);
+            return true;
 
-            if (_buffs[idx].probability == 1)
-            {
-                buffData = _buffs[idx];
-                return true;
-            }
+            //int idx = Random.Range(0, _buffs.Length);
 
-            float probability = Random.Range(0, 1.0f);
+            //if (_buffs[idx].probability == 1)
+            //{
+            //    buffsData.Add(_buffs[idx]);
+            //    return true;
+            //}
 
-            if (probability <= _buffs[idx].probability)
-            {
-                buffData = _buffs[idx];
-                return true;
-            }
-            else return false;
+            //float probability = Random.Range(0, 1.0f);
+
+            //if (probability <= _buffs[idx].probability)
+            //{
+            //    buffsData.Add(_buffs[idx]);
+            //    return true;
+            //}
+            //else return false;
         }
 
         public void UpdateBuffData(BuffData[] buffData) =>
@@ -67,19 +74,44 @@ namespace Burmuruk.RPGStarterTemplate.Combat
 
         public override void Equip(Character character)
         {
+            if (character == null || Characters.Contains(character))
+                return;
+
             base.Equip(character);
-            ModsList.AddModification(character, ModifiableStat.BaseDamage, m_damage);
+            BuffsManager manager = BuffsManager.Instance;
+            //if (manager != null)
+            //{
+            //    var buff = new BuffData
+            //    {
+            //        name = "Weapon damage",
+            //        stat = ModifiableStat.BaseDamage,
+            //        effectType = EffectType.UntilRemoved,
+            //        value = m_damage,
+            //        probability = 1f
+            //    };
+            //    System.Guid id = manager.ApplyEffect(character, buff);
+            //    if (id != System.Guid.Empty)
+            //        damageBuffs[character] = (manager, id);
+            //}
             ModsList.AddModification(character, ModifiableStat.GunFireRate, m_rateDamage);
             ModsList.AddModification(character, ModifiableStat.MinDistance, m_minDistance);
+            ModsList.AddModification(character, ModifiableStat.BaseDamage, Damage);
         }
 
         public override void Unequip(Character character)
         {
-            base.Unequip(character);
+            if (character == null || !Characters.Contains(character))
+                return;
 
-            ModsList.RemoveModification(character, ModifiableStat.BaseDamage, m_damage);
+            if (damageBuffs.TryGetValue(character, out var buff))
+            {
+                if (buff.manager != null)
+                    buff.manager.RemoveEffect(buff.id);
+                damageBuffs.Remove(character);
+            }
             ModsList.RemoveModification(character, ModifiableStat.GunFireRate, m_rateDamage);
             ModsList.RemoveModification(character, ModifiableStat.MinDistance, m_minDistance);
+            base.Unequip(character);
         }
 
         public void UpdateInfo(EquipmentType bodyPart, WeaponType subType, int damage, float rateDamage, float minDistance, float maxDistance,

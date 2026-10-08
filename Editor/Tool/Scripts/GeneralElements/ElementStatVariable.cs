@@ -1,11 +1,9 @@
-﻿using System;
+﻿using Burmuruk.RPGStarterTemplate.Stats;
 using UnityEngine.UIElements;
-using Burmuruk.RPGStarterTemplate.Editor.Utilities;
-using Burmuruk.RPGStarterTemplate.Stats;
 
 namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 {
-    public class ElementStatVariable : ElementCreation<ModifiableStat>
+    public class ElementStatVariable : ListElementUI<ModifiableStat>
     {
         private VariableType _variableType;
 
@@ -14,7 +12,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         public Label LblOldName { get; set; }
         public Label Modification { get; private set; }
         public string OldName { get; set; }
-        public string NewName { get => NameButton.text; }
+        public string NewName => NameButton.text;
         public VariableType VariableType
         {
             get => _variableType;

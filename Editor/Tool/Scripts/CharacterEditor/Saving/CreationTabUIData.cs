@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Burmuruk.RPGStarterTemplate.Editor.Saving
 {
     [Serializable]
-    internal class CreationTabUIData : CreationData
+    public class CreationTabUIData : CreationData
     {
         public ElementType searchFilter;
         public float scrollPos;
@@ -38,7 +38,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Saving
     }
 
     [Serializable]
-    internal struct TabUIData
+    public struct TabUIData
     {
         public CreationData data;
         public ElementType type;

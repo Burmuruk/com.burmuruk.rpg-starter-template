@@ -1,4 +1,4 @@
-﻿using Burmuruk.RPGStarterTemplate.Combat;
+using Burmuruk.RPGStarterTemplate.Combat;
 using Burmuruk.RPGStarterTemplate.Editor.Controls;
 using Burmuruk.RPGStarterTemplate.Inventory;
 using Burmuruk.RPGStarterTemplate.Saving;
@@ -16,7 +16,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 {
     public class CreationSaver
     {
-        const string BASE_PICKUP_PATH = "Packages/com.burmuruk.rpg-starter-template/GameArquitecture/Game/Prefabs/Pickables/PickUpBase.prefab";
+        const string BASE_PICKUP_PATH = "Packages/com.burmuruk.rpg-starter-template/CoreAssets/Game/Prefabs/Pickables/PickUpBase.prefab";
         const string ITEMS_LIST_NAME = "GeneralItemsList.asset";
         const string PROGRESS_NAME = "CharactersProgress.asset";
         const string ASSET_EXTENSION = ".asset";
@@ -251,6 +251,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             var typeF = typeof(RPGStarterTemplate.Control.Character).GetField("characterType", BindingFlags.Instance | BindingFlags.NonPublic);
             if (typeF != null)
                 typeF.SetValue(player.GetComponent<RPGStarterTemplate.Control.Character>(), characterData.characterType);
+
+            var tagF = typeof(RPGStarterTemplate.Control.Character).GetField("enemyTag", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (tagF != null)
+                tagF.SetValue(player.GetComponent<RPGStarterTemplate.Control.Character>(), characterData.enemyTag);
 
             Setup_Drops(player, characterData);
             Setup_BasicStats(player, characterData);
@@ -523,13 +527,18 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             var body = GameObject.Instantiate(model, Vector3.zero, Quaternion.identity, player.transform);
             garbage.Add(body);
 
-            Dictionary<string, EquipmentType> names = new();
-            equipment.spawnPoints.ForEach(s =>
-            {
-                names.TryAdd(s.path, s.type);
-            });
+            var spawnPoints = new List<SpawnPointData>();
 
-            var spawnPoints = GetSpawnPoints(body, names);
+            if (equipment.spawnPoints != null)
+            {
+                Dictionary<string, EquipmentType> names = new();
+                equipment.spawnPoints.ForEach(s =>
+                {
+                    names.TryAdd(s.path, s.type);
+                });
+
+                spawnPoints = GetSpawnPoints(body, names); 
+            }
 
             FieldInfo bodyF = typeof(RPGStarterTemplate.Inventory.Equipment).GetField("body", BindingFlags.Instance | BindingFlags.NonPublic);
             FieldInfo spawnPointsF = typeof(RPGStarterTemplate.Inventory.Equipment).GetField("spawnPoints", BindingFlags.Instance | BindingFlags.NonPublic);

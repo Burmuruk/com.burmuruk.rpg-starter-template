@@ -1,6 +1,7 @@
 ﻿using Burmuruk.RPGStarterTemplate.Inventory;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -12,8 +13,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
     {
         public VisualElement container;
         public ObjectField transform;
-        public DropdownField place;
+        public DynamicEnumField place;
         public string path;
+
+        EnumRegistry _registry;
+        private SpawnRowData _snapshot;
+        public Transform SelectedTransform => transform.value is GameObject go
+            ? go.transform : transform.value as Transform;
 
         public VisualElement Container => container;
 
@@ -21,12 +27,15 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             this.container = new VisualElement();
 
+            _registry = SavingSystem.LoadEnumRegistry();
             transform = new ObjectField("");
-            place = new DropdownField();
-            place.choices = new List<string>(Enum.GetNames(typeof(EquipmentType)));
+            place = new DynamicEnumField();
+            container.Add(new DropdownField());
+            place.Init(container, typeof(EquipmentType), EnumRegistry.NoneId);
+            place.SelectionChanged += a => VerifyData(out _);
 
             var row1 = InsertInRow(transform, "Spawn point");
-            var row2 = InsertInRow(place, "Place");
+            var row2 = InsertInRow(place.DDField, "Place");
             row2.style.marginBottom = 6;
             container.Add(row1);
             container.Add(row2);
@@ -74,6 +83,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             });
 
             transform.RegisterCallback<DragPerformEvent>(OnBoneDropped);
+            transform.RegisterValueChangedCallback(a => { VerifyData(out _); });
+        }
+
+        private void OnTransformChanged(ChangeEvent<UnityEngine.Object> evt)
+        {
+            VerifyData(out _);
         }
 
         private void OnBoneDropped(DragPerformEvent evt)
@@ -82,20 +97,18 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             if (values != null && values.Length > 0)
             {
-                for (int i = 0; i < values.Length; i++)
-                {
-                    Debug.Log($"Spawn point: {values[i].name}");
-                }
-                transform.SetValueWithoutNotify(values[0]);
+                transform.value = values[0];
             }
         }
 
         public void Clear()
         {
-            transform.value = null;
-            place.value = default(EquipmentType).ToString();
+            _snapshot = null;
+            path = null;
+            transform.SetValueWithoutNotify(null);
+            place.Clear();
             Utilities.UtilitiesUI.Set_Tooltip(transform, null, false);
-            Utilities.UtilitiesUI.Set_Tooltip(place, null, false);
+            Utilities.UtilitiesUI.Set_Tooltip(place.DDField, null, false);
         }
 
         public bool VerifyData(out List<string> errors)
@@ -106,36 +119,58 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             result &= isValid = transform.value != null;
             Utilities.UtilitiesUI.Set_ErrorTooltip(transform, "Value can't be empty", ref errors, isValid);
 
-            var place = Enum.Parse<EquipmentType>(this.place.value);
-            result &= isValid = place != EquipmentType.None && place != EquipmentType.Body;
-            Utilities.UtilitiesUI.Set_ErrorTooltip(this.place, "Invalid place", ref errors, isValid);
+            result &= isValid = place.SelectedId != EnumRegistry.NoneId;
+            Utilities.UtilitiesUI.Set_ErrorTooltip(place.DDField, "Invalid place", ref errors, isValid);
 
             return result;
         }
 
         public ModificationTypes Check_Changes()
         {
-            throw new System.NotImplementedException();
+            if (_snapshot == null)
+                return SelectedTransform != null || place.SelectedId != EnumRegistry.NoneId
+                    ? ModificationTypes.Add : ModificationTypes.None;
+            return SelectedTransform != _snapshot.transform || place.SelectedId != _snapshot.placeId || path != _snapshot.path
+                ? ModificationTypes.EditData : ModificationTypes.None;
         }
 
-        public void Load_Changes()
+        public void Load_Changes() => Apply(_snapshot);
+        public void Remove_Changes() => _snapshot = null;
+        public CreationData GetInfo() => new SpawnRowData
         {
-            throw new System.NotImplementedException();
-        }
-
-        public void Remove_Changes()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public CreationData GetInfo()
-        {
-            throw new System.NotImplementedException();
-        }
+            transform = SelectedTransform,
+            placeId = place.SelectedId,
+            path = this.path
+        };
 
         public void UpdateInfo(CreationData cd)
         {
-            throw new System.NotImplementedException();
+            if (cd is not SpawnRowData data)
+                return;
+            _snapshot = new SpawnRowData { transform = data.transform, placeId = data.placeId, path = data.path };
+            Apply(data);
         }
+
+        //public void UpdateUIData<T>(T cd) where T : CreationData
+        //{
+        //    if (cd is SpawnRowData data)
+        //        Apply(data);
+        //}
+
+        private void Apply(SpawnRowData data)
+        {
+            transform.value = data?.transform != null ? data.transform.gameObject : null;
+            place.SetValue(data?.placeId ?? EnumRegistry.NoneId);
+            path = data?.path;
+        }
+    }
+
+    // UI snapshot only; EquipmentSpawnsList.GetInfo supplies the existing persistence format.
+    public class SpawnRowData : CreationData
+    {
+        public Transform transform;
+        public int placeId;
+        public string path;
+        public SpawnRowData() : base(null) { }
     }
 }

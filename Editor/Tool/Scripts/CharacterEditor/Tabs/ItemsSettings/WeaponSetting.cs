@@ -16,7 +16,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         public IntegerField MaxAmmo { get; private set; }
         public override ElementType ElementType => ElementType.Weapon;
 
-        public EnumField EFBodyPart { get; private set; }
+        public EnumModifierUI<EquipmentType> EFBodyPart { get; private set; }
         public EnumModifierUI<WeaponType> EMWeaponType { get; private set; }
 
         public override void Initialize(VisualElement container, CreationsBaseInfo name)
@@ -30,17 +30,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             ReloadTime = container.Q<FloatField>("txtReloadTime");
             MaxAmmo = container.Q<IntegerField>("txtMaxAmmo");
 
-            EFBodyPart = container.Q<EnumField>("efBodyPart");
-            EFBodyPart.Init(EquipmentType.None);
-            //var bodyPart = container.Q<EnumField>("efBodyPart");
-            //bodyPart.Init(EquipmentPlace.None);
+            EFBodyPart = new EnumModifierUI<EquipmentType>(container.Q<VisualElement>("TypeAdderBodyPart"));
+            EFBodyPart.Name.text = "Equipment Place";
 
             var typeAdder = container.Q<VisualElement>("TypeAdderWeapon");
             EMWeaponType = new EnumModifierUI<WeaponType>(typeAdder);
             EMWeaponType.Name.text = "Weapon type";
-            //var weaponType = container.Q<VisualElement>("TypeAdderWeapon");
-            //weaponType.Q<Label>().text = "Weapon type";
-            //weaponType.Q<EnumField>().Init(WeaponType.None);
 
             BuffAdder = new BuffAdderUI(container);
         }
@@ -56,17 +51,17 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             //if (weapon == null) return;
 
-            EFBodyPart.value = weapon.BodyPart;
+            EFBodyPart.Id = (int)weapon.BodyPart;
             Damage.value = (uint)weapon.Damage;
             RateDamage.value = weapon.DamageRate;
             MinDistance.value = weapon.MinDistance;
             MaxDistance.value = weapon.MaxDistance;
             ReloadTime.value = weapon.ReloadTime;
             MaxAmmo.value = weapon.MaxAmmo;
-            EMWeaponType.Value = (WeaponType)weapon.GetSubType();
+            EMWeaponType.Id = (int)(WeaponType)weapon.GetSubType();
 
             (_changes as Weapon).UpdateInfo(
-                weapon.BodyPart, EMWeaponType.Value, weapon.Damage, weapon.DamageRate,
+                weapon.BodyPart, (WeaponType)EMWeaponType.Id, weapon.Damage, weapon.DamageRate,
                 weapon.MinDistance, weapon.MaxDistance, weapon.ReloadTime, weapon.MaxAmmo, weapon.Buffs);
 
             UpdateBuffs(weapon.Buffs, buffArgs);
@@ -79,21 +74,21 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             var weapon = data as Weapon;
             var buffArgs = args as BuffsNamesDataArgs;
 
-            EFBodyPart.value = weapon.BodyPart;
+            EFBodyPart.Id = (int)weapon.BodyPart;
             Damage.value = (uint)weapon.Damage;
             RateDamage.value = weapon.DamageRate;
             MinDistance.value = weapon.MinDistance;
             MaxDistance.value = weapon.MaxDistance;
             ReloadTime.value = weapon.ReloadTime;
             MaxAmmo.value = weapon.MaxAmmo;
-            EMWeaponType.Value = (WeaponType)weapon.GetSubType();
+            EMWeaponType.Id = (int)(WeaponType)weapon.GetSubType();
 
             UpdateUIBuffs(weapon.Buffs, buffArgs);
         }
 
         public override (InventoryItem item, ItemDataArgs args) GetInfo(ItemDataArgs args)
         {
-            Weapon weapon = new Weapon();
+            Weapon weapon = new();
             var (baseInfo, baseArgs) = base.GetInfo(args);
             weapon.Copy(baseInfo);
 
@@ -105,8 +100,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             };
 
             weapon.UpdateInfo(
-                (EquipmentType)EFBodyPart.value,
-                EMWeaponType.Value,
+                (EquipmentType)EFBodyPart.Id,
+                (WeaponType)EMWeaponType.Id,
                 (int)unchecked(Damage.value),
                 RateDamage.value,
                 MinDistance.value,
@@ -128,7 +123,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             MaxDistance.value = 0;
             ReloadTime.value = 0;
             MaxAmmo.value = 0;
-            EFBodyPart.value = EquipmentType.None;
+            EFBodyPart.Clear();
             EMWeaponType.Clear();
             BuffAdder.Clear();
 
@@ -175,11 +170,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 {
                     CurModificationType = ModificationTypes.EditData;
                 }
-                if (_changesWeapon.BodyPart != (EquipmentType)EFBodyPart.value)
+                if ((int)_changesWeapon.BodyPart != EFBodyPart.Id)
                 {
                     CurModificationType = ModificationTypes.EditData;
                 }
-                if ((WeaponType)_changesWeapon.GetSubType() != EMWeaponType.Value)
+                if ((int)(WeaponType)_changesWeapon.GetSubType() != EMWeaponType.Id)
                 {
                     CurModificationType = ModificationTypes.EditData;
                 }
@@ -255,8 +250,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             MaxDistance.value = changes.MaxDistance;
             ReloadTime.value = changes.ReloadTime;
             MaxAmmo.value = changes.MaxAmmo;
-            EFBodyPart.value = changes.BodyPart;
-            EMWeaponType.Value = (WeaponType)changes.GetSubType();
+            EFBodyPart.Id = (int)changes.BodyPart;
+            EMWeaponType.Id = (int)(WeaponType)changes.GetSubType();
             BuffAdder.Load_Changes();
         }
     }

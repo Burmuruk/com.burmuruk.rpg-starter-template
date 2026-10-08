@@ -107,17 +107,28 @@ namespace Burmuruk.RPGStarterTemplate.Utilities
 
         public void CancelAll()
         {
-            while (actions.Count > 0)
+            var pending = new List<ActionStatus>(actions);
+            actions.Clear();
+            curTask = 0;
+
+            foreach (var item in pending)
             {
-                var first = actions.First;
-
-                if (first.Value.state == ActionState.Paused || first.Value.state == ActionState.Running)
-                {
-                    Cancel(first.Value.action);
-                }
-
-                //actions.RemoveFirst();
+                if (item.state == ActionState.Paused || item.state == ActionState.Running)
+                    item.action.CancelAction();
             }
+        }
+
+        public void Discard(IScheduledAction action)
+        {
+            for (var node = actions.First; node != null;)
+            {
+                var next = node.Next;
+
+                if (node.Value.action == action) 
+                    actions.Remove(node);
+                node = next;
+            }
+            curTask = 0;
         }
 
         public void Finished(IScheduledAction action)

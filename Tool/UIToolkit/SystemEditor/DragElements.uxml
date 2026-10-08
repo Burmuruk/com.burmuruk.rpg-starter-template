@@ -1,0 +1,33 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="SavingStageRow" src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/SystemEditor/Elements/DragTemplate.uxml?fileID=9197481963319205126&amp;guid=f7edad4450cbbf4418ef78b19d068457&amp;type=3#SavingStageRow" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/SavingDrag.uss?fileID=7433441132597879392&amp;guid=847af861ce17cc945bfbee7340da9e93&amp;type=3#SavingPanel.example" />
+    <ui:VisualElement name="savingInfoCont" style="flex-grow: 1;">
+        <ui:Toggle name="TglEncryptSaving" label="Encrypt saving" class="Disable" />
+        <ui:Label text="Stages run from top to bottom. Drag the handle to reorder." />
+        <ui:Instance template="SavingStageRow" name="tplSavingStage" class="Disable" style="padding-bottom: 4px;" />
+        <ui:ScrollView name="savingRowsContainer" class="InfoContainer" />
+        <ui:Button name="btnAddSavingStage" text="+ Add stage" class="MidButton" style="width: 84px;" />
+        <ui:VisualElement name="savingRemovalPanel">
+            <ui:VisualElement name="Hr" style="flex-grow: 1; flex-direction: row; flex-shrink: 1; justify-content: center; align-self: center; align-items: center; margin-top: 10px; margin-bottom: 2px;">
+                <ui:VisualElement name="HR" style="flex-grow: 1; flex-direction: column; flex-basis: 98%; flex-shrink: 1; background-color: rgb(242, 242, 242); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; min-height: 1px;" />
+            </ui:VisualElement>
+            <ui:Label name="lblSavingRemovalPrompt" />
+            <ui:DropdownField name="ddSavingReplacement" />
+            <ui:VisualElement class="saving-actions LineContainer" style="flex-shrink: 0; margin-top: 10px; justify-content: center;">
+                <ui:Button name="btnConfirmSavingRemoval" text="Remove stage" class="MidButton" />
+                <ui:Button name="btnCancelSavingRemoval" text="Keep stage" class="MidButton" />
+            </ui:VisualElement>
+            <ui:Label text="Without a replacement, data saved in that stage will be skipped." class="Title" style="margin-top: 6px; -unity-text-align: lower-center;" />
+            <ui:VisualElement name="Hr" style="flex-grow: 1; flex-direction: row; flex-shrink: 1; justify-content: center; align-self: center; align-items: center; margin-top: 10px; margin-bottom: 22px;">
+                <ui:VisualElement name="HR" style="flex-grow: 1; flex-direction: column; flex-basis: 98%; flex-shrink: 1; background-color: rgb(242, 242, 242); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; min-height: 1px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="lblSavingStatus" style="margin-top: 8px;" />
+        <ui:VisualElement name="SavingButtons" class="saving-actions LineContainer" style="justify-content: center;">
+            <ui:Button name="btnAcceptSaving" text="Apply" class="MidButton" />
+            <ui:Button name="btnCancelSaving" text="Cancel" class="MidButton" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

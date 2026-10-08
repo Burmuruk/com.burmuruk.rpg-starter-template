@@ -55,8 +55,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public virtual void UpdateInfo(CreationData cd)
         {
-            var data = cd as ItemCreationData;
-            
+            ItemCreationData data = cd as ItemCreationData;
+
             if (!string.IsNullOrEmpty(data.Id))
             {
                 _creationsState = CreationsState.Editing;
@@ -66,7 +66,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             {
                 _creationsState = CreationsState.Creating;
             }
-            
+
             _id = cd.Id;
             UpdateUIData(data.Data, data.args);
         }
@@ -76,8 +76,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             if (string.IsNullOrEmpty(_id))
                 _originalName = data.Name;
             TempName = data.Name;
-            UpdateName(); 
-            
+            UpdateName();
+
             TxtDescription.value = data.Description;
             OfSprite.value = args?.GetSprite();
             OfPickup.value = args?.GetPickupPrefab();
@@ -86,7 +86,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public virtual (InventoryItem item, ItemDataArgs args) GetInfo(ItemDataArgs args)
         {
-            var data = new InventoryItem();
+            InventoryItem data = new();
             ItemDataArgs newArgs;
 
             newArgs = new ItemDataArgs(
@@ -144,7 +144,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             try
             {
-                if (_changes == null) return CurModificationType = ModificationTypes.Add;
+                if (_changes == null)
+                    return CurModificationType = ModificationTypes.Add;
 
                 CurModificationType = ModificationTypes.None;
 
@@ -180,17 +181,20 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             }
 
             CurModificationType = Check_Changes();
-            if (_creationsState == CreationsState.Editing && Check_Changes() == ModificationTypes.None)
+            if (_creationsState == CreationsState.Editing)
             {
-                Utilities.UtilitiesUI.Notify("No changes were found", BorderColour.HighlightBorder);
-                return false;
+                if (Check_Changes() == ModificationTypes.None)
+                {
+                    Utilities.UtilitiesUI.Notify("No changes were found", BorderColour.HighlightBorder);
+                    return false;
+                }
             }
             else
                 CurModificationType = ModificationTypes.Add;
 
             Utilities.UtilitiesUI.DisableNotification(NotificationType.Creation);
             var (data, args) = GetInfo(null);
-            var creationData = new ItemCreationData(_nameControl.TxtName.value, data, args);
+            ItemCreationData creationData = new(_nameControl.TxtName.value, data, args);
 
             return SavingSystem.SaveCreation(ElementType.Item, in _id, creationData, CurModificationType);
         }
@@ -199,10 +203,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             var result = SavingSystem.Load(type, id);
 
-            if (result == null) return null;
+            if (result == null)
+                return null;
 
             _id = id;
-            var item = (result as ItemCreationData);
+            ItemCreationData item = result as ItemCreationData;
             Set_CreationState(CreationsState.Editing);
             UpdateInfo(item.Data, item.args);
 
@@ -213,10 +218,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             CreationData result = SavingSystem.Load(id);
 
-            if (result == null) return null;
+            if (result == null)
+                return null;
 
             _id = id;
-            var item = (result as ItemCreationData);
+            ItemCreationData item = result as ItemCreationData;
             Set_CreationState(CreationsState.Editing);
             UpdateInfo(item.Data, item.args);
 
@@ -261,11 +267,15 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             ImgGUID = imgGUID;
         }
 
-        public Sprite GetSprite() => SavingSystem.GetAsset<Sprite>(ImgGUID);
+        public Sprite GetSprite()
+        {
+            return SavingSystem.GetAsset<Sprite>(ImgGUID);
+        }
 
-        public GameObject GetPickupPrefab() => SavingSystem.GetAsset<GameObject>(PickupPath);
-
-
+        public GameObject GetPickupPrefab()
+        {
+            return SavingSystem.GetAsset<GameObject>(PickupPath);
+        }
     }
 }
 

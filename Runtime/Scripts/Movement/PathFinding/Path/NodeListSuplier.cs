@@ -12,7 +12,6 @@ namespace Burmuruk.WorldG.Patrol
     public class NodeListSuplier : INodeListSupplier
     {
         IPathNode[][][] connections;
-        float halfNodeDistance;
 
         public float NodeDistance { get; private set; }
 
@@ -35,14 +34,14 @@ namespace Burmuruk.WorldG.Patrol
 
             (int x, int y, int z)? index = null;
             int length = connections.Length - 1;
-            float dis;
 
             for (int i = 0; i < connections.Length; i++)
             {
                 if (i == length ||
                     (connections[i][0][0].Position.x > start.x))
                 {
-                    RoundIdx(ref i, connections[i][0][0].Position.x, start.x);
+                    if (i > 0)
+                        RoundIdx(ref i, start.x, connections[i][0][0].Position.x, connections[i - 1][0][0].Position.x);
 
                     length = connections[i].Length - 1;
 
@@ -51,7 +50,8 @@ namespace Burmuruk.WorldG.Patrol
                         if (j == length ||
                             (start.z > connections[i][j][0].Position.z))
                         {
-                            RoundIdx(ref j, start.z, connections[i][j][0].Position.z);
+                            if (j > 0)
+                                RoundIdx(ref j, start.z, connections[i][j][0].Position.z, connections[i][j - 1][0].Position.z);
 
                             length = connections[i][j].Length - 1;
 
@@ -60,7 +60,8 @@ namespace Burmuruk.WorldG.Patrol
                                 if (k == length ||
                                     (start.y < connections[i][j][k].Position.y))
                                 {
-                                    RoundIdx(ref k, connections[i][j][k].Position.y, start.y);
+                                    if (k > 0)
+                                        RoundIdx(ref k, start.y, connections[i][j][k].Position.y, connections[i][j][k - 1].Position.y);
 
                                     index = (i, j, k);
                                     break;
@@ -77,11 +78,9 @@ namespace Burmuruk.WorldG.Patrol
 
             return index.HasValue ? connections[index.Value.x][index.Value.y][index.Value.z] : null;
 
-            void RoundIdx(ref int idx, float max, float min)
+            void RoundIdx(ref int idx, float position, float current, float previous)
             {
-                dis = max - min;
-
-                if (dis > halfNodeDistance && idx > 0)
+                if (Mathf.Abs(position - previous) < Mathf.Abs(position - current))
                 {
                     --idx;
                 }
@@ -104,7 +103,6 @@ namespace Burmuruk.WorldG.Patrol
             PlayerRadious = pRadious;
             NodeDistance = maxDistance;
             MaxAngle = maxAngle;
-            halfNodeDistance = NodeDistance / 2;
         }
 
         public bool ValidatePosition(Vector3 position, IPathNode nearestPoint)
@@ -143,35 +141,42 @@ namespace Burmuruk.WorldG.Patrol
 
         public IPathNode FindNearestNodeAround(IPathNode start, Vector3 destiny, float maxDistance = 0)
         {
-            float curDistance = 0;
+            if (start == null) return null;
 
             if (maxDistance <= 0)
                 maxDistance = Vector3.Distance(start.Position, destiny);
 
-            SortedDictionary<float, IPathNode> closestNodes = new();
             IPathNode curNode = start;
+            var visited = new HashSet<IPathNode>();
 
-            while (curDistance < maxDistance)
+            while (visited.Add(curNode) && curNode.NodeConnections != null)
             {
-                closestNodes.Clear();
+                IPathNode closest = null;
+                float bestDistance = Vector3.SqrMagnitude(curNode.Position - destiny);
 
                 foreach (var connection in curNode.NodeConnections)
                 {
-                    closestNodes.Add(Vector3.Distance(connection.node.Position, destiny), connection.node);
+                    var next = connection.node;
+
+                    if (next == null || !next.IsEnabled || visited.Contains(next) ||
+                        Vector3.Distance(start.Position, next.Position) > maxDistance) 
+                        continue;
+
+                    float distance = Vector3.SqrMagnitude(next.Position - destiny);
+
+                    if (distance < bestDistance)
+                    {
+                        bestDistance = distance;
+                        closest = next;
+                    }
                 }
 
-                var nextDistance = Vector3.Distance(start.Position, closestNodes.First().Value.Position);
+                if (closest == null) break;
 
-                if (closestNodes.Count > 0 && nextDistance > curDistance && nextDistance <= maxDistance)
-                {
-                    curNode = closestNodes.First().Value;
-                    curDistance = nextDistance;
-                }
-                else
-                    break;
+                curNode = closest;
             }
 
-            return curNode;
+            return curNode.IsEnabled ? curNode : null;
         }
 
         List<Direction> GetDirections(Vector3 curPos, Vector3 nextPos)

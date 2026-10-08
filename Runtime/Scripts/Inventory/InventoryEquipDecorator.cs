@@ -35,29 +35,33 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
             }
         }
 
-        EquipeableItem _alarmedRemovedItem = default;
-        (Character player, EquipeableItem item) _alarmedEquipItem = default;
+        EquipableItem _alarmedRemovedItem = default;
+        (Character player, EquipableItem item) _alarmedEquipItem = default;
         public ref Equipment Equipped { get => ref _equipment; }
 
         public event Action OnTryDeleteEquiped;
         public event Action OnTryAlreadyEquiped;
 
-        private void Start()
+        public void SetInventory(Inventory inventory)
         {
+            this._inventory = inventory;
             InitInventory();
         }
 
-        public void SetInventory(Inventory inventory) => this._inventory = inventory;
-
-        public bool TryEquip(Character player, InventoryItem item, out List<EquipeableItem> unequippedItems)
+        public bool TryEquip(Character player, InventoryItem item, out List<EquipableItem> unequippedItems)
         {
             unequippedItems = null;
-            if (item == null) return false;
 
-            var equiped = (EquipeableItem)item;
-            if (equiped.Characters.Contains(player)) return false;
+            if (item == null || !(item is EquipableItem equiped)) 
+                return false;
 
-            _alarmedEquipItem = (player, (EquipeableItem)item);
+            if (equiped.Characters.Contains(player))
+            {
+                UpdateModel(player, equiped);
+                return false;
+            }
+
+            _alarmedEquipItem = (player, (EquipableItem)item);
 
             if (equiped.IsEquip && !HasAvailableItem(item.ID))
             {
@@ -75,7 +79,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
             }
         }
 
-        private List<EquipeableItem> UnequipWeaponSlot(Character player, EquipeableItem item)
+        private List<EquipableItem> UnequipWeaponSlot(Character player, EquipableItem item)
         {
             var equippedItems = player.Equipment.GetItems((int)item.GetEquipLocation());
 
@@ -100,7 +104,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
             _alarmedEquipItem = default;
         }
 
-        private void VerifyBonus(EquipeableItem equipeableItem, Character player)
+        private void VerifyBonus(EquipableItem equipeableItem, Character player)
         {
             var place = equipeableItem.GetEquipLocation();
             //equipment.par
@@ -135,13 +139,13 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
 
         private void UpdateModel(Character player, InventoryItem prefab)
         {
-            if (prefab is EquipeableItem equipable && equipable != null)
+            if (prefab is EquipableItem equipable && equipable != null)
             {
                 ItemEquiper.EquipModification(ref player.Equipment, equipable);
             }
         }
 
-        public bool Unequip(Character player, EquipeableItem item)
+        public bool Unequip(Character player, EquipableItem item)
         {
             if (item is var unequipped && unequipped == null)
                 return false;
@@ -165,9 +169,9 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
 
             if (item == null) return false;
 
-            _alarmedRemovedItem = (EquipeableItem)item;
+            _alarmedRemovedItem = (EquipableItem)item;
 
-            if (((EquipeableItem)item).IsEquip)
+            if (((EquipableItem)item).IsEquip)
             {
                 OnTryDeleteEquiped?.Invoke();
                 return false;
@@ -205,7 +209,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
 
             foreach (var item in items)
             {
-                var equiped = item as EquipeableItem;
+                var equiped = item as EquipableItem;
                 if (equiped.IsEquip && equiped.Characters.Contains(character))
                 {
                     equipedItems.Add(equiped);

@@ -63,7 +63,7 @@ namespace Burmuruk.WorldG.Patrol
         {
             get
             {
-                if (!spline && spline.path == null) return default;
+                if (!spline || spline.path == null) return default;
 
                 enumerator??= spline.path.GetEnumerator();
 
@@ -176,7 +176,9 @@ namespace Burmuruk.WorldG.Patrol
         public void Initialize()
         {
             if (!spline) spline = transform.GetComponentInChildren<Spline>();
-            spline.Initialize();
+
+            if (spline != null)
+                spline.Initialize();
 
             tasksList = new();
             enumerator = null;
@@ -211,7 +213,7 @@ namespace Burmuruk.WorldG.Patrol
                 tasksList[currentAction].Invoke();
                 return;
             }
-            else if (shouldRepeat && tasksList != null)
+            else if (shouldRepeat && tasksList != null && tasksList.Count > 0)
             {
                 currentAction = -1;
                 state = PatrolState.Repeating;
@@ -224,6 +226,14 @@ namespace Burmuruk.WorldG.Patrol
         }
 
         public void AbortPatrol() => CancelRequested = true;
+
+        public void StopPatrolling()
+        {
+            CancelInvoke(nameof(ContinueTasks));
+
+            if (state != PatrolState.None)
+                FinishPatrol();
+        }
         #endregion
 
         #region private methods
@@ -237,12 +247,14 @@ namespace Burmuruk.WorldG.Patrol
         private void FinishPatrol()
         {
             currentAction = -1;
-            enumerator?.Reset();
-            OnPatrolFinished?.Invoke();
+            enumerator?.Dispose();
+            enumerator = null;
+            CancelInvoke(nameof(ContinueTasks));
             CancelRequested = false;
 
             mover.OnFinished -= ContinueTasks;
             state = PatrolState.None;
+            OnPatrolFinished?.Invoke();
         }
 
         private bool InitializeTasks()

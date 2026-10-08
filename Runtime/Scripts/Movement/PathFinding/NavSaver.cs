@@ -1,4 +1,4 @@
-﻿using Burmuruk.AI;
+using Burmuruk.AI;
 using Burmuruk.WorldG.Patrol;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -95,7 +97,9 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
                 writer.WriteLine("END");
             }
 
+#if UNITY_EDITOR
             AssetDatabase.Refresh();
+#endif
             saved = true;
         }
 
@@ -110,7 +114,9 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
             string path = Path.Combine(Application.streamingAssetsPath, FILE_NAME + "_" + sceneName + ".txt");
 
             File.Delete(path);
+#if UNITY_EDITOR
             AssetDatabase.Refresh();
+#endif
         }
 
         private static void Write(LinkedList<string> text)
@@ -132,7 +138,9 @@ namespace Burmuruk.RPGStarterTemplate.Movement.PathFindig
                 }
             }
 
+#if UNITY_EDITOR
             AssetDatabase.Refresh();
+#endif
         }
 
         //private static string GetNodeConnections(IPathNode node)

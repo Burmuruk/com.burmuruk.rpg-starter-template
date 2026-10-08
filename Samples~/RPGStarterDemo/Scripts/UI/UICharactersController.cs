@@ -14,9 +14,23 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             menuCharacters = FindObjectOfType<UIMenuCharacters>();
         }
 
+        private bool TryGetActiveMenu()
+        {
+            if (gameManager == null)
+                gameManager = GameManager.Instance;
+
+            if (gameManager == null || gameManager.GameState != GameManager.State.UI)
+                return false;
+
+            if (menuCharacters == null)
+                menuCharacters = FindObjectOfType<UIMenuCharacters>();
+
+            return menuCharacters != null && menuCharacters.isActiveAndEnabled;
+        }
+
         public void RotatePlayer(InputAction.CallbackContext context)
         {
-            if (GameManager.Instance.GameState != GameManager.State.UI)
+            if (!TryGetActiveMenu())
                 return;
 
             var value = context.ReadValue<Vector2>();
@@ -45,7 +59,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         {
             if (!context.performed) return;
 
-            if (gameManager.GameState == GameManager.State.UI)
+            if (TryGetActiveMenu())
             {
                 menuCharacters.SwitchExtraData();
             }
@@ -55,7 +69,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         {
             if (!context.performed) return;
 
-            if (gameManager.GameState == GameManager.State.UI)
+            if (TryGetActiveMenu())
             {
                 menuCharacters.TryRemoveItem();
             }
@@ -65,7 +79,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         {
             if (!context.performed) return;
 
-            if (gameManager.GameState == GameManager.State.UI)
+            if (TryGetActiveMenu())
             {
                 menuCharacters.ChangeMenu();
             }
@@ -73,7 +87,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
 
         public void ChangeCharacter(InputAction.CallbackContext context)
         {
-            if (!context.performed) return;
+            if (!context.performed || !TryGetActiveMenu()) return;
 
             if (context.ReadValue<float>() > 0)
                 menuCharacters.ShowNextPlayer();

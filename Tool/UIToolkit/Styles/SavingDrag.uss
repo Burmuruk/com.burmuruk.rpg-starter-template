@@ -1,0 +1,22 @@
+.saving-stage-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+}
+
+.saving-stage-drag {
+    width: 24px;
+    -unity-text-align: middle-center;
+}
+
+.saving-stage-row.saving-drop-before {
+    border-top-color: rgb(64, 153, 255);
+}
+
+.saving-stage-row.saving-drop-after {
+    border-bottom-color: rgb(64, 153, 255);
+}

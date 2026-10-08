@@ -56,6 +56,8 @@ El demo y varios materiales usan URP.
 
 ## Ejecución de escena demo
 
+Antes de abrir el demo, importa **Window > TextMeshPro > Import TMP Essential Resources** y configura **Project Settings > Player > Active Input Handling** en **Both**. El demo utiliza recursos de TextMeshPro y ambos sistemas de entrada. Usa un proyecto con URP configurado.
+
 Para abrir es demo incluido debes seguir los siguientes pasos:
 
 1. Importar el demo desde el Package Manager
@@ -64,6 +66,8 @@ Para abrir es demo incluido debes seguir los siguientes pasos:
 
 
 ### Errores conocidos
+
+- **Navegación del demo en ejecutables**: los overrides de carga de mapas del sample actualmente se ejecutan únicamente en el editor. La compilación de scripts para Player no implica que la navegación del demo esté validada en una build.
 
 - **Pérdida de datos al editar diálogos**
   Al abrir un mismo archivo de diálogo varias veces, el editor limpia ciertos campos y los cambios pueden perderse.

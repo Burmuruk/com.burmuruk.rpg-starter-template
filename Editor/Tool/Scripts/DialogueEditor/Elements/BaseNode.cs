@@ -1,4 +1,4 @@
-﻿using System;
+﻿                         using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -15,6 +15,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         [SerializeField] bool isPlayerSpeaking = false;
         [SerializeField] bool _isStartNode = false;
         [SerializeField] private bool _isPinned = false;
+        [SerializeField] private string _pinNote = "";
         [SerializeField] private bool _expanded = true;
         [SerializeField] private Vector2 _position;
         [SerializeField] List<string> _children = new();
@@ -24,12 +25,15 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         //[SerializeField] string onEnterAction;
         //[SerializeField] string onExitAction;
 
-        private string _id = null;
+        [SerializeField] private string _id = null;
         private bool isInfoDisplayed;
         private bool isCreatingNode;
         public DialogueGraphView _graphView;
 
         public event Action<BaseNode> OnSelected;
+        public event Action OnChanged;
+        public void NotifyChanged() => OnChanged?.Invoke();
+        internal void RestoreIdentity(string id) => _id = id;
         public event Action<BaseNode> OnDeselected;
         public event Action<BaseNode, bool> OnPinned;
         public event Action<string, bool> OnStartPointCreated;
@@ -39,6 +43,19 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         public VisualElement Element { get; private set; }
         public GraphViewNode GraphViewNode { get; private set; }
         public Button BtnPin { get; private set; }
+        public bool IsPinned => _isPinned;
+        public string PinNote
+        {
+            get => _pinNote;
+            set
+            {
+                if (_pinNote == value) return;
+
+                Undo.RecordObject(this, "Edit pinned node note");
+                _pinNote = value;
+                EditorUtility.SetDirty(this);
+            }
+        }
         public List<string> Children => _children;
         public bool IsExecutable
         {
@@ -70,7 +87,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             _graphView = graph;
             GraphViewNode = new GraphViewNode(graph, this);
-            Id ??= Guid.NewGuid().ToString();
+            Id ??= AssetDatabase.Contains(this) ? name : Guid.NewGuid().ToString();
             characterID ??= Guid.NewGuid().ToString();
             SetPosition(startPosition);
             BtnPin = GraphViewNode.Q<Button>(GraphViewNode.PIN_BUTTON_NAME);
@@ -78,14 +95,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
             GraphViewNode.OnSelect += () => OnSelected?.Invoke(this);
             GraphViewNode.OnDeselected += () => OnDeselected?.Invoke(this);
-            BtnPin.clicked += () =>
-            {
-                _isPinned = !_isPinned;
-                BtnPin.style.unityBackgroundImageTintColor = _isPinned ?
-                    new Color(0.7960784f, 0.6313726f, 0.1019608f) :
-                    new Color(0.5169811f, 0.5169811f, 0.5169811f);
-                OnPinned?.Invoke(this, _isPinned);
-            };
+            GraphViewNode.RegisterCallback<ChangeEvent<string>>(_ => NotifyChanged());
+            GraphViewNode.RegisterCallback<ChangeEvent<bool>>(_ => NotifyChanged());
+            BtnPin.clicked += TogglePin;
+            RefreshPinButton();
             Set_CharacterData(prevNode);
             MakeStartButton(prevNode == null);
         }
@@ -97,6 +110,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             OnDeselected = null;
             OnStartPointCreated = null;
             OnExecutionChanged = null;
+            OnChanged = null;
         }
 
         public virtual void LoadData()
@@ -104,13 +118,38 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             MakeStartButton(_isStartNode);
             GraphViewNode.EnableExecution(_isExecutable);
             _id = this.name;
+            GraphViewNode.TxtOnEnterAction.SetValueWithoutNotify(onEnterAction);
+            GraphViewNode.TxtOnExitAction.SetValueWithoutNotify(onExitAction);
+            GraphViewNode.expanded = _expanded;
         }
 
-        private void StartBtn_clicked()
+        public void TogglePin() => SetPinned(!_isPinned);
+
+        public void SetPinned(bool pinned)
+        {
+            if (_isPinned == pinned) return;
+
+            Undo.RecordObject(this, "Pin dialogue node");
+            _isPinned = pinned;
+            RefreshPinButton();
+            EditorUtility.SetDirty(this);
+
+            OnPinned?.Invoke(this, pinned);
+        }
+
+        private void RefreshPinButton()
+        {
+            BtnPin.style.unityBackgroundImageTintColor = _isPinned ?
+                new Color(0.7960784f, 0.6313726f, 0.1019608f) :
+                new Color(0.5169811f, 0.5169811f, 0.5169811f);
+        }
+
+        public void StartBtn_clicked()
         {
             IsExecutable = !IsExecutable;
             GraphViewNode.ColorButton(GraphViewNode.StartBtn, _isExecutable);
             OnExecutionChanged?.Invoke(this, _isExecutable);
+            NotifyChanged();
         }
 
         public virtual RPGStarterTemplate.Dialogue.DialogueNode GetNodeData(RPGStarterTemplate.Dialogue.DialogueNode nodeData)
@@ -200,8 +239,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 }
             }
 
-            value = port.direction != Direction.Input && node.IsStartNode;
-            node.MakeStartButton(value);
+            //value = port.direction != Direction.Input && node.IsStartNode;
+            //node.MakeStartButton(value);
+            node.MakeStartButton(node.IsStartNode);
         }
 
         private void Color_StatusButtonDesconnection(BaseNode node, Port port, BaseNode other)
@@ -241,8 +281,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             if (!string.IsNullOrEmpty(prevNode.characterID))
             {
                 characterID = prevNode.characterID;
-                this.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor = 
-                    prevNode.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor;
+                GraphViewNode.BaseColour = prevNode.GraphViewNode.BaseColour;
                 Title = prevNode.Title;
             }
 
@@ -265,7 +304,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         public void AddChild(string childId)
         {
-            _children.Add(childId);
+            if (!_children.Contains(childId))
+                _children.Add(childId);
         }
 
         public void RemoveChild(string childId)

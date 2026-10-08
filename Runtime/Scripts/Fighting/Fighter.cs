@@ -1,4 +1,5 @@
-﻿using Burmuruk.RPGStarterTemplate.Inventory;
+﻿using Burmuruk.RPGStarterTemplate.Control;
+using Burmuruk.RPGStarterTemplate.Inventory;
 using Burmuruk.RPGStarterTemplate.Stats;
 using Burmuruk.Utilities;
 using System;
@@ -19,119 +20,145 @@ namespace Burmuruk.RPGStarterTemplate.Combat
 
         Transform m_target;
         CoolDownAction cdBasicAttack;
-        Coroutine basicAttackC;
-        Coroutine autoBACoroutine;
-        public bool shouldGetClose = false;
+
         bool canAttack = true;
-        bool inAutoAttack = false;
+        bool autoAttack = false;
 
-        BasicStats Stats { get => m_Stats.Invoke(); }
+        BasicStats Stats => m_Stats.Invoke();
 
-        enum Satate
+        public int Damage => Stats.damage;
+
+        private void Update()
         {
-            None,
-            Paused,
-            Working,
-        }
-
-        private void FixedUpdate()
-        {
-            if (m_targetHealth && canAttack)
-            {
+            if (autoAttack)
                 BasicAttack();
-            }
-
-            //if (m_Stats.DamageRate != 0)
-            //    cdBasicAttack = new CoolDownAction(m_Stats.DamageRate);
         }
 
-        public void Initilize(InventoryEquipDecorator inventory, Func<BasicStats> stats)
+        public virtual void Initilize(InventoryEquipDecorator inventory, Func<BasicStats> stats) 
         {
             m_inventory = inventory;
             m_Stats = stats;
 
-            //m_inventory.Equipped.OnEquipmentChanged += (id) =>
-            //{
-            //    if (id == (int)EquipmentType.WeaponR)
-            //    {
-            //        CacheWeapon();
-            //    }
-            //};
-
-            float rate = m_Stats.Invoke().damageRate;
+            float rate = Stats.damageRate;
             cdBasicAttack = new CoolDownAction(in rate);
-            inAutoAttack = false;
+
+            autoAttack = false;
         }
 
         public void Pause(bool shouldPause)
         {
-            canAttack = shouldPause;
+            canAttack = !shouldPause;
+        }
+
+        public void ResetCombat()
+        {
+            StopAllCoroutines();
+
+            cdBasicAttack?.Cancel();
+            autoAttack = false;
+            SetTarget(null);
+            canAttack = true;
         }
 
         public void SetTarget(Transform target)
         {
-            m_target = target;
+            if (m_targetHealth != null)
+                m_targetHealth.OnDied -= RemoveTarget;
 
-            if (target == null) return;
-            m_targetHealth = target?.GetComponent<Health>();
-            m_targetHealth.OnDied -= RemoveTarget;
-            m_targetHealth.OnDied += RemoveTarget;
+            m_target = target;
+            m_targetHealth = target != null ? target.GetComponent<Health>() : null;
+
+            if (m_targetHealth != null)
+                m_targetHealth.OnDied += RemoveTarget;
         }
+
         public void RemoveTarget(Transform target)
         {
-            target.GetComponent<Health>().OnDied -= RemoveTarget;
+            if (m_target != target)
+                return;
 
-            if (m_target != target) return;
-            m_target = null;
-            m_targetHealth = null;
+            SetTarget(null);
         }
 
         /// <summary>
-        /// Executes a basic attack if it's close enough to the m_direction.
+        /// Attempts to start a basic attack.
         /// </summary>
         public void BasicAttack()
         {
-            if (!m_target) return;
+            if (!CanBasicAttack())
+                return;
 
-            if (cdBasicAttack.CanUse)
+            EquipableItem equipable =
+                m_inventory?.Equipped[(int)EquipmentType.WeaponR];
+
+            StartBasicAttack(equipable);
+            StartCoroutine(cdBasicAttack.CoolDown());
+        }
+
+        /// <summary>
+        /// Determines whether a new basic attack can be started.
+        /// </summary>
+        protected virtual bool CanBasicAttack()
+        {
+            if (!canAttack ||
+                !isActiveAndEnabled ||
+                m_target == null ||
+                !m_target.gameObject.activeInHierarchy ||
+                m_targetHealth == null ||
+                !m_targetHealth.IsAlive ||
+                cdBasicAttack == null ||
+                !cdBasicAttack.CanUse)
             {
-                if (Vector3.Distance(m_target.position, transform.position) > Stats.minDistance)
-                    return;
+                return false;
+            }
 
-                m_targetHealth.ApplyDamage(Stats.damage);
+            return Vector3.Distance(m_target.position, transform.position) <= Stats.minDistance;
+        }
 
-                EquipeableItem weapon = m_inventory.Equipped[(int)Inventory.EquipmentType.WeaponR];
+        /// <summary>
+        /// Starts the basic attack.
+        ///
+        /// The default implementation hits immediately.
+        /// Derived classes can override this method to play
+        /// an animation and call Hit() later.
+        /// </summary>
+        protected virtual void StartBasicAttack(EquipableItem equipable)
+        {
+            Hit();
+        }
 
-                if (weapon != null && (weapon as Weapon).TryGetBuff(out BuffData? buff))
+        /// <summary>
+        /// Applies the effects of the current basic attack.
+        /// </summary>
+        protected virtual void Hit()
+        {
+            if (m_targetHealth == null || !m_targetHealth.IsAlive)
+            {
+                return;
+            }
+
+            m_targetHealth.ApplyDamage(Stats.damage);
+
+            EquipableItem equipable = m_inventory?.Equipped[(int)EquipmentType.WeaponR];
+
+            if (equipable is Weapon weapon && BuffsManager.Instance != null)
+            {
+                if (weapon.TryGetBuffs(out var buffsData))
                 {
-                    if (buff.HasValue)
-                        BuffsManager.Instance.AddBuff(transform.GetComponent<Control.Character>(), buff.Value, () => m_targetHealth.ApplyDamage(Stats.damage));
+                    foreach (var buff in buffsData)
+                    {
+                        BuffsManager.Instance.ApplyEffectIfNotActive(m_target.GetComponent<Character>(), buff, rollProbability: true);
+                    }
                 }
-
-                if (!gameObject.activeSelf) return;
-
-                StartCoroutine(cdBasicAttack.CoolDown());
             }
         }
 
+        /// <summary>
+        /// Enables or disables automatic basic attacks.
+        /// </summary>
         public void StartAutoBasicAttack(bool start)
         {
-            if (start)
-            {
-                if (autoBACoroutine != null)
-                    StopCoroutine(autoBACoroutine);
-
-                if (inAutoAttack) return;
-
-                autoBACoroutine = StartCoroutine(AutoBasicAttackCoroutine()); 
-            }
-            else
-            {
-                if (autoBACoroutine != null)
-                    StopCoroutine(autoBACoroutine);
-
-                autoBACoroutine = null;
-            }
+            autoAttack = start;
         }
 
         public void SpecialAttack(AbilityType type)
@@ -143,7 +170,10 @@ namespace Burmuruk.RPGStarterTemplate.Combat
                 if ((AbilityType)hability.GetSubType() == type)
                 {
                     var args = GetSpecialAttackArgs(type);
-                    //AbilitiesManager.habilitiesList[modifiableStat]?.Invoke(args);
+
+                    // AbilitiesManager.habilitiesList[
+                    //     modifiableStat]?.Invoke(args);
+
                     return;
                 }
             }
@@ -156,39 +186,5 @@ namespace Burmuruk.RPGStarterTemplate.Combat
                 AbilityType.StealHealth => m_target,
                 _ => null
             };
-
-        private IEnumerator AutoBasicAttackCoroutine()
-        {
-            if (m_target == null) goto EndAutoAttack;
-
-            inAutoAttack = true;
-
-            while (m_target != null)
-            {
-                while (Vector3.Distance(m_target.position, transform.position) > Stats.minDistance)
-                {
-                    yield return new WaitForSeconds(.5f);
-
-                    if (m_target == null) goto EndAutoAttack;
-                }
-
-                m_targetHealth.ApplyDamage(Stats.damage);
-
-                EquipeableItem weapon = m_inventory.Equipped[(int)Inventory.EquipmentType.WeaponR];
-
-                if (weapon != null && (weapon as Weapon).TryGetBuff(out BuffData? buff))
-                {
-                    if (buff.HasValue)
-                        BuffsManager.Instance.AddBuff(transform.GetComponent<Control.Character>(), buff.Value, () => m_targetHealth.ApplyDamage(Stats.damage));
-                }
-
-                if (!gameObject.activeSelf) goto EndAutoAttack;
-
-                yield return new WaitForSeconds(Stats.damageRate);
-            }
-
-        EndAutoAttack:
-            inAutoAttack = false;
-        }
     }
 }

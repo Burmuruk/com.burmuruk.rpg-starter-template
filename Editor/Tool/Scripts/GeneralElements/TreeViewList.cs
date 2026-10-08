@@ -25,13 +25,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         protected void ChangeAmount(KeyUpEvent evt)
         {
-            if (evt.keyCode != KeyCode.Return && evt.keyCode != KeyCode.KeypadEnter) return;
+            if (evt.keyCode != KeyCode.Return && evt.keyCode != KeyCode.KeypadEnter)
+                return;
 
             int amount = ((int)TxtCount.value) - _enabledElements.Count;
 
             if (amount == 0)
             {
-                Clear();
+                return;
             }
             else if (amount > 0)
             {
@@ -84,24 +85,20 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public virtual void Remove()
         {
-            if (_enabledElements.Count <= 0) return;
+            if (_enabledElements.Count <= 0)
+                return;
 
-            _disabledElements.AddLast(_enabledElements.Last.Value);
-            _elementsContainer.Remove(_enabledElements.Last.Value.Container);
-            _enabledElements.RemoveLast();
-
-            OnElementRemoved?.Invoke(_disabledElements.Last.Value);
-            _disabledElements.Last.Value.Clear();
-            TxtCount.value = (uint)_enabledElements.Count;
-            _disabledElements.Last.Value.Clear();
+            Remove(_enabledElements.Last);
         }
 
         public virtual void Remove(LinkedListNode<T> node)
         {
+            if (node == null || node.List != _enabledElements)
+                return;
             _enabledElements.Remove(node);
             _disabledElements.AddLast(node);
             _elementsContainer.Remove(node.Value.Container);
-
+            OnElementRemoved?.Invoke(node.Value);
             node.Value.Clear();
             TxtCount.value = (uint)_enabledElements.Count;
         }
@@ -129,7 +126,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         public override ModificationTypes Check_Changes()
         {
             if (_changes == null)
-                return ModificationTypes.None;
+                return _enabledElements.Count == 0 ? ModificationTypes.None : ModificationTypes.Add;
+            if (_enabledElements.Count != (_changes.Elements?.Count ?? 0))
+                return ModificationTypes.EditData;
 
             var result = ModificationTypes.None;
 
@@ -150,13 +149,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             while (current != null)
             {
-                if (!current.Value.VerifyData(out _))
-                {
-                    var next = current.Next;
-                    Remove(current);
-                    current = next;
-                    continue;
-                }
+                result &= current.Value.VerifyData(out _);
+                //if (!current.Value.VerifyData(out _))
+                //{
+                //    var next = current.Next;
+                //    Remove(current);
+                //    current = next;
+                //    continue;
+                //}
 
                 current = current.Next;
             }
@@ -182,7 +182,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             var data = cd as TreeViewListData;
 
-            if (data == null) return;
+            if (data == null)
+                return;
 
             Clear();
             _changes = data;
@@ -198,7 +199,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             var data = cd as TreeViewListData;
 
-            if (data == null) return;
+            if (data == null)
+                return;
 
             DisableAllElements();
 

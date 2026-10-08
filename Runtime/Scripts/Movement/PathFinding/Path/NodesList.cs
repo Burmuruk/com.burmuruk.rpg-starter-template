@@ -1,11 +1,10 @@
-﻿using Burmuruk.AI.PathFinding;
+using Burmuruk.AI.PathFinding;
 using Burmuruk.Collections;
 using Burmuruk.RPGStarterTemplate.Movement.PathFindig;
 using Burmuruk.WorldG.Patrol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace Burmuruk.AI

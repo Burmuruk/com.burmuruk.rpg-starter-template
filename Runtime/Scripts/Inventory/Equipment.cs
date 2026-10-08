@@ -10,13 +10,13 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
     {
         [SerializeField] GameObject body;
         [SerializeField] SpawnPointData[] spawnPoints;
-        Dictionary<int, (Transform spawnPoint, GameObject item, List<EquipeableItem> equipables)> _parts;
+        Dictionary<int, (Transform spawnPoint, GameObject item, List<EquipableItem> equipables)> _parts;
 
         public event Action<int> OnEquipmentChanged;
 
         public GameObject Body { set => body = value; }
 
-        public EquipeableItem this[int part]
+        public EquipableItem this[int part]
         {
             get
             {
@@ -39,7 +39,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
 
         public void Initilize()
         {
-            _parts = new Dictionary<int, (Transform spawnPoint, GameObject item, List<EquipeableItem> equipeables)>();
+            _parts = new Dictionary<int, (Transform spawnPoint, GameObject item, List<EquipableItem> equipeables)>();
 
             if (spawnPoints != null)
             {
@@ -52,7 +52,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
             _parts[0] = (null, body, null);
         }
 
-        public void Equip(int part, GameObject item, params EquipeableItem[] equipables)
+        public void Equip(int part, GameObject item, params EquipableItem[] equipables)
         {
             if (_parts == null)
                 Initilize();
@@ -88,7 +88,7 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
             return _parts.ContainsKey(part) ? _parts[part].item : null;
         }
 
-        public List<EquipeableItem> GetItems(int part)
+        public List<EquipableItem> GetItems(int part)
         {
             if (_parts == null)
                 Initilize();
@@ -105,6 +105,18 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
             }
 
             return null;
+        }
+
+        public void ClearPart(int part)
+        {
+            if (_parts == null)
+                Initilize();
+
+            if (part == 0)
+                return;
+
+            _parts[part] = (GetSpawnPoint(part), null, new List<EquipableItem>()
+            );
         }
     }
 }

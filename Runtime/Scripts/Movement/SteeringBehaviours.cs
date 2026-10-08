@@ -52,6 +52,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         public static Vector3 Arrival(Movement agent, Vector3 targetPosition, float slowingRadious, float threshold)
         {
             Vector3 newVel = agent.GetComponent<Rigidbody>().velocity;
+            newVel.y = 0;
             float slowingCowficient;
 
             slowingCowficient = Vector3.Distance(agent.transform.position, targetPosition) is var dis && dis > threshold ? dis / slowingRadious : 0;
@@ -95,12 +96,15 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         public static Vector3 calculateSteer(Movement agent, Vector3 desiredVel)
         {
             Rigidbody agentRB = agent.GetComponent<Rigidbody>();
+            Vector3 planarVelocity = agentRB.velocity;
+            planarVelocity.y = 0;
+            desiredVel.y = 0;
             desiredVel.Normalize();
             desiredVel *= agent.getMaxVel();
-            Vector3 steering = desiredVel - agentRB.velocity;
+            Vector3 steering = desiredVel - planarVelocity;
             steering = truncate(steering, agent.getMaxSteerForce());
             steering /= agentRB.mass;
-            steering += agentRB.velocity;
+            steering += planarVelocity;
             steering = truncate(steering, agent.GetSpeed());
             steering.y = 0;
             return steering;

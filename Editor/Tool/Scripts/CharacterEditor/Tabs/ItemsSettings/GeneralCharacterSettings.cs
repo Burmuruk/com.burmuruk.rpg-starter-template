@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.Callbacks;
+using UnityEditor.Compilation;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static Burmuruk.RPGStarterTemplate.Editor.Utilities.UtilitiesUI;
@@ -60,8 +62,29 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             TxtLocation.tooltip = "Root is always Assets/ event if it's not specified.";
             TxtLocation.SetValueWithoutNotify(PlayerPrefs.GetString("CreationPath", DEFAULT_CREATION_PATH));
             BtnRest.clicked += ResetPath;
-            BtnGenerate.clicked += CreatePrefabs;
+            BtnGenerate.clicked += ApplyChanges;
             _creationSaver = new CreationSaver();
+        }
+
+        private void ApplyChanges()
+        {
+            if (!CanCreate())
+                return;
+
+            var registry = SavingSystem.LoadEnumRegistry();
+
+            if (!registry.HasChanges)
+            {
+                CreatePrefabs();
+                return;
+            }
+
+            //Save();
+            registry.waitingForCompilation = true;
+            SavingSystem.SaveEnumRegistry(registry);
+            registry.ApplyEnums();
+            AssetDatabase.Refresh();
+            CompilationPipeline.RequestScriptCompilation();
         }
 
         private void ResetPath()
@@ -102,14 +125,31 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         private void CreatePrefabs()
         {
+            if (!CanCreate())
+                return;
+
+            bool elementCreated = CreationManager.CreateEverything();
+
+            if (elementCreated)
+            {
+                Notify("Elements created", BorderColour.Success);
+            }
+            else
+            {
+                Notify("There were no elements to create", BorderColour.HighlightBorder);
+            }
+        }
+
+        private bool CanCreate()
+        {
             if (string.IsNullOrEmpty(TxtLocation.value))
             {
                 Highlight(TxtLocation, true, BorderColour.Error);
                 Notify("Must enter a location first", BorderColour.Error);
-                return;
+                return false;
             }
             else if (!VerifyPath(TxtLocation.value))
-                return;
+                return false;
 
             Highlight(TxtLocation, false);
 
@@ -117,57 +157,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 (SavingSystem.Data.creations.Count == 1 && SavingSystem.Data.creations.ContainsKey(ElementType.Buff)))
             {
                 Notify("There's no elelemts to create", BorderColour.Error);
-                return;
+                return false;
             }
 
-            ElementType[] types = GetTypesInOrder();
-            bool elementCreated = false;
-
-            foreach (var creationType in types)
-            {
-                foreach (var creation in SavingSystem.Data.creations[creationType])
-                {
-                    switch (creationType)
-                    {
-                        case ElementType.Item:
-                        case ElementType.Armour:
-                            var item = (creation.Value as ItemCreationData).Data;
-                            var args = (creation.Value as ItemCreationData).args;
-                            var inst = CloneFakeScriptable(item);
-                            _creationSaver.SavetItem(inst, args);
-                            elementCreated = true;
-                            break;
-
-                        case ElementType.Weapon:
-                        case ElementType.Consumable:
-                            var buffUserData = creation.Value as BuffUserCreationData;
-                            var (buffUser, cArgs) = (buffUserData.Data, buffUserData.Names);
-
-                            ItemDataConverter.Update_BuffsInfo(buffUser as IBuffUser, cArgs);
-                            InventoryItem newBuff = CloneFakeScriptable(buffUser);
-
-                            _creationSaver.SavetItem(newBuff, cArgs);
-                            elementCreated = true;
-                            break;
-
-                        case ElementType.Character:
-                            _creationSaver.SavePlayer((creation.Value as CharacterCreationData).Data);
-                            elementCreated = true;
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-            }
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            if (elementCreated)
-                Notify("Elements created", BorderColour.Success);
-            else
-                Notify("There were no elements to create", BorderColour.HighlightBorder);
+            return true;
         }
 
         private ElementType[] GetTypesInOrder()

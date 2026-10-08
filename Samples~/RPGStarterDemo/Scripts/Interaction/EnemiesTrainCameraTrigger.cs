@@ -9,7 +9,14 @@ namespace Burmuruk.RPGStarterTemplate.Interaction.Samples
 
         private void Start()
         {
-            chiefEnemy.OnTroopsDeployed += HandleTroopsDeployed;
+            if (chiefEnemy != null) 
+                chiefEnemy.OnTroopsDeployed += HandleTroopsDeployed;
+        }
+
+        private void OnDestroy()
+        {
+            if (chiefEnemy != null) 
+                chiefEnemy.OnTroopsDeployed -= HandleTroopsDeployed;
         }
 
         private void HandleTroopsDeployed()

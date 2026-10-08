@@ -14,9 +14,15 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             scheduler.AddContainer(modificationType, key, container);
         }
 
+        public static void Remove(ModificationTypes modificationType, Type key, IUIListContainer<EnumModificationData> container)
+        {
+            scheduler ??= new();
+            scheduler.RemoveContainer(modificationType, key, container);
+        }
+
         public static void ChangeData(ModificationTypes modificationType, Type key)
         {
-            scheduler.ChangeData(modificationType, key, default);
+            scheduler?.ChangeData(modificationType, key, default);
         }
     }
 
@@ -29,6 +35,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         {
             scheduler ??= new();
             scheduler.AddContainer(modificationType, key, container);
+        }
+
+        public static void Remove(ModificationTypes modificationType, ElementType key, IUIListContainer<BaseCreationInfo> container)
+        {
+            scheduler ??= new();
+            scheduler.RemoveContainer(modificationType, key, container);
         }
 
         public static void ChangeData(ModificationTypes modificationType, ElementType key, string id, BaseCreationInfo data)
@@ -82,6 +94,15 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                     MakeChange(data, mod, key);
                 }
             }
+        }
+
+        public void RemoveContainer(ModificationTypes modificationTypes, T key, IUIListContainer<U> container)
+        {
+            if (!modifiers.ContainsKey(modificationTypes) ||
+                !modifiers[modificationTypes].ContainsKey(key))
+                return;
+
+            modifiers[modificationTypes][key].Remove(container);
         }
 
         private void MakeChange(in U data, ModificationTypes modificationType, T key)

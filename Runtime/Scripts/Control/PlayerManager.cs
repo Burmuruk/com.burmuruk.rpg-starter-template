@@ -23,6 +23,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
         protected PlayerController playerController;
         protected int? m_CurPlayer;
         protected (Formation value, object args) curFormation = default;
+        private bool inCombat;
+        public bool IsInCombat => inCombat;
 
         public event Action OnPlayerChanged;
         public event Action<bool> OnCombatEnter;
@@ -126,7 +128,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
         {
             var item = MainInventory.GetItem(id);
 
-            if (item == null) return;
+            if (item == null)
+                return;
 
             if (item.Type == ItemType.Ability)
             {
@@ -169,23 +172,24 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         private void DestroyPlayers()
         {
-            var players = FindObjectsOfType<AIGuildMember>();
+            var previousPlayers = FindObjectsOfType<AIGuildMember>(true);
 
-            if (players.Length == 0) return;
-
-            foreach (var player in players)
+            foreach (var player in previousPlayers)
             {
+                if (player == null)
+                    continue;
+
                 RemoveMember(player);
+
+                player.GetComponent<JsonSaveableEntity>()
+                    ?.ReleaseIdentifierForDestruction();
+
+                player.gameObject.SetActive(false);
                 Destroy(player.gameObject);
             }
 
-            this.players = new();
-
+            players.Clear();
             m_CurPlayer = null;
-            //foreach (var member in players)
-            //{
-            //    AddMember(member);
-            //}
         }
 
         private void EnableIAInRestOfPlayers(int mainPlayerIdx)
@@ -206,11 +210,28 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         private void EnterToCombatMode(bool shouldEnter)
         {
+            if (!shouldEnter)
+            {
+                shouldEnter = players.Any(player => player != null && player.gameObject.activeInHierarchy &&
+                    player.Health != null && player.Health.IsAlive &&
+                    (player.IsUnderAttack || (player.Target != null && player.Target.gameObject.activeInHierarchy &&
+                      player.Target.TryGetComponent<Health>(out var targetHealth) && targetHealth.IsAlive) ||
+                     (player.enabled && (player.IsTargetClose || player.IsTargetFar))));
+            }
+
+            if (inCombat == shouldEnter) return;
+
+            inCombat = shouldEnter;
             PlayerState state = shouldEnter ? PlayerState.Combat : PlayerState.None;
 
             players.ForEach((player) => { player.PlayerState = state; });
 
             OnCombatEnter?.Invoke(shouldEnter);
+        }
+
+        private void LateUpdate()
+        {
+            EnterToCombatMode(false);
         }
 
         public void AddMember(AIGuildMember member)
@@ -261,7 +282,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         public JToken CaptureAsJToken(out SavingExecution execution)
         {
-            execution = SavingExecution.Organization;
+            execution = SavingExecution.Instances;
             JObject state = new JObject();
 
             state["Players"] = CapturePlayers();
@@ -279,7 +300,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         private JToken CapturePlayers()
         {
-            if (players.Count == 0) return null;
+            if (players.Count == 0)
+                return null;
 
             JObject playersState = new JObject();
             var leaderIdentifier = players[0].Leader.GetComponent<JsonSaveableEntity>().GetUniqueIdentifier();
@@ -317,8 +339,6 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
                 if ((state[i.ToString()] as JObject).ContainsKey("Leader"))
                     leaderIdx = i;
-
-                OnPlayerAdded?.Invoke(newPlayer);
             }
 
             //for (int i = 0; i < players.Count; i++)
@@ -333,7 +353,9 @@ namespace Burmuruk.RPGStarterTemplate.Control
             foreach (var member in members)
                 AddMember(member);
 
-            DontDestroyOnLoad(players[0].gameObject.transform.parent);
+            Debug.Log(
+    $"RestorePlayers: creados={members.Length}, " +
+    $"registrados={players.Count}, líder={leaderIdx}");
 
             curFormation = ((Formation)state["Formation"].ToObject<int>(), null);
             SetPlayerControl(leaderIdx);
@@ -341,7 +363,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         private JToken CaptureInventory()
         {
-            if (Players.Count == 0) return null;
+            if (Players.Count == 0)
+                return null;
 
             JObject state = new JObject();
             int i = 0;
@@ -350,7 +373,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
             {
                 var items = MainInventory.GetList(type);
 
-                if (items == null) continue;
+                if (items == null)
+                    continue;
 
 
                 for (int j = 0; j < items.Count; j++)
@@ -361,9 +385,10 @@ namespace Burmuruk.RPGStarterTemplate.Control
                     itemState["Count"] = MainInventory.GetItemCount(items[j].ID);
 
                     JObject equipmentState = new JObject();
+
                     for (int k = 0; k < Players.Count; k++)
                     {
-                        if (items[j] is EquipeableItem equipeable && equipeable.Characters.Contains(Players[k]))
+                        if (items[j] is EquipableItem equipeable && equipeable.Characters.Contains(Players[k]))
                         {
                             equipmentState[k.ToString()] = 1;
                         }
@@ -379,9 +404,11 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         private void RestoreInventory(JToken jToken)
         {
-            if (Players.Count == 0) return;
+            if (Players.Count == 0)
+                return;
 
-            if (!(jToken is JObject state && state != null)) return;
+            if (!(jToken is JObject state && state != null))
+                return;
 
             int i = 0;
 

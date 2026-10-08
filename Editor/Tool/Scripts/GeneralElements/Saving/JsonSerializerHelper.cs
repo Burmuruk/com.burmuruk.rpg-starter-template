@@ -20,7 +20,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Saving.Json
             ContractResolver = new UnitySerializeFieldResolver(),
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
-            Converters = { new StringEnumConverter(), new UnityObjectConverter<GameObject>() }
+            Converters =
+            {
+                new StringEnumConverter(), 
+                new UnityObjectConverter<GameObject>(),
+                new EnumEntryConverter(),
+            }
         });
         public static JsonSerializer Serializer => serializer;
 

@@ -68,7 +68,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                 NotificationType.Creation,
                 new NotificationData(ntf, ntfLbl));
 
-            SavingSystem.Initialize();
+            SavingSystem.ForceInit();
             //Load_CreatedAssets();
             CreateTagsContainer();
             GetInfoContainers();
@@ -167,7 +167,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         {
             if (CreationControls[obj] is BaseInfoTracker tracker && tracker != null)
             {
-                if (string.IsNullOrEmpty(tracker.Id)) return;
+                if (string.IsNullOrEmpty(tracker.Id))
+                    return;
 
                 tracker.Force_CreationState(CreationsState.Creating);
 
@@ -244,6 +245,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                 ++tagIdx;
             }
             int i = 0;
+            EnumRegistry enumRegistry = SavingSystem.LoadEnumRegistry();
 
             btnsRight_Tag.ForEach(b =>
             {
@@ -254,7 +256,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
                 if (i < max)
                 {
-                    b.element.text = b.type.ToString();
+                    b.element.text = enumRegistry.GetName<ElementType>((int)b.type) ?? "None";
                     int j = b.idx;
 
                     b.element.clicked += () => OnClicked_TagComponents(j, b.type);
@@ -268,9 +270,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         private void DisplayElementPanel(int idx)
         {
-            ElementCreationPinnable element = searchBar[idx];
+            SearchListElement element = searchBar[idx];
             var type = (ElementType)element.Type;
-            var id = element.Id;
 
             (CreationControls[type] as BaseInfoTracker).Set_CreationState(CreationsState.Editing);
             Load_CreationData(element, type);
@@ -280,7 +281,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             int tagIdx = 0;
             foreach (var tag in btnsRight_Tag)
             {
-                if (tag.Text == type.ToString())
+                if ((int)tag.type == element.Type)
                 {
                     Highlight(tag.element, true);
                     currentSettingTag = (type, tagIdx);
@@ -367,7 +368,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                     ChangeTab(INFO_ARMOUR_SETTINGS_NAME);
                     break;
 
-                default: return;
+                default:
+                    return;
             }
 
             EnableContainer(infoSetup, true);

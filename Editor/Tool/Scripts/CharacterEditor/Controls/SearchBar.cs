@@ -14,6 +14,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         ElementType currentFilter = ElementType.None;
         List<TagData> tagButtons = new();
         bool _showCustomColour, _showElementColour;
+        readonly EnumRegistry _registry;
 
         public event Action<ElementType> OnElementDeleted;
 
@@ -39,8 +40,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         public TextField txtSearch_Left { get; private set; }
         public Button BtnClearSearch { get; private set; }
         public VisualElement InfoPanel { get; private set; }
-        public ComponentsList<ElementCreationPinnable> Creations { get; private set; }
-        public ElementCreationPinnable this[int idx]
+        public ComponentsList<SearchListElement> Creations { get; private set; }
+        public SearchListElement this[int idx]
         {
             get => Creations[idx];
             set => Creations[idx] = value;
@@ -61,6 +62,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         public SearchBar(VisualElement container, int initialAmount, bool addFilters)
         {
             _container = container;
+            _registry = SavingSystem.LoadEnumRegistry();
             Creations = new(container);
 
             BtnClearSearch = container.Q<Button>("btnClearSearch");
@@ -68,7 +70,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             txtSearch_Left = container.Q<TextField>("txtSearch");
             Create_Elements(initialAmount);
 
-            if (addFilters) Create_TagButtons();
+            if (addFilters)
+                Create_TagButtons();
 
             BtnClearSearch.clicked += SearchAllElements;
             txtSearch_Left.RegisterCallback<KeyDownEvent>(KeyDown_SearchBar);
@@ -78,7 +81,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         private void Create_Elements(int amount)
         {
-            Creations.OnElementCreated += (ElementCreationPinnable element) =>
+            Creations.OnElementCreated += (SearchListElement element) =>
             {
                 element.RemoveButton.clicked += () =>
                 {
@@ -99,7 +102,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             var type = (ElementType)Creations[elementIdx].Type;
             string id = Creations[elementIdx].Id;
 
-            if (!SavingSystem.Remove(type, id)) return;
+            if (!SavingSystem.Remove(type, id))
+                return;
 
             OnElementDeleted?.Invoke(type);
             Notify("Element deleted.", BorderColour.Success);
@@ -118,7 +122,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 if (idx < SavingSystem.Data.defaultElements.Count)
                 {
                     ElementType element = SavingSystem.Data.defaultElements[idx];
-                    btnTag.text = element.ToString();
+                    btnTag.text = _registry.GetName<ElementType>((int)element) ?? "None";
                     int i = idx;
                     newButton.element.clicked += () => OnClicked_FilterTag(i, element);
                     EnableContainer(btnTag, true);
@@ -134,7 +138,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             foreach (var element in Creations.Components)
             {
-                if (element.pinned) continue;
+                if (element.pinned)
+                    continue;
 
                 if (element.element.ClassListContains("Disable"))
                     return;
@@ -221,7 +226,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             for (int i = 0; i < Creations.Components.Count; i++)
             {
-                if (IsDisabled(Creations[i].element)) break;
+                if (IsDisabled(Creations[i].element))
+                    break;
 
                 if (Creations.Components[i].Id == newValue.Id)
                 {
@@ -229,13 +235,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                     return;
                 }
             }
-        } 
+        }
         #endregion
 
         #region events
         private void KeyDown_SearchBar(KeyDownEvent evt)
         {
-            if (evt.keyCode != KeyCode.Return) return;
+            if (evt.keyCode != KeyCode.Return)
+                return;
 
             string text = txtSearch_Left.value.Trim();
 
@@ -277,27 +284,28 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         #region Search
         private void SearchElementTag(string text, ElementType searchType)
         {
-            if (string.IsNullOrEmpty(text)) return;
+            if (string.IsNullOrEmpty(text))
+                return;
 
-            if (currentFilter != ElementType.None) searchType = currentFilter;
+            if (currentFilter != ElementType.None)
+                searchType = currentFilter;
 
             List<(ElementType, List<string>)> idsFound = null;
 
             if (searchType == ElementType.None)
             {
-                int count = Enum.GetValues(typeof(ElementType)).Length;
-
-                for (int i = 0; i < count; i++)
+                foreach (var entry in _registry.GetEntries<ElementType>())
                 {
-                    if (!SavingSystem.Data.creations.ContainsKey((ElementType)i))
+                    var type = (ElementType)entry.Id;
+                    if (entry.Id == EnumRegistry.NoneId || !SavingSystem.Data.creations.ContainsKey(type))
                         continue;
 
-                    if (FindValues(text, (ElementType)i, out List<string> found))
+                    if (FindValues(text, type, out List<string> found))
                     {
                         Debug.Log("Found without filter");
                         idsFound ??= new();
 
-                        idsFound.Add(((ElementType)i, found));
+                        idsFound.Add((type, found));
                     }
                 }
             }
@@ -324,7 +332,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             bool FindValues(string text, ElementType type, out List<string> valuesIds)
             {
                 valuesIds = (from c in SavingSystem.Data.creations[type]
-                             where c.Value.Id.ToLower().Contains(text.ToLower())
+                             where c.Value != null &&
+                                   c.Value.Id != null &&
+                                   c.Value.Id.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0
                              select c.Key).ToList();
 
                 return valuesIds.Count > 0;
@@ -380,9 +390,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             bool enabled = false;
 
-            if (elements == null || elements.Count == 0) return false;
+            if (elements == null || elements.Count == 0)
+                return false;
 
-            var pinned = new List<ElementCreationPinnable>();
+            var pinned = new List<SearchListElement>();
             int idx = 0;
             while (idx < Creations.Components.Count && Creations[idx].pinned)
                 pinned.Add(Creations[idx++]);
@@ -427,7 +438,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             for (int i = elementIdx; i < Creations.Components.Count; i++)
             {
                 Creations[i].NameButton.text = "";
-                EnableContainer(Creations[i].element, false); 
+                EnableContainer(Creations[i].element, false);
             }
 
             return enabled;
@@ -460,8 +471,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             int insertAt = 0;
             for (int i = 0; i < Creations.Components.Count; i++)
             {
-                if (IsDisabled(Creations[i].element)) break;
-                if (Creations[i].pinned) 
+                if (IsDisabled(Creations[i].element))
+                    break;
+                if (Creations[i].pinned)
                     insertAt = i + 1;
                 else if (i == 0)
                 {
@@ -496,8 +508,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             int insertAt = 0;
             for (int i = 0; i < Creations.Components.Count; i++)
             {
-                if (IsDisabled(Creations[i].element)) break;
-                if (Creations[i].pinned) insertAt = i;
+                if (IsDisabled(Creations[i].element))
+                    break;
+                if (Creations[i].pinned)
+                    insertAt = i;
             }
 
             var element = Creations[idx];
@@ -527,7 +541,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             var height = element.resolvedStyle.height + element.resolvedStyle.marginTop + element.resolvedStyle.marginBottom;
             float offset = (toIndex - fromIndex) * height;
 
-            if (offset == 0) return;
+            if (offset == 0)
+                return;
 
             element.transform.position = new Vector3(0, 0, 0);
             element.transform.position = new Vector3(0, -offset, 0);
@@ -536,5 +551,35 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 .Start();
         }
         #endregion
+    }
+
+    public class SearchListElement : ListElementUI<ElementType>
+    {
+        readonly ElementCreationPinnable<ElementType> _pinnable;
+
+        public bool pinned
+        {
+            get => _pinnable.pinned;
+            set => _pinnable.pinned = value;
+        }
+
+        public Button Pin => _pinnable.Pin;
+
+        public SearchListElement() : this(new ElementCreationPinnable<ElementType>())
+        {
+        }
+
+        SearchListElement(ElementCreationPinnable<ElementType> pinnable) : base(pinnable)
+        {
+            _pinnable = pinnable;
+        }
+
+        public void SetInfo(bool pinned, ElementType type, string id, string name)
+        {
+            this.pinned = pinned;
+            SetType((int)type);
+            Id = id;
+            NameButton.text = name;
+        }
     }
 }

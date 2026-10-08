@@ -1,5 +1,3 @@
-using Burmuruk.RPGStarterTemplate.Saving;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,25 +5,34 @@ using UnityEngine.SceneManagement;
 
 public class PersistentObjSpawner : MonoBehaviour
 {
+    private static readonly Dictionary<GameObject, GameObject> spawnedObjects = new();
     [SerializeField] List<GameObject> persistentObjectsPref;
     [SerializeField] private string _id = "";
-    //static Dictionary<string, object> neverDelete = new();
-
 
     public void TrySpawnObjects()
     {
-        //if (neverDelete.ContainsKey(_id) && (bool)neverDelete[_id] == true) return;
-
         SpawnObjects();
-
-        //neverDelete[_id] = true;
     }
 
     private void SpawnObjects()
     {
-        foreach (var obj in persistentObjectsPref)
+        foreach (GameObject obj in persistentObjectsPref)
         {
-            var newObj = Instantiate(obj);
+            if (obj == null)
+                continue;
+
+            if (spawnedObjects.TryGetValue(obj, out GameObject existing) && existing != null)
+                continue;
+
+            if (obj.GetComponentInChildren<Burmuruk.RPGStarterTemplate.Control.GameManager>(true) != null &&
+                Burmuruk.RPGStarterTemplate.Control.GameManager.Instance != null)
+            {
+                spawnedObjects[obj] = Burmuruk.RPGStarterTemplate.Control.GameManager.Instance.transform.root.gameObject;
+                continue;
+            }
+
+            GameObject newObj = Instantiate(obj);
+            spawnedObjects[obj] = newObj;
             DontDestroyOnLoad(newObj);
         }
     }
@@ -58,7 +65,7 @@ public static class PersistentObjects
 
     public static void ClearAll()
     {
-        foreach (var go in objects)
+        foreach (GameObject go in objects)
         {
             if (go != null)
                 UnityEngine.Object.Destroy(go);

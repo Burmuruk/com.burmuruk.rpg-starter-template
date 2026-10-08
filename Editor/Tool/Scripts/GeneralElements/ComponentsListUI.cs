@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 {
-    public class ComponentsListUI<T> : ComponentsList<T> where T : ElementCreationUI, IClearable, new()
+    public class ComponentsListUI<T> : ComponentsList<T> where T : ListElementUI, IClearable, new()
     {
         public DropdownField DDFType { get; private set; }
         public DropdownField DDFElement { get; private set; }

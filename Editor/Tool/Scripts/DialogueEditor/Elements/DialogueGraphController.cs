@@ -1,4 +1,4 @@
-﻿using Burmuruk.RPGStarterTemplate.Saving;
+using Burmuruk.RPGStarterTemplate.Saving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +21,36 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         private const string CF_NODE_COLOUR_NAME = "NodeColour";
         private RPGStarterTemplate.Dialogue.DialogueBlock _result;
         [SerializeField] private List<string> _pins = new();
+        private readonly Dictionary<string, PinNode> _pinNodes = new();
         [SerializeField] private BaseNode _selectedNode;
         [SerializeField] public List<CharacterData> characters = new();
         private string _path;
+        [SerializeField] private DialogueGraphController _sourceAsset;
+        [SerializeField] private List<BaseNode> _editingNodes = new();
+
+        public static DialogueGraphController CreateWorkingCopy(DialogueGraphController source)
+        {
+            var copy = Instantiate(source);
+            copy.name = source.name;
+            copy._sourceAsset = source;
+            copy._selectedNode = null;
+            copy._editingNodes = AssetDatabase.LoadAllAssetRepresentationsAtPath(AssetDatabase.GetAssetPath(source))
+                .OfType<BaseNode>().Select(node =>
+                {
+                    var clone = Instantiate(node);
+                    clone.name = node.name;
+                    clone.RestoreIdentity(node.name);
+                    return clone;
+                }).ToList();
+            return copy;
+        }
+
+        public void CaptureSession()
+        {
+            foreach (var node in nodes.Values)
+                node.Save();
+            _editingNodes = nodes.Values.ToList();
+        }
 
         public string dialogueGUID;
         public Dictionary<string, BaseNode> nodes = new();
@@ -84,6 +111,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         public void Initialize()
         {
+            ClearPinViews();
             //_graphData = controller;
             Container = new VisualElement()
             {
@@ -112,23 +140,25 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             nodes = new();
 
-            var values = AssetDatabase.LoadAllAssetRepresentationsAtPath(
-                    AssetDatabase.GetAssetPath(this));
-            return values.ToDictionary(i => i.name, n => (BaseNode)n);
+            return _editingNodes.Where(node => node != null).ToDictionary(node => node.name);
         }
 
         public void AddNode(BaseNode node)
         {
             nodes.Add(node.Id, node);
+
+            if (!_editingNodes.Contains(node))
+                _editingNodes.Add(node);
+
+            node.OnChanged += () => OnChange?.Invoke();
             node.Set_DefaultStatusButton();
             node.OnStartPointCreated += OnStartNodeChanged;
             node.OnExecutionChanged += Node_OnExecutionChanged;
             node.OnExecutionChanged += (n, v) =>
             {
-                if (!v) Notify?.Invoke("Unrachable node detected.");
+                if (!v) Notify?.Invoke("Unreachable node detected");
             };
             node.OnSelected += SetTargetNode;
-            node.OnDeselected += SetTargetNode;
 
             OnChange?.Invoke();
         }
@@ -137,12 +167,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             foreach (var id in node.Children)
             {
-                var cur = nodes[id];
+                if (!nodes.TryGetValue(id, out var cur)) continue;
                 bool state = cur.IsExecutable;
                 BaseNode.UpdateExecution(cur, false);
 
-                if (state != value)
-                    Node_OnExecutionChanged(cur, value);
+                if (state != cur.IsExecutable)
+                    Node_OnExecutionChanged(cur, cur.IsExecutable);
             }
         }
 
@@ -160,23 +190,25 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             if (nodes.ContainsKey(node.Parent.Id))
             {
+                RemovePin(node.Parent);
                 var ids = new List<string>(node.Parent.Children);
 
-                node.parent.schedule.Execute(() =>
+                RemoveCharacterData(node.Parent);
+                nodes.Remove(node.Parent.Id);
+                _editingNodes.Remove(node.Parent);
+
+                foreach (var remaining in nodes.Values)
+                    remaining.RemoveChild(node.Parent.Id);
+
+                foreach (var id in ids)
                 {
-                    RemoveCharacterData(node.Parent);
-                    nodes.Remove(node.Parent.Id);
-
-                    foreach (var id in ids)
+                    if (nodes.ContainsKey(id) && VeryfyExecution(nodes[id], out var change))
                     {
-                        if (nodes.ContainsKey(id) && VeryfyExecution(nodes[id], out var change))
-                        {
-                            nodes[id].IsExecutable = change;
-                        }
+                        nodes[id].IsExecutable = change;
                     }
+                }
 
-                    OnChange?.Invoke();
-                }).ExecuteLater(100);
+                OnChange?.Invoke();
             }
         }
 
@@ -260,7 +292,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 {
                     if (character.id == node.characterID)
                     {
-                        node.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor = character.Color;
+                        node.GraphViewNode.BaseColour = character.Color;
                         node.GraphViewNode.title = character.name;
                         break;
                     }
@@ -270,6 +302,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void OnChanged_TxtDialogueName(ChangeEvent<string> evt)
         {
+            if (_selectedNode == null) return;
+
             _selectedNode.dialogueName = evt.newValue;
             OnChange?.Invoke();
         }
@@ -278,7 +312,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             if (_selectedNode == null) return;
 
-            if (characters.Any(c => c.name.Equals(evt.newValue, StringComparison.OrdinalIgnoreCase)))
+            if (characters.Any(c => c.id != _selectedNode.characterID &&
+                string.Equals(c.name, evt.newValue, StringComparison.OrdinalIgnoreCase)))
             {
                 TxtCharacterName.SetValueWithoutNotify(evt.previousValue);
                 return;
@@ -326,11 +361,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             {
                 if (node.characterID == _selectedNode.characterID)
                 {
-                    node.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor = evt.newValue;
+                    node.GraphViewNode.BaseColour = evt.newValue;
                 }
             }
 
-            _selectedNode.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor = evt.newValue;
+            _selectedNode.GraphViewNode.BaseColour = evt.newValue;
             SaveCharacterData(TxtCharacterName.value, _selectedNode.characterID, CFNodeColour.value);
             OnChange?.Invoke();
         }
@@ -340,7 +375,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             _selectedNode = node;
             TxtId.SetValueWithoutNotify(node.characterID);
             TxtCharacterName.SetValueWithoutNotify(node.Title);
-            CFNodeColour.SetValueWithoutNotify(node.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor.value);
+            CFNodeColour.SetValueWithoutNotify(node.GraphViewNode.BaseColour);
 
             var conversants = SceneAsset.FindObjectsByType<RPGStarterTemplate.Dialogue.AIConversant>(FindObjectsSortMode.None);
             bool found = false;
@@ -361,6 +396,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void VerifyCharacterSelection(ChangeEvent<UnityEngine.Object> evt)
         {
+            if (_selectedNode == null) return;
+
             if (evt.newValue is not RPGStarterTemplate.Dialogue.AIConversant conversant)
             {
                 TxtId.value = null;
@@ -374,7 +411,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 var id = saveableEntity.GetUniqueIdentifier();
                 SetPreviousSettings(id);
 
-                var data = characters.Where(c => c.id == _selectedNode.Id);
+                var data = characters.Where(c => c.id == id);
                 CharacterData cur = default;
 
                 if (data.Count() > 0)
@@ -388,6 +425,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 }
 
                 UpdateSettingsValues(cur);
+                _selectedNode.characterID = cur.id;
+                _selectedNode.Title = cur.name;
+                _selectedNode.GraphViewNode.BaseColour = cur.Color;
                 OnChange?.Invoke();
             }
             else
@@ -433,8 +473,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             {
                 if (node.characterID == newId)
                 {
-                    _selectedNode.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor =
-                        node.GraphViewNode.Q<VisualElement>("node-border").style.backgroundColor;
+                    _selectedNode.GraphViewNode.BaseColour = node.GraphViewNode.BaseColour;
                     break;
                 }
             }
@@ -449,6 +488,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             instance.style.top = 4;
 
             PinsContainer = instance.Q<VisualElement>(PINS_TAB_NAME);
+            PinsContainer.Clear();
         }
 
         private void CreateSaveButton()
@@ -510,10 +550,17 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         #region Pins
         public void AddPin(BaseNode node)
         {
-            if (_pins.Contains(node.Id))
-                return;
+            node.SetPinned(true);
 
-            _pins.Add(node.Id);
+            if (!_pins.Contains(node.Id))
+                _pins.Add(node.Id);
+
+            if (!_pinNodes.ContainsKey(node.Id))
+            {
+                var pin = new PinNode();
+                pin.Initialize(PinsContainer, node, () => OnChange?.Invoke());
+                _pinNodes.Add(node.Id, pin);
+            }
 
             if (_pins.Count >= 1)
             {
@@ -527,12 +574,38 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             _pins.Remove(node.Id);
 
+            if (_pinNodes.TryGetValue(node.Id, out var pin))
+            {
+                pin.Dispose();
+                _pinNodes.Remove(node.Id);
+            }
+            node.SetPinned(false);
+
             if (_pins.Count == 0)
             {
                 EnableContainer(PinsContainer, false);
             }
 
             OnChange?.Invoke();
+        }
+
+        public void RestorePins()
+        {
+            _pins.RemoveAll(id => !nodes.ContainsKey(id));
+
+            foreach (var node in nodes.Values)
+            {
+                if (node.IsPinned || _pins.Contains(node.Id))
+                    AddPin(node);
+            }
+        }
+
+        public void ClearPinViews()
+        {
+            foreach (var pin in _pinNodes.Values)
+                pin.Dispose();
+
+            _pinNodes.Clear();
         }
         #endregion
 
@@ -662,16 +735,20 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void SaveGraphData()
         {
-            if (AssetDatabase.GetAssetPath(this) == "")
+            if (_sourceAsset == null)
                 GenerateGraphAsset();
+            if (_sourceAsset == null) return;
 
-            foreach (var node in nodes.Values)
-            {
-                node.Save();
-            }
+            CaptureSession();
+            var assetName = _sourceAsset.name;
+            EditorUtility.CopySerialized(this, _sourceAsset);
+            _sourceAsset.name = assetName;
+            _sourceAsset._sourceAsset = null;
+            _sourceAsset._editingNodes = new();
+            _sourceAsset._selectedNode = null;
             AttachNodes();
-            EditorUtility.SetDirty(this);
-            AssetDatabase.SaveAssets();
+            EditorUtility.SetDirty(_sourceAsset);
+            AssetDatabase.SaveAssetIfDirty(_sourceAsset);
             OnSave?.Invoke();
             //string path = Path.Combine("Assets", "Test_DialogueGraphController.asset");
             //AssetDatabase.CreateAsset(this, path);
@@ -692,32 +769,35 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             string relativePath = GetRelativePath(path);
             if (!string.IsNullOrEmpty(relativePath))
             {
-                AssetDatabase.CreateAsset(this, relativePath);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-
-                Result = AssetDatabase.LoadAssetAtPath<RPGStarterTemplate.Dialogue.DialogueBlock>(relativePath);
+                _sourceAsset = CreateInstance<DialogueGraphController>();
+                AssetDatabase.CreateAsset(_sourceAsset, relativePath);
             }
         }
 
         public void AttachNodes()
         {
-            if (AssetDatabase.GetAssetPath(this) == "") return;
+            if (_sourceAsset == null) return;
 
             var currentNodes = AssetDatabase.LoadAllAssetRepresentationsAtPath(
-                    AssetDatabase.GetAssetPath(this))
-                    .Where(n => !nodes.ContainsKey(n.name))
-                    .Select(n => (BaseNode)n).ToList();
+                    AssetDatabase.GetAssetPath(_sourceAsset)).OfType<BaseNode>().ToList();
 
-            foreach (var node in currentNodes)
+            foreach (var node in currentNodes.Where(node => !nodes.ContainsKey(node.name)))
                 AssetDatabase.RemoveObjectFromAsset(node);
 
             foreach (var node in nodes)
             {
-                if (AssetDatabase.GetAssetPath(node.Value) == "")
+                var savedNode = currentNodes.FirstOrDefault(saved => saved.name == node.Key);
+
+                if (savedNode == null)
                 {
-                    AssetDatabase.AddObjectToAsset(node.Value, this);
+                    savedNode = Instantiate(node.Value);
+                    savedNode.name = node.Key;
+                    AssetDatabase.AddObjectToAsset(savedNode, _sourceAsset);
                 }
+                else
+                    EditorUtility.CopySerialized(node.Value, savedNode);
+
+                EditorUtility.SetDirty(savedNode);
             }
         }
         #endregion

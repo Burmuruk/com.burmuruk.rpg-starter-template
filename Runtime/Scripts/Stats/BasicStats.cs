@@ -1,6 +1,5 @@
 using Burmuruk.RPGStarterTemplate.Inventory;
 using System;
-using UnityEditor;
 using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Stats
@@ -13,6 +12,7 @@ namespace Burmuruk.RPGStarterTemplate.Stats
         [Space(), Header("Basic stats")]
         [Utilities.DisallowNegative]
         [SerializeField] public float speed;
+        [SerializeField] public UnityEngine.Vector2 testDir;
         [Utilities.DisallowNegative]
         [SerializeField] public int damage;
         [Utilities.DisallowNegative]
@@ -28,7 +28,7 @@ namespace Burmuruk.RPGStarterTemplate.Stats
         [Utilities.DisallowNegative]
         [SerializeField] public float minDistance;
 
-[Serializable]
+        [Serializable]
         public struct Slot
         {
             public ItemType type;

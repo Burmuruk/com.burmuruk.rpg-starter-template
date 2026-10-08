@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Burmuruk.RPGStarterTemplate.Combat
 {
     [CreateAssetMenu(fileName = "Stats", menuName = "ScriptableObjects/WeaponMod", order = 3)]
-    public class Modification : EquipeableItem
+    public class Modification : EquipableItem
     {
         [Header("Equipment")]
         [SerializeField] EquipmentType equipmentPlace;

@@ -6,7 +6,7 @@ using Character = Burmuruk.RPGStarterTemplate.Control.Character;
 namespace Burmuruk.RPGStarterTemplate.Stats
 {
     [CreateAssetMenu(fileName = "Stats", menuName = "ScriptableObjects/Consumable", order = 3)]
-    public class ConsumableItem : EquipeableItem, IUsable, IBuffUser
+    public class ConsumableItem : EquipableItem, IUsable, IBuffUser
     {
         [Space(), Header("Attributes")]
         [SerializeField] BuffData[] _buffs;

@@ -51,7 +51,7 @@ namespace Burmuruk.RPGStarterTemplate.Interaction
 
         public JToken CaptureAsJToken(out SavingExecution execution)
         {
-            execution = SavingExecution.General;
+            execution = SavingExecution.References;
 
             if (!isPersistent) return null;
 

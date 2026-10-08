@@ -1,7 +1,5 @@
-using Burmuruk.RPGStarterTemplate.Editor.Controls;
 using Burmuruk.RPGStarterTemplate.Editor.Saving;
 using Burmuruk.RPGStarterTemplate.Editor.Utilities;
-using Newtonsoft.Json.Linq;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -16,7 +14,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             UtilitiesUI.DisableNotification(NotificationType.Creation);
             try
             {
-                var type = currentSettingTag.type;
+                ElementType type = currentSettingTag.type;
                 return CreationControls[type].Save();
             }
             catch (InvalidDataExeption e)
@@ -25,7 +23,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             }
         }
 
-        private void Load_CreationData(ElementCreationPinnable element, ElementType type)
+        private void Load_CreationData(ListElementUI<ElementType> element, ElementType type)
         {
             UtilitiesUI.DisableNotification(NotificationType.Creation);
             ChangeTab(type switch
@@ -45,40 +43,31 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         {
             var data = new CreationTabUIData(curTab)
             {
-                //scrollPosition = scrollView.scrollOffset
                 scrollPos = infoRight.Q<ScrollView>("infoContainer").scrollOffset.y,
+
                 elements = infoContainers.Select(x => new TabUIData()
                 {
                     type = x.Value.type,
-                    data = CreationControls[x.Value.type].GetInfo()
+
+                    data =
+                            CreationControls[
+                                x.Value.type]
+                            .GetInfo()
                 }).ToList()
             };
 
-            JObject json = new ();
-
-            if (JsonWritter.ReadJson(out json))
-            {
-                json["unsavedChanges"] = data.GetJson();
-            }
-            else
-            {
-                json = new JObject
-                {
-                    ["unsavedChanges"] = data.GetJson(),
-                };
-            }
-
-            JsonWritter.WriteJson(json);
+            SavingSystem.SaveUnsavedChanges(data);
         }
 
         private void Load_UnsavedChanges()
         {
-            if (!JsonWritter.ReadJson(out var json)) return;
+            CreationTabUIData data =
+            SavingSystem.LoadUnsavedChanges();
 
-            CreationTabUIData data = new(null);
-            data.RestoreFromJson((JObject)json["unsavedChanges"]);
+            if (data == null)
+                return;
 
-            foreach (var tabData in data.elements)
+            foreach (TabUIData tabData in data.elements)
             {
                 CreationControls[tabData.type].UpdateInfo(tabData.data);
 
@@ -98,12 +87,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                 }
                 else
                 {
-                    var tabType = infoContainers[data.Id].type;
+                    ElementType tabType = infoContainers[data.Id].type;
 
                     ChangeTab(data.Id);
                     UtilitiesUI.EnableContainer(infoSetup, true);
 
-                    foreach (var tag in btnsRight_Tag)
+                    foreach (TagData tag in btnsRight_Tag)
                     {
                         if (tag.type == tabType)
                         {
@@ -122,13 +111,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             }).ExecuteLater(100);
             searchBar.CurrentFilter = data.searchFilter;
 
-            json["unsavedChanges"] = null;
-            JsonWritter.WriteJson(json);
+            SavingSystem.ClearUnsavedChanges();
         }
 
         private void Load_CreatedAssets()
         {
-            var assets = AssetDatabase.LoadAllAssetsAtPath("Assets/RPG-Results");
+            Object[] assets = AssetDatabase.LoadAllAssetsAtPath("Assets/RPG-Results");
             bool noAssets = true;
 
             //foreach (var asset in assets)

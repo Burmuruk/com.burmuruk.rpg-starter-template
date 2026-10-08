@@ -12,51 +12,51 @@ namespace Burmuruk.RPGStarterTemplate.Saving
     public class JsonSavingSystem : MonoBehaviour
     {
         private const string extension = ".json";
+        private const int CurrentFormatVersion = 2;
+        private const string FormatKey = "SaveFormatVersion";
+        private const string StagesKey = "Stages";
+
+        [SerializeField, Tooltip("Reload the saved scene before restoring state.")]
+        private bool reloadScene = true;
+        private bool loading;
 
         public event Action onSlotLoaded;
         public event Action<int> OnLoadingStateFinished;
 
         public IEnumerator LoadLastScene(JObject state, int slot, Action<JObject> callback)
         {
-            JObject slotState = new JObject();
-            int curScene = SceneManager.GetActiveScene().buildIndex;
-            int nextScene = 2;
-
-            if (state.ContainsKey(slot.ToString()) &&
-                state[slot.ToString()] is JObject obj &&
-                obj != null &&
-                obj.ContainsKey("SlotData"))
-            {
-                slotState = (JObject)state[slot.ToString()];
-                nextScene = (int)slotState["SlotData"][SlotData.BuildIndexKey];
-            }
-            else
-            {
+            if (loading)
+                throw new InvalidOperationException("A save is already being restored.");
+            if (!(state?[slot.ToString()] is JObject slotState) ||
+                !(slotState["SlotData"] is JObject slotData))
                 yield break;
+
+            ValidateFormat(slotState);
+            int nextScene = slotData[SlotData.BuildIndexKey]?.Value<int>()
+                ?? throw new InvalidDataException("The slot has no scene build index.");
+            loading = true;
+            try
+            {
+                if (reloadScene || SceneManager.GetActiveScene().buildIndex != nextScene)
+                    yield return SceneManager.LoadSceneAsync(nextScene);
+
+                onSlotLoaded?.Invoke();
+                // Advance the enumerator here so finally also runs if restoration fails.
+                var restore = RestoreFromToken(slotState);
+                try
+                {
+                    while (restore.MoveNext())
+                        yield return restore.Current;
+                }
+                finally { (restore as IDisposable)?.Dispose(); }
+                callback?.Invoke(slotData);
             }
-
-            yield return SceneManager.LoadSceneAsync(nextScene);
-
-            onSlotLoaded?.Invoke();
-
-            RestoreFromToken(slotState);
-
-            callback?.Invoke((JObject)slotState["SlotData"]);
+            finally { loading = false; }
         }
 
         public void Save(string saveFile, int slot, JObject slotData = null)
         {
             JObject state = LoadJsonFromFile(saveFile);
-
-            if (slotData == null)
-            {
-                slotData = new JObject
-                {
-                    [SlotData.SlotKey] = slot,
-                    [SlotData.BuildIndexKey] = SceneManager.GetActiveScene().buildIndex,
-                    [SlotData.TimePlayedKey] = 0f
-                };
-            }
 
             CaptureAsToken(ref state, slotData, slot);
             SaveFileAsJson(saveFile, state);
@@ -92,13 +92,16 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
             IDictionary<string, JToken> data = savingData;
 
-            if (!data.ContainsKey(slot.ToString())) return;
+            if (!data.ContainsKey(slot.ToString()))
+                return;
 
             int curSlot = slot;
 
             while (data.ContainsKey((curSlot + 1).ToString()))
             {
-                data[curSlot.ToString()] = data[(curSlot + 1).ToString()];
+                data[curSlot.ToString()] = data[(curSlot + 1).ToString()].DeepClone();
+                if (data[curSlot.ToString()]?["SlotData"] is JObject metadata)
+                    metadata[SlotData.SlotKey] = curSlot;
                 ++curSlot;
             }
 
@@ -135,85 +138,128 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             File.WriteAllText(path, Encrypter.EncryptString(state));
         }
 
-        private void CaptureAsToken(ref JObject state, JObject slotData, int slot)
+        private JObject BuildSlotData(JObject data, int slot)
         {
-            IDictionary<string, JToken> stateDict = state;
-
-            JObject slotState = new();
-            slotState["SlotData"] = slotData;
-
-            foreach (var saveable in FindObjectsOfType<JsonSaveableEntity>())
-            {
-                var idComponents = saveable.CaptureAsJtoken(out JObject UniqueItems);
-
-                if (idComponents != null)
-                    slotState[saveable.GetUniqueIdentifier()] = idComponents;
-
-                if (UniqueItems == null) continue;
-
-                foreach (var item in UniqueItems)
-                {
-                    if (slotState.ContainsKey(item.Key))
-                    {
-                        foreach (var component in (JObject)item.Value)
-                        {
-                            slotState[item.Key][component.Key] = component.Value;
-                        }
-                    }
-                    else
-                    {
-                        JObject newComponents = new JObject();
-                        foreach (var component in (JObject)item.Value)
-                        {
-                            newComponents[component.Key] = component.Value;
-                        }
-
-                        slotState[item.Key] = newComponents;
-                    }
-                }
-            }
-
-            stateDict[slot.ToString()] = slotState;
-            state = (JObject)stateDict;
+            var metadata = data == null ? new JObject() : (JObject)data.DeepClone();
+            metadata[SlotData.SlotKey] = slot;
+            if (metadata[SlotData.BuildIndexKey] == null)
+                metadata[SlotData.BuildIndexKey] = SceneManager.GetActiveScene().buildIndex;
+            if (metadata[SlotData.TimePlayedKey] == null)
+                metadata[SlotData.TimePlayedKey] = 0f;
+            return metadata;
         }
 
-        private void RestoreFromToken(JObject state)
+        private void CaptureAsToken(ref JObject state, JObject slotData, int slot)
         {
-            if (state.Count <= 0) return;
-
-            IDictionary<string, JToken> stateDict = state;
-
-            var saveables = FindObjectsOfType<JsonSaveableEntity>().ToList();
-
-            for (int i = 0; i < (int)SavingExecution.General; i++)
+            if (loading)
+                throw new InvalidOperationException("Cannot capture a partially restored scene.");
+            state ??= new JObject();
+            var stages = new JObject();
+            var slotState = new JObject
             {
-                if (!stateDict.ContainsKey(((SavingExecution)i).ToString()))
+                [FormatKey] = CurrentFormatVersion,
+                ["SlotData"] = BuildSlotData(slotData, slot),
+                [StagesKey] = stages
+            };
+            // A fresh snapshot removes data for objects/components no longer present.
+            foreach (var entity in FindEntities().Values)
+            {
+                foreach (var entry in entity.CaptureStages())
                 {
-                    OnLoadingStateFinished?.Invoke(i);
+                    var stage = stages[entry.Key] as JObject;
+                    if (stage == null)
+                        stages[entry.Key] = stage = new JObject();
+                    stage[entity.GetUniqueIdentifier()] = entry.Value.DeepClone();
+                }
+            }
+            state[slot.ToString()] = slotState;
+        }
+
+        private static Dictionary<string, JsonSaveableEntity> FindEntities()
+        {
+            var result = new Dictionary<string, JsonSaveableEntity>();
+            // Preserve the original active-object scope. Include disabled behaviours
+            // on active GameObjects, but not inactive GameObjects or prefab assets.
+            foreach (var entity in FindObjectsOfType<JsonSaveableEntity>())
+            {
+                if (entity == null || entity.IsRetiring)
                     continue;
-                }
-
-                for (int x = 0; x < saveables.Count; x++)
-                {
-                    saveables[x].RestoreFromJToken(state, (SavingExecution)i);
-                }
-
-                OnLoadingStateFinished?.Invoke(i);
+                entity.SetUniqueIdentifier();
+                string id = entity.GetUniqueIdentifier();
+                if (result.ContainsKey(id))
+                    throw new InvalidDataException($"Duplicate save entity ID: {id}");
+                result.Add(id, entity);
             }
+            return result;
+        }
 
-            saveables = FindObjectsOfType<JsonSaveableEntity>().ToList();
+        private static void ValidateFormat(JObject state)
+        {
+            if (state[FormatKey] == null)
+                return; // Original project format.
+            if (state[FormatKey].Type != JTokenType.Integer ||
+                state[FormatKey].Value<int>() != CurrentFormatVersion ||
+                !(state[StagesKey] is JObject))
+                throw new InvalidDataException("Unsupported or invalid save format.");
+        }
 
-            for (int i = 0; i < saveables.Count; i++)
+        private IEnumerator RestoreFromToken(JObject state)
+        {
+            ValidateFormat(state);
+            state = SavingExecutionAliases.NormalizeSlot(state);
+            bool isCurrentFormat = state[FormatKey] != null;
+            var stages = isCurrentFormat ? (JObject)state[StagesKey] : null;
+            var executions = Enum.GetValues(typeof(SavingExecution)).Cast<SavingExecution>()
+                .Distinct().OrderBy(e => (int)e).ToArray();
+            if (isCurrentFormat)
             {
-                string id = saveables[i].GetUniqueIdentifier();
-
-                if (stateDict.ContainsKey(id))
-                {
-                    saveables[i].RestoreFromJToken(stateDict[id], SavingExecution.General);
-                }
+                var known = new HashSet<string>(executions.Select(e => e.ToString()));
+                foreach (var entry in stages)
+                    if (!known.Contains(entry.Key))
+                        Debug.LogWarning($"Saved stage '{entry.Key}' no longer exists; its data will not be restored.");
             }
 
-            OnLoadingStateFinished?.Invoke((int)SavingExecution.General);
+            foreach (var execution in executions)
+            {
+                string stageName = execution.ToString();
+                // Refresh after previous stages and their event callbacks spawned objects.
+                var entities = FindEntities();
+                if (isCurrentFormat)
+                {
+                    if (stages[stageName] is JObject stage)
+                    {
+                        foreach (var entry in stage)
+                        {
+                            if (!(entry.Value is JObject components))
+                                throw new InvalidDataException($"Invalid entity data in stage '{stageName}'.");
+                            if (entities.TryGetValue(entry.Key, out var entity) && entity != null && !entity.IsRetiring)
+                                entity.RestoreComponents(components);
+                            else
+                                Debug.LogWarning($"No entity '{entry.Key}' found for saved stage '{stageName}'.");
+                        }
+                    }
+                }
+                else
+                {
+                    // Original format: early stages were global by component type;
+                    // later stages were nested under the entity ID. Read all stages.
+                    foreach (var entity in entities.Values)
+                    {
+                        if (entity == null || entity.IsRetiring)
+                            continue;
+                        if (state[stageName] is JObject globalComponents)
+                            entity.RestoreComponents(globalComponents);
+                        if (entity == null || entity.IsRetiring)
+                            continue;
+                        if (state[entity.GetUniqueIdentifier()] is JObject perEntity &&
+                            perEntity[stageName] is JObject components)
+                            entity.RestoreComponents(components);
+                    }
+                }
+                OnLoadingStateFinished?.Invoke((int)execution);
+                // Let deferred Destroy and Start finish before discovering the next stage.
+                yield return null;
+            }
         }
 
         private string GetPathFromSaveFile(string saveFile)
@@ -230,7 +276,8 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
             foreach (var slot in stateDict)
             {
-                if (!int.TryParse(slot.Key, out int id)) continue;
+                if (!int.TryParse(slot.Key, out int id))
+                    continue;
 
                 try
                 {

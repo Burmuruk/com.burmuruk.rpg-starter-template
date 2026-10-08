@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Burmuruk.RPGStarterTemplate.Combat
 {
     [CreateAssetMenu(fileName = "Stats", menuName = "ScriptableObjects/Ability", order = 2)]
-    public class Ability : EquipeableItem, IUsable
+    public class Ability : EquipableItem, IUsable
     {
         [Header("Attributes")]
         [SerializeField] AbilityType type;

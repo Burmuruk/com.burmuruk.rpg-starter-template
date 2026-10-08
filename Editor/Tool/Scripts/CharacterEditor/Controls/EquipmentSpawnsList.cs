@@ -10,172 +10,151 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 {
     public class EquipmentSpawnsList : TreeViewList<SpawnElementData>
     {
-        Dictionary<string, (Transform transform, EquipmentType place)> _changes;
+        private List<(Transform transform, EquipmentType place)> _snapshot;
+        private readonly EnumRegistry _registry;
+        private bool _updatingChoices;
+        private bool _loading;
 
         public Action<List<string>> OnChoicesChanged;
 
         public EquipmentSpawnsList(VisualElement container) : base(container)
         {
+            _registry = SavingSystem.LoadEnumRegistry();
             TxtCount.RegisterCallback<DragPerformEvent>(OnBoneDropped);
-            OnElementCreated += (element) =>
+            OnElementCreated += element =>
             {
-                element.place.choices = GetChoices();
-                element.place.value = EquipmentType.None.ToString();
-                element.place.RegisterValueChangedCallback(_ => UpdatePlaceChoices());
+                element.place.IsOptionAllowed = id => !_enabledElements.Any(other =>
+                    !ReferenceEquals(other, element) && other.place.SelectedId == id);
+                element.place.SelectionChanged += _ => UpdatePlaceChoices();
+                element.place.RegistryChanged += UpdatePlaceChoices;
             };
+            OnElementAdded += _ => UpdatePlaceChoices();
             OnElementRemoved += _ => UpdatePlaceChoices();
         }
 
         private void UpdatePlaceChoices()
         {
-            var placesTaken = GetChoices();
+            if (_loading || _updatingChoices)
+                return;
 
-            foreach (var item in _enabledElements)
+            _updatingChoices = true;
+
+            try
             {
-                item.place.choices = placesTaken;
-            }
-
-            OnChoicesChanged?.Invoke(placesTaken);
-        }
-
-        public new List<(Transform transform, EquipmentType type)> GetInfo()
-        {
-            var spawnPoints = new List<(Transform transform, EquipmentType type)>();
-
-            foreach (var item in _enabledElements)
-            {
-                if (item.place.value == EquipmentType.None.ToString() ||
-                    item.transform == null)
-                    continue;
-
-                Transform transform = null;
-                if (item.transform.value is GameObject obj)
+                foreach (var element in _enabledElements)
                 {
-                    transform = obj.transform;
+                    if (_registry.GetEntry(typeof(EquipmentType), element.place.SelectedId) == null)
+                        element.place.SetValueWithoutNotify(EnumRegistry.NoneId);
                 }
-                else if (item.transform.value is Transform t)
-                {
-                    transform = t.transform;
-                }
+                foreach (var element in _enabledElements)
+                    element.place.RefreshChoices();
 
-                spawnPoints.Add((transform, (EquipmentType)Enum.Parse(typeof(EquipmentType), item.place.value)));
+                OnChoicesChanged?.Invoke(GetChoices());
             }
-
-            return spawnPoints;
+            finally { _updatingChoices = false; }
         }
 
         private List<string> GetChoices()
         {
-            var selected = new List<string>();
-            var newNames = new List<string>(Enum.GetNames(typeof(EquipmentType)));
+            var selected = new HashSet<int>(_enabledElements.Select(e => e.place.SelectedId)
+                .Where(id => id != EnumRegistry.NoneId));
 
-            foreach (var element in _enabledElements)
-            {
-                if (element.place.value == "none") continue;
-
-                selected.Add(element.place.value);
-            }
-
-            return newNames.Where(name => !selected.Contains(name)).ToList();
+            return _registry.GetEntries<EquipmentType>().Where(e => !selected.Contains(e.Id))
+                .Select(e => e.Name).ToList();
         }
+
+        private List<(Transform transform, EquipmentType place)> CaptureRows() =>
+            _enabledElements.Select(e => (e.SelectedTransform, (EquipmentType)e.place.SelectedId)).ToList();
+
+        public new List<(Transform transform, EquipmentType type)> GetInfo() =>
+            CaptureRows().Where(e => e.transform != null && (int)e.place != EnumRegistry.NoneId).ToList();
 
         private void OnBoneDropped(DragPerformEvent evt)
         {
             var values = DragAndDrop.GetGenericData("DraggedNode") as UnityEngine.Object[];
 
-            if (values != null && values.Length > 0)
-            {
-                Add();
-                _enabledElements.Last.Value.transform.value = values[0];
-            }
+            if (values == null || values.Length == 0)
+                return;
+
+            Add();
+            _enabledElements.Last.Value.transform.value = values[0];
         }
 
         protected override void SetupFoldOut()
         {
             base.SetupFoldOut();
-
             Foldout.text = "Spawn points";
+        }
+
+        private void ApplyRows(List<(Transform transform, EquipmentType place)> data)
+        {
+            _loading = true;
+            try
+            {
+                DisableAllElements();
+
+                if (data != null)
+                    foreach (var item in data)
+                    {
+                        Add();
+                        var row = _enabledElements.Last.Value;
+                        row.place.SetValueWithoutNotify((int)item.place);
+                        row.transform.SetValueWithoutNotify(item.transform != null ? item.transform.gameObject : null);
+                    }
+            }
+            finally { _loading = false; UpdatePlaceChoices(); }
         }
 
         public void LoadInfo(List<(Transform transform, EquipmentType place)> newData)
         {
-            Clear();
-            _changes = new();
-
-            if (newData == null) return;
-
-            foreach (var item in newData)
-            {
-                Add();
-                _enabledElements.Last.Value.place.value = item.place.ToString();
-                _enabledElements.Last.Value.transform.value = item.transform;
-
-                _changes.Add(item.transform.name, item);
-            }
+            _snapshot = newData == null ? new() : new(newData);
+            ApplyRows(newData);
         }
-
 
         public new void UpdateUIData<T>(T newData) where T : List<(Transform transform, EquipmentType place)>
         {
-            if (newData == null) return;
-
-            DisableAllElements();
-
-            foreach (var item in newData)
-            {
-                Add();
-                _enabledElements.Last.Value.place.value = item.place.ToString();
-                _enabledElements.Last.Value.transform.value = item.transform;
-            }
+            ApplyRows(newData);
         }
 
         public override void Clear()
         {
-            base.Clear();
-            _changes = null;
+            _loading = true;
+
+            try
+            { 
+                base.Clear(); _snapshot = null; 
+            }
+            finally 
+            { 
+                _loading = false; 
+                UpdatePlaceChoices(); 
+            }
         }
 
         public override ModificationTypes Check_Changes()
         {
-            if (_changes == null) return ModificationTypes.None;
+            var current = CaptureRows();
+            if (_snapshot == null)
+                return current.Count == 0 ? ModificationTypes.None : ModificationTypes.Add;
 
-            foreach (SpawnElementData element in _enabledElements)
+            if (current.Count != _snapshot.Count)
+                return ModificationTypes.EditData;
+
+            var unmatched = new List<(Transform transform, EquipmentType place)>(_snapshot);
+
+            foreach (var row in current)
             {
-                if (_changes.ContainsKey(element.transform.value.name))
-                {
-                    //place
-                    if (_changes[element.transform.value.name].place.ToString() != element.place.value)
-                        return ModificationTypes.EditData;
+                int idx = unmatched.FindIndex(old => old.transform == row.transform && old.place == row.place);
 
-                    //transform
-                    if (element.transform.value is GameObject go)
-                    {
-                        if (_changes[element.transform.value.name].transform.gameObject != go)
-                            return ModificationTypes.EditData;
-                    }
-                    else if (element.transform.value is Transform t)
-                    {
-                        if (_changes[element.transform.value.name].transform != t)
-                            return ModificationTypes.EditData;
-                    }
-                }
-                else
-                {
+                if (idx < 0)
                     return ModificationTypes.EditData;
-                }
-            }
 
+                unmatched.RemoveAt(idx);
+            }
             return ModificationTypes.None;
         }
 
-        //public void Load_Changes()
-        //{
-        //    throw new System.NotImplementedException();
-        //}
-
-        //public void Remove_Changes()
-        //{
-        //    throw new System.NotImplementedException();
-        //}
+        public override void Load_Changes() => ApplyRows(_snapshot);
+        public override void Remove_Changes() { _snapshot = null; base.Remove_Changes(); }
     }
 }

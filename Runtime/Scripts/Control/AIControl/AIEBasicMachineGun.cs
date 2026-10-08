@@ -6,9 +6,8 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
     {
         protected override bool FindEnemies()
         {
-            if (!IsTargetClose && !IsTargetFar) return false;
+            if (!base.FindEnemies()) return false;
 
-            playerAction = PlayerAction.Combat;
             attackState = AttackState.BasicAttack;
             return true;
         }
@@ -30,14 +29,10 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         private void Attack()
         {
-            m_target = GetNearestTarget(eyesPerceibed);
-            if (m_target == null)
-                GetNearestTarget(earsPerceibed);
+            if (Target == null) return;
 
-            if (Vector3.Distance(m_target.position, transform.position)
-                <= stats.minDistance)
+            if (Vector3.Distance(m_target.position, transform.position) <= stats.minDistance)
             {
-                fighter.SetTarget(m_target);
                 fighter.BasicAttack();
             }
         }
@@ -48,15 +43,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
             {
                 case PlayerAction.Combat:
 
-                    var dis = stats.minDistance * .8f;
-
-                    if (Vector3.Distance(m_target.position, transform.position) > dis)
-                    {
-                        Vector3 destiny = (transform.position - m_target.position).normalized * dis;
-                        destiny += m_target.position;
-
-                        mover.MoveTo(destiny);
-                    }
+                    PursueCombatTarget();
                     break;
             }
         }

@@ -24,6 +24,7 @@ namespace Burmuruk.AI.PathFinding
         //states
         (IPathNode start, IPathNode end)[] curNodes = null;
         public bool isCalculating = false;
+        private int requestVersion;
         public event Action OnPathCalculated;
 
         #endregion
@@ -65,9 +66,12 @@ namespace Burmuruk.AI.PathFinding
         public void Find_BestRoute<T>(params (IPathNode start, Vector3 end)[] pairs) where T : IPathFinder, new()
         {
             if (isCalculating) return;
-            if (nodesList == null || !nodesList.Initilized || pairs == null) return;
 
-            if (algorithem == null) algorithem = new T();
+            if (nodesList == null || !nodesList.Initilized || pairs == null || pairs.Length == 0) return;
+
+            var requestAlgorithm = new T();
+            algorithem = requestAlgorithm;
+            int version = ++requestVersion;
 
             isCalculating = true;
             curNodes = new (IPathNode, IPathNode)[pairs.Length];
@@ -79,14 +83,15 @@ namespace Burmuruk.AI.PathFinding
                 curNodes[i].end = nodesList.FindNearestNode(pairs[i].end);
             }
 
+            var requestNodes = curNodes;
+
             Task<(LinkedList<IPathNode> path, float dist)> task = Task.Run(() =>
             {
                 try
                 {
-                    // compute only the first pair (most callers use single pair)
-                    var p = curNodes[0];
+                    var p = requestNodes[0];
                     float d;
-                    var route = algorithem.Get_Route(p.start, p.end, out d);
+                    var route = requestAlgorithm.Get_Route(p.start, p.end, out d);
                     return (route, d);
                 }
                 catch (Exception)
@@ -98,6 +103,7 @@ namespace Burmuruk.AI.PathFinding
             var awaiter = task.GetAwaiter();
             awaiter.OnCompleted(() =>
             {
+                if (version != requestVersion) return;
                 try
                 {
                     var result = awaiter.GetResult();
@@ -124,6 +130,15 @@ namespace Burmuruk.AI.PathFinding
                     OnPathCalculated?.Invoke();
                 }
             });
+        }
+
+        public void CancelPendingRequest()
+        {
+            requestVersion++;
+            isCalculating = false;
+            paths?.Clear();
+            curNodes = null;
+            curPath = -1;
         }
 
         /// <summary>

@@ -23,7 +23,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             get
             {
                 var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(RPGStarterSetup).Assembly);
-                return Path.Combine(package.assetPath, "CoreAssets");
+                return Path.Combine(package.resolvedPath, "CoreAssets");
             }
         }
 
@@ -31,6 +31,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         static RPGStarterSetup()
         {
+            if (Application.isBatchMode) return;
+
             Debug.Log("Initialized");
 
             if (!Directory.Exists(TargetPath) && (!EditorPrefs.HasKey(copyPref) || !EditorPrefs.GetBool(copyPref)))

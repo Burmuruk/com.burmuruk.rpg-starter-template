@@ -6,9 +6,8 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
     {
         protected override bool FindEnemies()
         {
-            if (!IsTargetClose && !IsTargetFar) return false;
+            if (!base.FindEnemies()) return false;
 
-            playerAction = PlayerAction.Combat;
             attackState = AttackState.BasicAttack;
             return true;
         }
@@ -30,31 +29,15 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         protected override bool ChooseAttack()
         {
-            if (isTargetFar || isTargetClose)
-            {
-                playerAction = PlayerAction.Combat;
-                return true;
-            }
-
             return false;
         }
 
         private void Attack()
         {
-            if (IsTargetFar)
-            {
-                Target = GetNearestTarget(eyesPerceibed);
-            }
-            else if (IsTargetClose)
-            {
-                Target = GetNearestTarget(earsPerceibed);
-            }
-            else if (Target == null) return;
+            if (!IsValidTarget(Target)) return;
 
-            if (Vector3.Distance(Target.position, transform.position)
-                <= stats.minDistance)
+            if (Vector3.Distance(Target.position, transform.position) <= stats.minDistance)
             {
-                fighter.SetTarget(Target);
                 fighter.BasicAttack();
             }
         }
@@ -67,6 +50,8 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
             {
                 case PlayerAction.Following:
 
+                    if (leader == null) return;
+
                     if (Vector3.Distance(leader.transform.position, transform.position) > dis)
                     {
                         Vector3 destiny = (transform.position - leader.transform.position).normalized * dis;
@@ -78,13 +63,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
                 case PlayerAction.Combat:
 
-                    if (Vector3.Distance(Target.position, transform.position) > dis)
-                    {
-                        Vector3 destiny = (transform.position - Target.position).normalized * dis;
-                        destiny += Target.position;
-
-                        mover.MoveTo(destiny);
-                    }
+                    PursueCombatTarget();
                     break;
             }
         }

@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Burmuruk.RPGStarterTemplate.Inventory
 {
     [CreateAssetMenu(fileName = "Stats", menuName = "ScriptableObjects/Armor", order = 1)]
-    public class ArmourElement : EquipeableItem
+    public class ArmourElement : EquipableItem
     {
         [Header("Equipment")]
         [SerializeField] EquipmentType m_bodyPart;

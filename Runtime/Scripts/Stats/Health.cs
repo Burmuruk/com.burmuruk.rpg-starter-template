@@ -49,13 +49,25 @@ namespace Burmuruk.RPGStarterTemplate.Stats
 
         public JToken CaptureAsJToken(out SavingExecution execution)
         {
-            execution = SavingExecution.General;
+            execution = SavingExecution.References;
             return JToken.FromObject(_hp);
         }
 
         public void LoadAsJToken(JToken state)
         {
             _hp = state.ToObject<int>();
+        }
+
+        public void RegisterValues(Control.Character character)
+        {
+            ModsList.AddVariable(character, ModifiableStat.MaxHP, () => _maxHp, (value) => { _maxHp = (int)value; });
+            ModsList.AddVariable(character, ModifiableStat.HP, () => _hp, (value) => { _hp = (int)value; });
+        }
+
+        public void LoadValues(int hp, int maxHp)
+        {
+            _hp = hp;
+            _maxHp = maxHp;
         }
     }
 }

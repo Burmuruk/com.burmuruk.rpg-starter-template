@@ -1,4 +1,4 @@
-﻿using Burmuruk.RPGStarterTemplate.Control;
+using Burmuruk.RPGStarterTemplate.Control;
 using Burmuruk.RPGStarterTemplate.Movement.PathFindig;
 using Burmuruk.RPGStarterTemplate.UI.Samples;
 using System.IO;
@@ -12,26 +12,11 @@ namespace Burmuruk.RPGStarterTemplate.Saving.Samples
         {
 #if UNITY_EDITOR
             NavSaver.Restart();
-            string assetsSamplePath = Path.Combine(
-                Directory.GetParent(Application.dataPath).FullName,
-                "Assets/com.burmuruk.rpg-starter-template/Samples/RPGStarterDemo/NavigationMaps"
-            );
-
-            if (!Directory.Exists(assetsSamplePath))
-            {
-                assetsSamplePath = Path.Combine(
-                  Directory.GetParent(Application.dataPath).FullName,
-                  "Packages/com.burmuruk.rpg-starter-template/Samples~/RPGStarterDemo/NavigationMaps"
-                );
-            }
-
-            if (!Directory.Exists(assetsSamplePath))
-            {
-                assetsSamplePath = Path.Combine(
-                    Application.dataPath,
-                    "Samples/RPGStarterDemo/NavigationMaps"
-                );
-            }
+            // Resolve relative to this imported sample, including its versioned folder.
+            string scriptPath = UnityEditor.AssetDatabase.GetAssetPath(
+                UnityEditor.MonoScript.FromMonoBehaviour(this));
+            string assetsSamplePath = Path.GetFullPath(Path.Combine(
+                Path.GetDirectoryName(scriptPath), "..", "..", "NavigationMaps"));
 
             if (!Directory.Exists(assetsSamplePath)) return;
 
@@ -42,9 +27,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving.Samples
 
         protected override void LoadFinalElements(SlotData data)
         {
-            SetSlotData(data);
-            //FindObjectOfType<HUDManager>().Init();
-            FindObjectOfType<GameManager>()?.SetState(GameManager.State.Playing);
+            base.LoadFinalElements(data);
         }
     }
 }

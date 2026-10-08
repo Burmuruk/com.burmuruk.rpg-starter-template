@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <ui:VisualElement name="savingStageRow" class="saving-stage-row LineContainer" style="flex-grow: 0; flex-shrink: 0; margin-bottom: 0;">
+        <ui:Label name="lblSavingStageDrag" text="≡" tooltip="Drag to change execution order" class="saving-stage-drag LineElements" />
+        <ui:TextField name="txtSavingStageName" class="saving-stage-name" style="flex-shrink: 1; flex-grow: 1;" />
+        <ui:Button name="btnRemoveSavingStage" text="x" tooltip="Remove stage" class="saving-stage-remove LineExtraButton" />
+    </ui:VisualElement>
+</ui:UXML>

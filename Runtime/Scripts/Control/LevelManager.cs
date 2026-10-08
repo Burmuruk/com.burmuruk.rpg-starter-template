@@ -42,10 +42,11 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         protected virtual void Start()
         {
-            playerManager = FindObjectOfType<PlayerManager>();
+            RefreshRuntimeReferences();
             AddItemToDestroy(playerManager.PlayersParent);
 
             gameManager = GetComponent<GameManager>();
+            gameManager.onStateChange -= UpdateGameState;
             gameManager.onStateChange += UpdateGameState;
             OnNavmeshLoaded += () =>
             {
@@ -63,12 +64,18 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         private void OnEnable()
         {
+            if (gameManager != null)
+            {
+                gameManager.onStateChange -= UpdateGameState;
+                gameManager.onStateChange += UpdateGameState;
+            }
             SceneManager.sceneLoaded += VerifyScene;
             SceneManager.sceneUnloaded += RestoreScene;
         }
 
         private void OnDisable()
         {
+            if (gameManager != null) gameManager.onStateChange -= UpdateGameState;
             SceneManager.sceneLoaded -= VerifyScene;
             SceneManager.sceneUnloaded -= RestoreScene;
         }
@@ -78,6 +85,9 @@ namespace Burmuruk.RPGStarterTemplate.Control
             LoadNavigationMap();
             FindAnyObjectByType<LevelManager>().SetPaths();
             UpdatePlayerPosition();
+
+            Time.timeScale = 1;
+            FindObjectOfType<LevelManager>()?.pauseMenu?.SetActive(false);
         }
 
         public void SetPaths()
@@ -103,10 +113,11 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         public void UpdatePlayerPosition()
         {
+            RefreshRuntimeReferences();
             var playerSpawner = FindObjectOfType<PlayerSpawner>();
-            var mainPlayer = FindObjectOfType<AIGuildMember>(true).Leader;
+            var mainPlayer = playerManager != null ? playerManager.CurPlayer : null;
 
-            if (playerSpawner && playerSpawner.Enabled)
+            if (mainPlayer != null && playerSpawner && playerSpawner.Enabled)
             {
                 mainPlayer.SetPosition(playerSpawner.transform.position);
             }
@@ -119,7 +130,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         public void GoToMainMenu()
         {
-            savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), true);
+            savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), false);
 
             itemsToDestroy.ForEach(obj => Destroy(obj));
             gameManager.GoToMainMenu();
@@ -128,7 +139,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         public void ExitGame()
         {
-            savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), true);
+            savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), false);
             gameManager.ExitGame();
         }
 
@@ -215,11 +226,12 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         public SlotData GetSlotData()
         {
+            RefreshRuntimeReferences();
             SlotData slotData = new SlotData(
                 slotIdx,
                 SceneManager.GetActiveScene().buildIndex,
                 Time.realtimeSinceStartup,
-                TryGetComponent<PlayerManager>(out var pm) ? pm.Players.Count : 0
+                playerManager != null ? playerManager.Players.Count : 0
             );
 
             return slotData;
@@ -257,9 +269,27 @@ namespace Burmuruk.RPGStarterTemplate.Control
             data[SlotData.SlotKey] = slotData.Id;
             data[SlotData.BuildIndexKey] = slotData.BuildIdx;
             data[SlotData.TimePlayedKey] = slotData.PlayedTime;
-            data[SlotData.MembersAmountKey] = FindObjectOfType<PlayerManager>().Players.Count;
+            data[SlotData.MembersAmountKey] = playerManager != null ? playerManager.Players.Count : 0;
 
             return data;
+        }
+
+        public void RefreshRuntimeReferences()
+        {
+            gameManager = GetComponent<GameManager>();
+
+            if (gameManager == null) 
+                gameManager = GameManager.Instance;
+
+            playerManager = GetComponent<PlayerManager>();
+
+            if (playerManager == null && gameManager != null)
+                playerManager = gameManager.GetComponent<PlayerManager>();
+
+            if (playerManager == null) 
+                playerManager = FindObjectOfType<PlayerManager>();
+
+            savingWrapper = FindObjectOfType<JsonSavingWrapper>();
         }
 
         protected IEnumerator Autosave()

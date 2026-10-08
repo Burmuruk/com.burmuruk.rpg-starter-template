@@ -66,7 +66,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         Dictionary<int, (Image image, int subType)> btnAbilitiesDict;
         Dictionary<int, (Image image, int subType)> btnAbilitiesSlotDict;
         Dictionary<int, (Image image, int subType)> btnModsDict;
-        Dictionary<int, (StackableNode panel, EquipeableItem item)> curElementLabels = new();
+        Dictionary<int, (StackableNode panel, EquipableItem item)> curElementLabels = new();
 
         public event Action<int> OnMainPlayerChanged;
 
@@ -195,7 +195,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             }
         }
 
-        private void ConsumeItem(EquipeableItem equipable)
+        private void ConsumeItem(EquipableItem equipable)
         {
             var item = (equipable as ConsumableItem);
             int id = item.ID;
@@ -308,7 +308,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             var equippedItem = curElementLabels[curElementId].item;
             var lastPlayer = equippedItem.Characters.Last();
             var inventoryDecorator = (lastPlayer.Inventory as InventoryEquipDecorator);
-            List<EquipeableItem> unequipped;
+            List<EquipableItem> unequipped;
 
             inventoryDecorator.Unequip(lastPlayer, equippedItem);
             inventoryDecorator.TryEquip(players[curPlayerIdx], equippedItem, out unequipped);
@@ -329,7 +329,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             }
         }
 
-        private void SetPlayersColors(List<EquipeableItem> items)
+        private void SetPlayersColors(List<EquipableItem> items)
         {
             if (items != null)
             {
@@ -383,7 +383,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         {
             var curElementLabel = curElementLabels[idx];
             var item = curElementLabel.item;
-            List<EquipeableItem> unequipped = null;
+            List<EquipableItem> unequipped = null;
             (players[curPlayerIdx].Inventory as InventoryEquipDecorator).TryEquip(players[curPlayerIdx], item, out unequipped);
 
             SetPlayersColors(unequipped);
@@ -413,7 +413,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             {
                 var panel = elementPanel.Get();
 
-                var equippedItem = item as EquipeableItem;
+                var equippedItem = item as EquipableItem;
 
                 if (equippedItem == null)
                     continue;
@@ -439,7 +439,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             }
         }
 
-        private void SetElementInfo(StackableNode panel, EquipeableItem item)
+        private void SetElementInfo(StackableNode panel, EquipableItem item)
         {
             panel.label.text = item.Name;
 
@@ -459,7 +459,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             SetPlayersColors(item, panel);
         }
 
-        private void SetPlayersColors(EquipeableItem equipedItem, StackableNode panel)
+        private void SetPlayersColors(EquipableItem equipedItem, StackableNode panel)
         {
             Image[] images = panel.image.transform.GetComponentsInChildren<Image>(true)
                 .Where(image => image.transform != panel.image.transform)
@@ -660,7 +660,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         private void ShowCharacterAbilities()
         {
             Ability[] abilities = (from ability in inventory.GetList(ItemType.Ability)
-                             where ((EquipeableItem)ability).Characters.Contains(players[curPlayerIdx])
+                             where ((EquipableItem)ability).Characters.Contains(players[curPlayerIdx])
                              select (Ability)inventory.GetItem(ability.ID))
                              .ToArray();
 
@@ -853,7 +853,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             if (inventory == null) return;
 
             var mods = (from mod in inventory.GetList(ItemType.Modification)
-                       let equiped = (EquipeableItem)mod
+                       let equiped = (EquipableItem)mod
                        where equiped != null && equiped.IsEquip && equiped.Characters.Contains(players[curPlayerIdx])
                        select (Modification)inventory.GetItem(mod.ID)
                        ).ToArray();
@@ -1013,7 +1013,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             var slot = btnAbilitiesSlotDict[curAbiltySlot.Value];
 
             var item = inventory.GetItem(slot.subType);
-            (players[curPlayerIdx].Inventory as InventoryEquipDecorator).Unequip(players[curPlayerIdx], (EquipeableItem)item);
+            (players[curPlayerIdx].Inventory as InventoryEquipDecorator).Unequip(players[curPlayerIdx], (EquipableItem)item);
 
             slot.image.sprite = defaultBTNSprite;
             btnAbilitiesSlotDict[curAbiltySlot.Value] = (slot.image, -1);

@@ -1,11 +1,8 @@
-﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -23,7 +20,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
     {
         public static DialogueEditor window;
         private DialogueGraphView graphView;
-        private DialogueGraphController _controller;
+        [SerializeField] private DialogueGraphController _controller;
+        private bool _isLoading;
         private VisualElement configTab;
         private VisualElement _notificationElement;
         private EditorCoroutine _notificationRoutine;
@@ -38,11 +36,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         [OnOpenAsset(1)]
         public static bool OnOpenAsset(int instanceID, int line)
         {
-            var controller = EditorUtility.InstanceIDToObject(instanceID) as DialogueGraphController;
+            DialogueGraphController controller = EditorUtility.InstanceIDToObject(instanceID) as DialogueGraphController;
 
             if (controller != null)
             {
-                if (window == null) SetWindow();
+                if (window == null)
+                    SetWindow();
 
                 window.LoadDialogue(controller);
                 return true;
@@ -53,10 +52,41 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void OnEnable()
         {
+            window = this;
+            saveChangesMessage = "This dialogue graph has unsaved changes. Would you like to save before closing?";
+            bool restoreSession = _controller != null;
+            rootVisualElement.Clear();
+            Selection.selectionChanged -= OnSelectionChanged;
             Selection.selectionChanged += OnSelectionChanged;
-            CreateGraphView();
             CreateNotificationOverlay();
-            CreateFirstNode();
+            CreateGraphView();
+
+            if (!restoreSession)
+                CreateFirstNode();
+        }
+
+        private void OnDisable()
+        {
+            Selection.selectionChanged -= OnSelectionChanged;
+            _firstNodeSchedule?.Pause();
+            _firstNodeSchedule = null;
+
+            if (_notificationRoutine != null)
+            {
+                EditorCoroutineUtility.StopCoroutine(_notificationRoutine);
+                _notificationRoutine = null;
+            }
+
+            RemoveControllerEvents();
+
+            if (_controller != null)
+            {
+                _controller.CaptureSession();
+                _controller.ClearPinViews();
+            }
+
+            if (window == this)
+                window = null;
         }
 
         private void CreateFirstNode()
@@ -66,7 +96,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             _firstNodeSchedule = graphView.schedule.Execute(() =>
             {
                 //var node = ScriptableObject.CreateInstance<DialogueNode>();
-                graphView.CreateNode(new Vector2(100, 100), NodeType.Dialogue);
+                graphView.CreateNode(new Vector2(100, 180), NodeType.Dialogue);
             });
             _firstNodeSchedule.ExecuteLater(500);
         }
@@ -76,7 +106,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             if (window == null)
             {
                 window = (DialogueEditor)GetWindow(typeof(DialogueEditor));
-                
+
                 if (window == null)
                     ShowEditorWindow(); //Creates a new window
             }
@@ -85,37 +115,61 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         #region Loading
         private void LoadDialogue(DialogueGraphController controller)
         {
+            if (hasUnsavedChanges)
+            {
+                if (!EditorUtility.DisplayDialog("Unsaved dialogue graph",
+                    "Save changes before opening another dialogue graph?", "Save", "Cancel")) return;
+                SaveChanges();
+
+                if (hasUnsavedChanges) return;
+            }
             //if (string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(controller.dialogueGUID)))
             //    return;
 
             _firstNodeSchedule?.Pause();
             _firstNodeSchedule = null;
             ResetGraphView();
-            LoadController(controller);
+            LoadController(DialogueGraphController.CreateWorkingCopy(controller));
+            OnControllerSaved();
         }
 
         private void LoadController(DialogueGraphController controller)
         {
-            _controller = controller;
-            _controller.Initialize();
-            configTab = _controller.SettingsContainer;
-            rootVisualElement.Add(configTab);
-            SetUpControllerEvents();
-            var nodes = _controller.GetNodes();
-            CreateNodes(nodes);
-            CreateConnections(nodes);
+            _isLoading = true;
+            try
+            {
+                _controller = controller;
+                _controller.Initialize();
+
+                configTab = _controller.SettingsContainer;
+
+                rootVisualElement.Add(_controller.Container);
+
+                SetUpControllerEvents();
+                var nodes = _controller.GetNodes();
+                CreateNodes(nodes);
+                CreateConnections(nodes);
+                _controller.RestorePins();
+            }
+            finally
+            {
+                _isLoading = false;
+            }
         }
 
         private void CreateConnections(Dictionary<string, BaseNode> nodes)
         {
             foreach (var node in nodes.Values)
             {
-                var children = new List<string>(node.Children);
+                List<string> children = new(node.Children);
                 node.Children.Clear();
 
                 foreach (var id in children)
                 {
-                    graphView.Connect(node.GraphViewNode.output, _controller.nodes[id].GraphViewNode.input);
+                    if (_controller.nodes.TryGetValue(id, out var child))
+                        graphView.Connect(node.GraphViewNode.output, child.GraphViewNode.input);
+                    else
+                        Debug.LogWarning($"Dialogue node {node.Id} references missing node {id}. Connection skipped.");
                 }
             }
         }
@@ -147,8 +201,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void ResetGraphView()
         {
-            rootVisualElement.Remove(configTab);
-            window.graphView.ResetGraph();
+            RemoveControllerEvents();
+            _controller?.ClearPinViews();
+            if (_controller != null && _controller.Container != null)
+            {
+                rootVisualElement.Remove(_controller.Container);
+            }
+            graphView.ResetGraph();
             SetUpGraphEvents();
         }
         #endregion
@@ -165,11 +224,19 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
 
+            if (_controller != null)
+            {
+                SetUpGraphEvents();
+                LoadController(_controller);
+                graphView.saved = !hasUnsavedChanges;
+                return;
+            }
+
             _controller = CreateInstance<DialogueGraphController>();
             _controller.Initialize();
             configTab = _controller.SettingsContainer;
 
-            rootVisualElement.Add(configTab);
+            rootVisualElement.Add(_controller.Container);
 
             configTab.style.visibility = Visibility.Hidden;
             SetUpGraphEvents();
@@ -193,14 +260,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
 
         private void SetUpControllerEvents()
         {
-            _controller.OnChange += () =>
-            {
-                window.name = window.name.Replace("*", "") + "*";
-            };
-            _controller.OnSave += () => window.name = window.name.Replace("*", "");
-            _controller.Notify += (m) => ShowNotificationMessage(m);
+            _controller.OnChange += OnControllerChanged;
+            _controller.OnSave += OnControllerSaved;
+            _controller.Notify += OnControllerNotification;
             graphView.OnSave += _controller.Save;
             graphView.OnExportResults += _controller.SaveResults;
+            graphView.OnChanged += OnControllerChanged;
             graphView.OnNodeCreated += _controller.AddNode;
             graphView.OnNodeDeleted += _controller.RemoveNode;
 
@@ -222,7 +287,46 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             graphView.Get_BaseNode += _controller.GetNode;
             graphView.OnPortConnected += _controller.OnPortConnected;
             graphView.OnPortDisconnected += _controller.OnPortDisconnected;
-        } 
+        }
+
+        private void OnControllerChanged()
+        {
+            if (_isLoading) return;
+
+            hasUnsavedChanges = true;
+            graphView.saved = false;
+            Repaint();
+        }
+
+        private void OnControllerSaved()
+        {
+            hasUnsavedChanges = false;
+            graphView.saved = true;
+            Repaint();
+        }
+
+        public override void SaveChanges()
+        {
+            // OnSave clears the dirty flag only after a successful save.
+            _controller?.Save();
+        }
+
+        private void OnControllerNotification(string message)
+        {
+            if (_isLoading) return;
+
+            ShowNotificationMessage(message);
+        }
+
+        private void RemoveControllerEvents()
+        {
+            if (_controller == null)
+                return;
+
+            _controller.OnChange -= OnControllerChanged;
+            _controller.OnSave -= OnControllerSaved;
+            _controller.Notify -= OnControllerNotification;
+        }
         #endregion
 
         private void DisplayNodeOptions(BaseNode node, bool shouldDisplay)
@@ -275,7 +379,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             _notificationElement.style.unityTextAlign = TextAnchor.MiddleCenter;
             _notificationElement.style.fontSize = 18;
             _notificationElement.style.color = Color.white;
-            
+
             _notificationElement.style.backgroundColor = new Color(0, 0, 0, 0.1f);
             _notificationElement.style.paddingTop = 10;
             _notificationElement.style.paddingBottom = 10;
@@ -285,11 +389,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             _notificationElement.style.alignItems = Align.Center;
             _notificationElement.style.justifyContent = Justify.Center;
 
-            var label = new Label();
+            Label label = new();
             _notificationElement.Add(label);
             label.style.unityTextAlign = TextAnchor.MiddleCenter;
             label.style.backgroundColor = new Color(0, 0, 0, 0.6f);
-            label.style.width = new Length(50, LengthUnit.Percent);
+            label.style.width = new Length(80, LengthUnit.Percent);
             label.style.fontSize = new Length(30, LengthUnit.Pixel);
             _notificationElement.style.borderBottomLeftRadius = 15;
             _notificationElement.style.borderBottomRightRadius = 15;
@@ -325,270 +429,5 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             rootVisualElement.Remove(_notificationElement);
         }
         #endregion
-    }
-
-    public class DialogueGraphView : GraphView
-    {
-        public bool saved = true;
-        private EdgeConnector<Edge> _edgeConnector;
-        private CreateNodeEdgeConnectorListener _conectorListener;
-        private NodeSearchProvider _searchProvider;
-
-        public event Action<BaseNode> OnNodeCreated;
-        public event Action<GraphViewNode> OnNodeDeleted;
-        public event Action<Port, Port> OnPortConnected;
-        public event Action<Port, Port> OnPortDisconnected;
-        public Func<string, BaseNode> Get_BaseNode;
-        public event Action OnSave;
-        public event Action OnExportResults;
-
-        public CreateNodeEdgeConnectorListener ConnectorListener
-        {
-            get
-            {
-                if (_conectorListener == null)
-                    _conectorListener = new CreateNodeEdgeConnectorListener(this);
-                return _conectorListener;
-            }
-        }
-        public EdgeConnector<Edge> SharedEdgeConnector
-        {
-            get
-            {
-                if (_edgeConnector == null)
-                    _edgeConnector = new EdgeConnector<Edge>(ConnectorListener);
-                return _edgeConnector;
-            }
-        }
-
-        public DialogueGraphView()
-        {
-            GridBackground grid = new();
-            Insert(0, grid);
-            grid.StretchToParentSize();
-
-            this.SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
-            graphViewChanged = OnGraphChanged;
-
-            this.AddManipulator(new ContentDragger());
-            this.AddManipulator(new SelectionDragger());
-            this.AddManipulator(new RectangleSelector());
-            this.RegisterCallback<MouseDownEvent>(evt =>
-            {
-                if (evt.button == (int)MouseButton.RightMouse)
-                {
-                    evt.StopImmediatePropagation();
-
-                    ShowContextMenu(evt.mousePosition);
-                }
-            }, TrickleDown.TrickleDown);
-
-            this.contentContainer.style.width = 5000;
-            this.contentContainer.style.height = 5000;
-
-            _searchProvider = ScriptableObject.CreateInstance<NodeSearchProvider>();
-            _searchProvider.Init(this);
-
-            //schedule.Execute(ResetPositionAndScale).ExecuteLater(1000);
-            // Centrar vista en el medio
-            //ScheduleExecute(() => ClearAndCenterView());
-        }
-
-        public void ResetGraph()
-        {
-            DeleteElements(graphElements.ToList());
-            OnSave = null;
-            OnExportResults = null;
-            OnNodeCreated = null;
-            OnNodeDeleted = null;
-            Get_BaseNode = null;
-            OnPortConnected = null;
-            OnPortDisconnected = null;
-            OnPortDisconnected += OnEdgeDisconnected;
-            saved = true;
-        }
-
-        private void OnEdgeDisconnected(Port from, Port to)
-        {
-            (from.node as GraphViewNode).Parent.RemoveChild((to.node as GraphViewNode).Parent.Id);
-        }
-
-        void ShowContextMenu(Vector2 position)
-        {
-            var menu = new GenericMenu();
-            menu.AddItem(new GUIContent("Crear nodo"), false, () => OpenCreateNodeSearch(position, null));
-            menu.AddItem(new GUIContent(saved ? "Save" : "Save*"), false, () => OnSave?.Invoke());
-            menu.AddItem(new GUIContent("Export results"), false, () => OnExportResults?.Invoke());
-            menu.DropDown(new Rect(position, Vector2.zero));
-        }
-
-        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
-        {
-            return (from nap in ports.ToList()
-                    where nap.direction != startPort.direction && nap.node != startPort.node &&
-                        !nap.connections.Any(p => GetInput(startPort.direction, p).node == startPort.node)
-                    select nap).ToList();
-        }
-
-        private Port GetInput(Direction direction, Edge edge) =>
-            direction switch
-            {
-                Direction.Input => edge.input,
-                _ => edge.output
-            };
-
-        void ResetPositionAndScale()
-        {
-            contentViewContainer.transform.position = -new Vector3(2500, 2500, 0);
-            contentViewContainer.transform.scale = Vector3.one;
-        }
-
-        private void ScheduleExecute(System.Action action)
-        {
-            schedule.Execute(() =>
-            {
-                action.Invoke();
-            }).ExecuteLater(100);
-        }
-
-        private void ClearAndCenterView()
-        {
-            Vector2 center = new Vector2(contentContainer.layout.width / 2, contentContainer.layout.height / 2);
-            contentViewContainer.transform.position = -center;
-            contentViewContainer.transform.scale = Vector3.one;
-        }
-
-        public GraphViewNode LoadNode(Vector2 position, NodeType type, BaseNode node)
-        {
-            node.Initilize(this, position, null);
-            AddElement(node.GraphViewNode);
-
-            OnNodeCreated?.Invoke(node);
-            return node.GraphViewNode;
-        }
-
-        public GraphViewNode CreateNode(Vector2 position, NodeType type, GraphViewNode prevNode = null)
-        {
-            var node = InstanciateNode(type);
-            node.Initilize(this, position, prevNode?.Parent);
-            
-            AddElement(node.GraphViewNode);
-
-            OnNodeCreated?.Invoke(node);
-            return node.GraphViewNode;
-        }
-
-        private BaseNode InstanciateNode(NodeType type) =>
-            type switch
-            {
-                NodeType.Dialogue => ScriptableObject.CreateInstance<DialogueNode>(),
-                NodeType.Mission => ScriptableObject.CreateInstance<MissionNode>(),
-                _ => ScriptableObject.CreateInstance<BaseNode>()
-            };
-
-        public void CreateConnectedNode(GraphViewNode fromNode)
-        {
-            var fromPort = fromNode.output;
-            var toNode = CreateNode(fromNode.GetPosition().position + new Vector2(250, 0), NodeType.Dialogue);
-            var toPort = toNode.input;
-
-            var edge = fromPort.ConnectTo(toPort);
-            AddElement(edge);
-        }
-
-        public void Connect(Port from, Port to)
-        {
-            var edge = from.ConnectTo(to);
-            AddElement(edge);
-            AddConnection(edge);
-        }
-
-        // Abre el buscador para crear nodo y conectar desde 'fromPort'
-        public void OpenCreateNodeSearch(Vector2 dropPosition, Port fromPort)
-        {
-            // dropPosition ya viene en coords del graph (contentViewContainer) en versiones recientes.
-            // Si ves desalineación, convierte: dropPosition = contentViewContainer.WorldToLocal(dropPosition);
-            dropPosition = contentViewContainer.WorldToLocal(dropPosition);
-            _searchProvider.SetupInvocation(fromPort, dropPosition);
-
-            // Convierte a pantalla para SearchWindow
-            var screenPos = GUIUtility.GUIToScreenPoint(Event.current != null ? Event.current.mousePosition : Vector2.zero);
-            SearchWindow.Open(new SearchWindowContext(screenPos, 50, 50), _searchProvider);
-        }
-
-        private GraphViewChange OnGraphChanged(GraphViewChange change)
-        {
-            if (change.edgesToCreate != null)
-            {
-                foreach (var edge in change.edgesToCreate)
-                {
-                    var from = edge.output;
-                    var to = edge.input;
-
-                    OnPortConnected?.Invoke(from, to);
-                }
-            }
-
-            if (change.elementsToRemove != null)
-            {
-                foreach (var element in change.elementsToRemove)
-                {
-                    if (element is not Edge edge) continue;
-
-                    var from = edge.output;
-                    var to = edge.input;
-
-                    OnPortDisconnected?.Invoke(from, to);
-                }
-            }
-
-            return change;
-        }
-
-        public override EventPropagation DeleteSelection()
-        {
-            foreach (var node in selection)
-            {
-                if (node is GraphViewNode graphNode)
-                {
-                    OnNodeDeleted?.Invoke(graphNode);
-                }
-            }
-
-            return base.DeleteSelection();
-        }
-
-        public void AddConnection(Edge edge)
-        {
-            if (Get_BaseNode == null) return;
-
-            var inputNode = (edge.input.node as GraphViewNode).Parent;
-            var outputNode = (edge.output.node as GraphViewNode).Parent;
-
-            if (inputNode != null && outputNode != null)
-                outputNode.AddChild(inputNode.Id);
-
-            NotifyConnection(edge);
-        }
-
-        public void NotifyConnection(Edge edge)
-        {
-            var from = edge.output;
-            var to = edge.input;
-
-            OnPortConnected?.Invoke(from, to);
-        }
-
-        public void RemoveConnection(Edge edge)
-        {
-            if (Get_BaseNode == null) return;
-
-            RemoveElement(edge);
-            var node = (edge.input.node as GraphViewNode).Parent;
-            if (node != null)
-            {
-                node.RemoveChild((edge.output.node as GraphViewNode).Parent.Id);
-            }
-        }
     }
 }

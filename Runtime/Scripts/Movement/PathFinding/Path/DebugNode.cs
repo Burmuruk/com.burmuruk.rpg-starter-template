@@ -1,7 +1,9 @@
-﻿using Burmuruk.Collections;
+using Burmuruk.Collections;
 using Burmuruk.WorldG.Patrol;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 namespace Burmuruk.AI

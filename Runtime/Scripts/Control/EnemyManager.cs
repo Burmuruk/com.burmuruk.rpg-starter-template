@@ -51,7 +51,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         private void SetEnemyMods()
         {
-            inventory = FindObjectOfType<LevelManager>().gameObject.GetComponent<Inventory.Inventory>();
+            // Enemy starting equipment must stay out of the player's inventory.
+            if (inventory == null)
+                inventory = GetComponent<Inventory.Inventory>();
 
             if (inventory == null || m_enemies == null) return;
 

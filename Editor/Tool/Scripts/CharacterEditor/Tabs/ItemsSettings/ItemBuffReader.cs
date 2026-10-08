@@ -121,10 +121,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 return false;
             }
 
-            if (_creationsState == CreationsState.Editing && Check_Changes() == ModificationTypes.None)
+            if (_creationsState == CreationsState.Editing)
             {
-                Notify("No changes were found", BorderColour.HighlightBorder);
-                return false;
+                if (Check_Changes() == ModificationTypes.None)
+                {
+                    Notify("No changes were found", BorderColour.HighlightBorder);
+                    return false;
+                }
             }
             else
                 CurModificationType = ModificationTypes.Add;

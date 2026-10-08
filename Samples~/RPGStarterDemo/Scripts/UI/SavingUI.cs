@@ -1,11 +1,10 @@
 using Burmuruk.RPGStarterTemplate.Saving;
-using Burmuruk.RPGStarterTemplate.UI;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 namespace Burmuruk.RPGStarterTemplate.UI.Samples
 {
@@ -14,240 +13,357 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         [Header("References")]
         [SerializeField] GameObject slotsContainer;
         [SerializeField] GameObject mainMenu;
-        [SerializeField] SlotUI[] slots;
-        [SerializeField] SlotUI[] autoSaves;
+        [SerializeField] SaveSlotView slotTemplate;
+        [SerializeField] Transform manualSlotsParent;
+        [SerializeField] Transform autoSavesParent;
         [SerializeField] GameObject btnAddMore;
-        [SerializeField] GameObject btnLoad;
-        [SerializeField] Image testImage;
+        [SerializeField] GameObject btnCancelDelete;
+        [Header("Mode")]
+        [SerializeField, Tooltip("True: save. False: load.")] bool saveMode;
+        [Header("Selection")]
+        [SerializeField] Color selectedColor = new Color(.75f, .85f, 1f);
+        [SerializeField] Color deleteSelectedColor = new Color(1f, .55f, .55f);
 
         JsonSavingWrapper savingWrapper;
-
-        int curSlots = 0;
+        readonly Dictionary<int, SaveSlotView> views = new Dictionary<int, SaveSlotView>();
+        readonly List<Sprite> ownedSprites = new List<Sprite>();
         int? selectedSlot;
-        bool deleting = false;
-
-        [Serializable]
-        private struct SlotUI
-        {
-            [SerializeField] GameObject item;
-            [SerializeField] TextMeshProUGUI title;
-            [SerializeField] TextMeshProUGUI timePlayed;
-            [SerializeField] TextMeshProUGUI membersCount;
-            [SerializeField] Image picture;
-
-            public GameObject GameObject { get { return item; } }
-            public string Title { get => title.text; set => title.text = value; }
-            public string PlayedTime { get => timePlayed.text; set => timePlayed.text = value; }
-            public int MembersCount { get => Int32.Parse(membersCount.text); set => membersCount.text = value.ToString(); }
-            public Sprite Sprite { get => picture.sprite; set => picture.sprite = value; }
-        }
-
+        int? pendingNewSlot;
+        bool deleting;
+        bool saving;
         public event Action<int> OnSlotAdded;
 
         private void Awake()
         {
+            if (slotTemplate != null && slotTemplate.gameObject.scene.IsValid())
+                slotTemplate.gameObject.SetActive(false);
+
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            ResolveWrapper();
+            ApplyState();
+        }
+
+        private bool ResolveWrapper()
+        {
+            if (savingWrapper != null)
+                return true;
+
             savingWrapper = FindObjectOfType<JsonSavingWrapper>();
 
-            EnableCurrentSlots(savingWrapper.FindAvailableSlots(out var sprites), sprites);
-            int i = 1;
-
-            foreach (var button in slots)
+            if (savingWrapper == null)
             {
-                button.GameObject.GetComponent<MyItemButton>().SetId(i++);
-                button.GameObject.GetComponent<MyItemButton>().OnPointerEnterEvent += SelectSlot;
+                Debug.LogWarning("SavingUI: JsonSavingWrapper not found.", this);
+                return false;
             }
 
-            i = -1;
-
-            foreach (var button in autoSaves)
-            {
-                button.GameObject.GetComponent<MyItemButton>().SetId(i--);
-                button.GameObject.GetComponent<MyItemButton>().OnPointerEnterEvent += SelectSlot;
-            }
-
-            SetSlotColour(Color.white);
+            savingWrapper.OnSaving += OnSavingProgress;
+            return true;
         }
 
-        public void ToggleSlots()
+        private void OnDestroy()
         {
-            ShowSlots(!slotsContainer.activeSelf);
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+
+            if (savingWrapper != null)
+                savingWrapper.OnSaving -= OnSavingProgress;
+
+            ReleaseSprites();
         }
 
-        public void ShowSlots(bool shouldShow)
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (scene.buildIndex == 0)
+                ShowMenu(true);
+        }
+
+        public void ToggleSavingSlots() => ShowSlots(!(slotsContainer.activeSelf && saveMode), true);
+
+        public void ToggleLoadingSlots() => ShowSlots(!(slotsContainer.activeSelf && !saveMode), false);
+
+        public void ToggleSlots() => ShowSlots(!slotsContainer.activeSelf);
+
+        public void ShowSlots(bool shouldShow) => ShowSlots(shouldShow, saveMode);
+
+        public void ShowSlots(bool shouldShow, bool shouldSave)
+        {
+            saveMode = shouldSave;
+            ResetSelection();
+
             if (shouldShow)
-                EnableCurrentSlots(savingWrapper.FindAvailableSlots(out var sprites), sprites);
+                RefreshSlots();
 
             slotsContainer.SetActive(shouldShow);
+            ApplyState();
         }
 
-        public void SaveSlot(int slot)
+        public void RefreshSlots()
         {
+            if (!ResolveWrapper())
+                return;
+
+            var data = savingWrapper.FindAvailableSlots(out var images);
+            ClearViews();
+            ReleaseSprites();
+
+            if (images != null)
+            {
+                foreach (var image in images)
+                {
+                    if (image.sprite != null)
+                        ownedSprites.Add(image.sprite);
+                }
+            }
+
+            EnableCurrentSlots(data, images);
+        }
+
+        public void EnableCurrentSlots(List<(int id, JObject slotData)> slots, List<(int id, Sprite sprite)> images)
+        {
+            ClearViews();
+
+            if (slotTemplate == null || manualSlotsParent == null || autoSavesParent == null)
+            {
+                Debug.LogError("SavingUI: assign template and containers.", this);
+                return;
+            }
+
+            if (slots != null)
+            {
+                var ordered = new List<(int id, JObject slotData)>(slots);
+                ordered.Sort((a, b) =>
+                {
+                    if ((a.id > 0) != (b.id > 0))
+                        return a.id > 0 ? -1 : 1;
+
+                    return Math.Abs(a.id).CompareTo(Math.Abs(b.id));
+                });
+
+                foreach (var slot in ordered)
+                {
+                    if (slot.id == 0 || slot.id < -3 || slot.id > 3 || views.ContainsKey(slot.id))
+                        continue;
+
+                    Sprite sprite = null;
+
+                    if (images != null)
+                    {
+                        foreach (var image in images)
+                        {
+                            if (image.id != slot.id)
+                                continue;
+
+                            sprite = image.sprite;
+                            break;
+                        }
+                    }
+
+                    var view = Instantiate(slotTemplate, slot.id > 0 ? manualSlotsParent : autoSavesParent);
+                    view.Bind(slot.id, slot.slotData, sprite, OnSlotClicked);
+                    views.Add(slot.id, view);
+                    view.gameObject.SetActive(true);
+                }
+            }
+
+            if (selectedSlot.HasValue && !views.ContainsKey(selectedSlot.Value))
+                selectedSlot = null;
+
+            ApplyState();
+        }
+
+        public void OnSlotClicked(int id)
+        {
+            if (saving || !views.ContainsKey(id))
+                return;
+
+            if (!deleting && saveMode && id < 0)
+                return;
+
+            selectedSlot = id;
+            ApplyState();
+
+            if (deleting) return;
+
+            if (saveMode)
+                SaveSlot(id);
+            else
+                LoadSlot(id);
+        }
+
+        public void EnterDeletingMode()
+        {
+            if (saving) return;
+
             if (!deleting)
             {
-                savingWrapper.Save(slot);
+                selectedSlot = null;
+                deleting = true;
+                ApplyState();
+                return;
             }
-            else
-            {
-                savingWrapper.DeleteSlot(slot);
-                EnterDeletingMode();
-                ToggleSlots();
-            }
+
+            if (selectedSlot.HasValue)
+                DeleteSlot(selectedSlot.Value);
         }
 
-        public void LoadSlot(int slot)
+        public void CancelDeletingMode()
         {
-            if (!deleting)
-            {
-                ShowMenu(false);
-
-                savingWrapper.Load(slot);
-            }
-            else
-            {
-                savingWrapper.DeleteSlot(slot);
-                EnterDeletingMode();
-                ToggleSlots();
-            }
+            ResetSelection();
+            ApplyState();
         }
 
+        public void DeleteSlot(int id)
+        {
+            if (saving || !deleting || selectedSlot != id || !views.ContainsKey(id) || !ResolveWrapper())
+                return;
+
+            savingWrapper.DeleteSlot(id);
+            ResetSelection();
+            RefreshSlots();
+        }
+
+        public void SaveSlot(int id)
+        {
+            if (saving || deleting || id < 1 || id > 3 || !ResolveWrapper())
+                return;
+
+            saving = true;
+            ApplyState();
+            savingWrapper.Save(id);
+        }
+
+        public void LoadSlot(int id)
+        {
+            if (saving || deleting || !views.ContainsKey(id) || !ResolveWrapper())
+                return;
+
+            ShowMenu(false);
+            savingWrapper.Load(id);
+        }
         public void LoadSelectedSlot()
         {
             if (selectedSlot.HasValue)
                 LoadSlot(selectedSlot.Value);
         }
 
-        public void EnableCurrentSlots(List<(int id, JObject slotData)> slots, List<(int id, Sprite sprite)> images)
-        {
-            DisableSlots();
-            EnableSlots(slots, images, out int slotsCount);
-
-            curSlots = slotsCount;
-
-            if (slotsCount >= 3)
-            {
-                btnAddMore.SetActive(false);
-            }
-            else if (slotsCount > 0)
-            {
-                btnAddMore.SetActive(true);
-                btnLoad.SetActive(true);
-            }
-            else
-            {
-                btnLoad.SetActive(false);
-            }
-        }
-
         public void AddSlot()
         {
-            ShowMenu(false);
+            if (saving || deleting || !ResolveWrapper())
+                return;
 
-            savingWrapper.Load(curSlots + 1);
-        }
+            RefreshSlots();
+            int id = FirstFreeManualId();
 
-        public void LoadScene(string name)
-        {
-            ShowMenu(false);
-            savingWrapper.LoadScene(name);
-        }
+            if (id == 0) return;
 
-        public void DeleteSlot(int idx)
-        {
-
-        }
-
-        public void EnterDeletingMode()
-        {
-            //if (selectedSlot.HasValue)
-            //    DeleteSlot(selectedSlot.Value);
-            deleting = !deleting;
-
-            if (deleting)
+            if (saveMode)
             {
-                SetSlotColour(Color.red);
+                pendingNewSlot = id;
+                SaveSlot(id);
             }
             else
             {
-                SetSlotColour(Color.white);
+                ShowMenu(false);
+                savingWrapper.Load(id);
+                OnSlotAdded?.Invoke(id);
             }
         }
 
-        private void SetSlotColour(Color newColour)
+        private int FirstFreeManualId()
         {
-            foreach (var item in slots)
+            for (int id = 1; id <= 3; id++)
+                if (!views.ContainsKey(id))
+                    return id;
+
+            return 0;
+        }
+
+        private void OnSavingProgress(float progress)
+        {
+            if (!saving || progress < 1f)
+                return;
+
+            saving = false;
+            int? added = pendingNewSlot;
+            pendingNewSlot = null;
+            RefreshSlots();
+
+            if (added.HasValue)
+                OnSlotAdded?.Invoke(added.Value);
+        }
+
+        public void ShowMenu(bool shouldShow)
+        {
+            ResetSelection();
+            ApplyState();
+
+            if (mainMenu != null)
+                mainMenu.SetActive(shouldShow);
+
+            if (slotsContainer != null)
+                slotsContainer.SetActive(false);
+        }
+
+        public void LoadScene(string sceneName)
+        {
+            if (saving || !ResolveWrapper())
+                return;
+
+            ShowMenu(false);
+            savingWrapper.LoadScene(sceneName);
+        }
+
+        private void ResetSelection()
+        {
+            selectedSlot = null;
+            deleting = false;
+
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
+        }
+        private void ApplyState()
+        {
+            foreach (var pair in views)
             {
-                var buttons = item.GameObject.GetComponent<MyItemButton>();
-                var colours = buttons.colors;
-                colours.highlightedColor = newColour;
-                colours.selectedColor = newColour;
-
-                item.GameObject.GetComponent<MyItemButton>().colors = colours;
+                pair.Value.SetState(!saving && (deleting || !saveMode || pair.Key > 0),
+                    selectedSlot == pair.Key, deleting ? deleteSelectedColor : selectedColor);
             }
+
+            if (btnAddMore != null)
+                btnAddMore.SetActive(saveMode && !saving && !deleting && FirstFreeManualId() != 0);
+
+            if (btnCancelDelete != null)
+                btnCancelDelete.SetActive(deleting);
         }
-
-        private void SelectSlot(int idx)
+        private void ClearViews()
         {
-
-        }
-
-        private void ShowMenu(bool shouldShow)
-        {
-            mainMenu.SetActive(shouldShow);
-            slotsContainer.SetActive(false);
-        }
-
-        private void DisableSlots()
-        {
-            foreach (var slot in slots)
+            foreach (var view in views.Values)
             {
-                slot.GameObject.SetActive(false);
+                if (view == null) continue;
+
+                view.gameObject.SetActive(false);
+                Destroy(view.gameObject);
             }
 
-            foreach (var autosave in autoSaves)
-            {
-                autosave.GameObject.SetActive(false);
-            }
+            views.Clear();
         }
-
-        private void EnableSlots(List<(int id, JObject slotData)> slots, List<(int id, Sprite sprite)> images, out int slotsCount)
+        private void ReleaseSprites()
         {
-            slotsCount = 0;
+            var textures = new HashSet<Texture>();
 
-            foreach (var slot in slots)
+            foreach (var sprite in ownedSprites)
             {
-                SlotUI curSlot = default;
-                if (slot.id < 0)
-                {
-                    curSlot = autoSaves[(slot.id * -1) - 1];
-                }
-                else
-                {
-                    curSlot = this.slots[slot.id - 1];
-                    ++slotsCount;
-                }
+                if (sprite == null) continue;
 
-                curSlot.Title = slot.id > 0 ? "Guardado " + slot.id : "Autoguardado";
-                curSlot.PlayedTime = slot.slotData["TimePlayed"].ToString();
-                curSlot.MembersCount = slot.slotData["MembersCount"].ToObject<int>();
-                curSlot.GameObject.SetActive(true);
+                if (sprite.texture != null)
+                    textures.Add(sprite.texture);
 
-
-                curSlot.Sprite = GetImage(slot.id);
-
-                Sprite GetImage(int id)
-                {
-                    if (images is null) return null;
-
-                    foreach (var image in images)
-                    {
-                        if (image.id == id)
-                            return image.sprite;
-                    }
-
-                    return null;
-                }
+                Destroy(sprite);
             }
+
+            foreach (var texture in textures)
+                Destroy(texture);
+
+            ownedSprites.Clear();
         }
-    } 
+    }
 }

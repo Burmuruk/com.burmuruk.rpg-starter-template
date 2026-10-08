@@ -35,6 +35,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
         private void Awake()
         {
+            RemoveDuplicates();
             var saver = GetComponent<JsonSavingSystem>();
 
             OnLoading += (_) =>
@@ -46,7 +47,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             {
                 LoadNavigationMap();
                 TemporalSaver.RemoveAllData();
-                
+
                 FindObjectOfType<PersistentObjSpawner>()?.TrySpawnObjects();
             };
 
@@ -55,6 +56,27 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
             DontDestroyOnLoad(gameObject);
             PersistentObjects.Register(gameObject);
+        }
+
+        private void RemoveDuplicates()
+        {
+            var instances = FindObjectsByType<JsonSavingWrapper>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+            foreach (var instance in instances)
+            {
+                if (instance == this)
+                    continue;
+
+                if (instance.gameObject.scene.name == "DontDestroyOnLoad")
+                {
+                    Destroy(gameObject);
+                    return;
+                }
+            }
+
+            DontDestroyOnLoad(gameObject);
         }
 
         protected virtual void LoadNavigationMap()
@@ -131,7 +153,8 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
             foreach (var kvp in data)
             {
-                if (!int.TryParse(kvp.Key, out int id)) continue;
+                if (!int.TryParse(kvp.Key, out int id))
+                    continue;
                 if (id > 0)
                 {
                     newSave[kvp.Key] = kvp.Value;
@@ -142,7 +165,8 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             {
                 string key = i.ToString();
 
-                if (!data.ContainsKey(key)) continue;
+                if (!data.ContainsKey(key))
+                    continue;
 
                 int newIndex = i - 1;
                 if (newIndex < -3)
@@ -204,7 +228,8 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
         private void TakeSlotPicture(int slot, byte[] pngBytes)
         {
-            if (pngBytes == null || pngBytes.Length == 0) return;
+            if (pngBytes == null || pngBytes.Length == 0)
+                return;
 
             string path = Path.Combine(
                 Application.persistentDataPath,
@@ -246,6 +271,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
         protected virtual void LoadFinalElements(SlotData data)
         {
+            FindObjectOfType<LevelManager>()?.RefreshRuntimeReferences();
             SetSlotData(data);
             FindObjectOfType<GameManager>()?.SetState(GameManager.State.Playing);
         }
@@ -275,7 +301,7 @@ namespace Burmuruk.RPGStarterTemplate.Saving
 
         private IEnumerator ChangeScene(string name)
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSecondsRealtime(1f);
 
             yield return SceneManager.LoadSceneAsync(name, LoadSceneMode.Single);
 
@@ -340,7 +366,8 @@ namespace Burmuruk.RPGStarterTemplate.Saving
             var saver = GetComponent<JsonSavingSystem>();
 
             var slots = saver.LookForSlots(DEFAULT_SAVEFILE);
-            if (slots is null) return null;
+            if (slots is null)
+                return null;
 
             foreach (var slot in slots)
             {
@@ -377,18 +404,18 @@ namespace Burmuruk.RPGStarterTemplate.Saving
         {
             switch ((SavingExecution)stage)
             {
-                case SavingExecution.Admin:
-                    break;
-
                 case SavingExecution.System:
                     break;
 
-                case SavingExecution.Organization:
+                case SavingExecution.Database:
+                    break;
+
+                case SavingExecution.Instances:
                     FindObjectOfType<LevelManager>().SetPaths();
                     FindObjectOfType<PlayerManager>().UpdateLeaderPosition();
                     break;
 
-                case SavingExecution.General:
+                case SavingExecution.References:
                     break;
             }
         }

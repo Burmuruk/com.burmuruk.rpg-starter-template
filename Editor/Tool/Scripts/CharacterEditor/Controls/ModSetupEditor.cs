@@ -1,4 +1,5 @@
-﻿using Burmuruk.RPGStarterTemplate.Stats;
+﻿using Burmuruk.RPGStarterTemplate.Editor.Saving;
+using Burmuruk.RPGStarterTemplate.Stats;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,119 +13,95 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public static List<ModEntry> ExtractAllMods(string scriptText)
         {
-            var mods = new List<ModEntry>();
-
-            var methodMatch = Regex.Match(scriptText, $@"(?<=void\s+{MethodName}\s*\(\)\s*\{{)(.*?)(?=\}}[^\)])", RegexOptions.Singleline);
-            if (!methodMatch.Success) return mods;
-
-            var methodBody = methodMatch.Groups[1].Value;
-
-            var matches = Regex.Matches(methodBody,
-                @"ModsList\.AddVariable\(\(Character\)this,\s*ModifiableStat\.([a-zA-Z0-9_]+),\s*\(\)\s*=>\s*(.*?),.*?value\s*?\)?\s*?=>",
-                RegexOptions.Singleline);
-
-            foreach (Match match in matches)
+            var registry = SavingSystem.LoadEnumRegistry();
+            return ModStatReferences.Read(scriptText).Select(call => new ModEntry
             {
-                if (match.Success && match.Groups.Count >= 3)
-                {
-                    mods.Add(new ModEntry
-                    {
-                        ModifiableStat = match.Groups[1].Value.Trim(),
-                        VariableName = match.Groups[2].Value.Trim().Split('.').Last().Replace(";", "")
-                    });
-                }
-            }
-
-            return mods;
+                VariableName = call.VariableName,
+                ModifiableStat = registry.GetName<ModifiableStat>(
+                    ModStatReferences.ResolveId(call.Value, registry))
+            }).ToList();
         }
 
         public static string AddMods(string scriptText, List<ModEntry> newMods)
         {
-            if (newMods.Count == 0) return scriptText;
+            if (newMods.Count == 0)
+                return scriptText;
 
-            var methodMatch = Regex.Match(scriptText, $@"(void\s+{MethodName}\s*\(\)\s*\{{)(.*?)(?=\}}[^\)])", RegexOptions.Singleline);
-            if (!methodMatch.Success) return scriptText;
+            string code = ModStatReferences.MaskTrivia(scriptText);
+            var methodMatch = Regex.Match(code, $@"\bvoid\s+{MethodName}\s*\(\s*\)\s*\{{");
+            if (!methodMatch.Success)
+                throw new InvalidOperationException($"Cannot find {MethodName} to add buff registrations.");
+            int depth = 1;
+            int close = methodMatch.Index + methodMatch.Length;
+            for (; close < code.Length && depth > 0; close++)
+            {
+                if (code[close] == '{')
+                    depth++;
+                else if (code[close] == '}')
+                    depth--;
+            }
+            if (depth != 0)
+                throw new InvalidOperationException($"Incomplete {MethodName} body.");
+            close--;
+            string additions = string.Empty;
 
-            var methodStart = methodMatch.Groups[1].Value.TrimEnd();
-            var bodyLines = methodMatch.Groups[2].Value.Split("\r\n");
-            var methodBody = string.Join("\r\n", bodyLines.Where(line => !string.IsNullOrWhiteSpace(line)));
-            var methodEnd = methodMatch.Groups[3].Value.TrimStart();
-
+            var registry = SavingSystem.LoadEnumRegistry();
+            var existing = new HashSet<string>(ModStatReferences.Read(scriptText).Select(c => c.VariableName));
             foreach (var entry in newMods)
             {
+                if (!existing.Add(entry.VariableName))
+                    continue;
+                var option = registry.GetEntry(typeof(ModifiableStat), entry.ModifiableStat);
+                if (option == null || option.Id == EnumRegistry.NoneId)
+                    throw new InvalidOperationException($"Invalid buff stat: {entry.ModifiableStat}");
                 string floatCast = entry.isFloat ? "" : "(int)";
-                var newLine = $"            ModsList.AddVariable((Character)this, ModifiableStat.{entry.ModifiableStat}, () => stats.{entry.VariableName}, (value) => {{ stats.{entry.VariableName} = {floatCast}value; }});";
-                bool containsLine = false;
-
-                foreach (var line in bodyLines)
-                {
-                    if (line.Contains(entry.ModifiableStat) && line.Contains(entry.VariableName))
-                    {
-                        containsLine = true;
-                        break;
-                    }
-                }
-
-                if (!containsLine)
-                    methodBody += "\r\n" + newLine;
+                var newLine = $"            ModsList.AddVariable((Character)this, (ModifiableStat){option.Id}, () => stats.{entry.VariableName}, (value) => {{ stats.{entry.VariableName} = {floatCast}value; }});";
+                additions += newLine + "\n";
             }
 
-            return scriptText.Replace(methodMatch.Value, methodStart + "\r\n" + methodBody + "\r\n" + methodEnd);
+            if (additions.Length == 0)
+                return scriptText;
+            int lineStart = scriptText.LastIndexOf('\n', close);
+            lineStart = lineStart < 0 ? 0 : lineStart + 1;
+            int insertion = string.IsNullOrWhiteSpace(scriptText.Substring(lineStart, close - lineStart))
+                ? lineStart : close;
+            return scriptText.Insert(insertion, "\n" + additions);
         }
 
         public static string RemoveMods(string scriptText, List<string> variableNames)
         {
-            if (variableNames.Count == 0) return scriptText;
-
-            var methodMatch = Regex.Match(scriptText, $@"(void\s+{MethodName}\s*\(\)\s*\{{)(.*?)(?=\}}[^\)])", RegexOptions.Singleline);
-            if (!methodMatch.Success) return scriptText;
-
-            var methodStart = methodMatch.Groups[1].Value;
-            var methodBody = methodMatch.Groups[2].Value;
-            var methodEnd = methodMatch.Groups[3].Value;
-
-            var lines = methodBody.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            var filteredLines = new List<string>();
-
-            foreach (var line in lines)
-            {
-                var trimmedLine = line.Trim();
-                if (trimmedLine.StartsWith("//"))
-                {
-                    filteredLines.Add(line);
-                    continue;
-                }
-
-                bool containsAny = false;
-                foreach (var variable in variableNames)
-                {
-                    if (Regex.IsMatch(line, $@"\b{Regex.Escape(variable)}\b"))
-                    {
-                        containsAny = true;
-                        break;
-                    }
-                }
-
-                if (!containsAny)
-                    filteredLines.Add(line);
-            }
-
-            return scriptText.Replace(methodMatch.Value, methodStart + "\r\n" + string.Join("\r\n", filteredLines) + "\r\n" + methodEnd);
+            var names = new HashSet<string>(variableNames);
+            foreach (var call in ModStatReferences.Read(scriptText).OrderByDescending(c => c.Start))
+                if (names.Contains(call.VariableName))
+                    scriptText = scriptText.Remove(call.Start, call.Length);
+            return scriptText;
         }
 
         public static string RenameModChanges(string scriptText, List<ModChange> changes)
         {
-            if (changes.Count == 0) return scriptText;
-            string result = scriptText;
-
-            foreach (ModChange change in changes)
+            // Get_Changes can emit both a type change and a name change for one variable.
+            var grouped = changes.GroupBy(c => c.OldName).ToDictionary(g => g.Key, g => g.ToList());
+            foreach (var call in ModStatReferences.Read(scriptText).OrderByDescending(c => c.Start))
             {
-                string regFind = $@"\b(?'stats'(stats|basicStats)\.){Regex.Escape(change.OldName)}\b";
-                string replacement = "${stats}" + change.NewName;
-                result = Regex.Replace(result, regFind, replacement);
+                if (!grouped.TryGetValue(call.VariableName, out var edits))
+                    continue;
+                int id = (int)edits[0].Type;
+                if (id == EnumRegistry.NoneId)
+                    scriptText = scriptText.Remove(call.Start, call.Length);
+                else
+                    scriptText = scriptText.Remove(call.ValueStart, call.ValueLength)
+                        .Insert(call.ValueStart, $"(ModifiableStat){id}");
             }
 
-            return result;
+            // A missing NewName means only the buff type changed.
+            // Replace in one pass to avoid cascading A->B, B->C renames.
+            return Regex.Replace(scriptText, @"\b(?<owner>stats|basicStats)\.(?<name>@?\w+)", match =>
+            {
+                if (!grouped.TryGetValue(match.Groups["name"].Value, out var edits))
+                    return match.Value;
+                string newName = edits.LastOrDefault(c => !string.IsNullOrEmpty(c.NewName)).NewName;
+                return string.IsNullOrEmpty(newName) ? match.Value : match.Groups["owner"].Value + "." + newName;
+            });
         }
     }
 

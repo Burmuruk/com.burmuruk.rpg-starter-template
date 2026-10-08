@@ -1,3 +1,7 @@
+#PinNodeContainer.unreachable {
+    background-color: rgb(210, 210, 210);
+}
+
 .dialogue-node {
     width: 200px;
     padding: 10px;
@@ -7,5 +11,32 @@
 }
 
 Button {
-    flex-basis: 20px;
+    flex-basis: 30px;
+    max-height: 30px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+Button .statusButton {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    margin-right: 1px;
+    margin-bottom: 1px;
+    margin-left: 2px;
+    flex-shrink: 0;
+    max-width: 20px;
+}
+
+Button .statusBorder {
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
 }

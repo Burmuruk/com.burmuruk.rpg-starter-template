@@ -32,7 +32,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         public bool TryGetCreation(string name, ElementType type, out string id)
         {
             id = null;
-            if (!creations.ContainsKey(type)) return false;
+            if (!creations.ContainsKey(type))
+                return false;
 
             foreach (var creation in creations[type])
             {
@@ -48,23 +49,19 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         public bool TryGetCreation(string id, out CreationData data, out ElementType type)
         {
-            data = default;
-            type = default;
+            data = null;
+            type = ElementType.None;
 
-            foreach (var key in creations.Keys)
+            foreach (var pair in creations)
             {
-                foreach (var creation in creations[key])
+                if (pair.Value.TryGetValue(id, out data))
                 {
-                    if (creation.Key == id)
-                    {
-                        data = creation.Value;
-                        type = key;
-                        return true;
-                    }
+                    type = pair.Key;
+                    return true;
                 }
             }
 
-            return true;
+            return false;
         }
     }
 
@@ -99,7 +96,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         public override JObject GetJson()
         {
             var status = base.GetJson();
-            
+
             status["itemData"] = JsonSerializerHelper.ConvertDynamicDataToJson(Data.GetType(), Data);
             status["args"] = JsonSerializerHelper.ConvertDynamicDataToJson(args.GetType(), args);
             return status;

@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
-    <Style src="project://database/Assets/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/LineTags.uss?fileID=7433441132597879392&amp;guid=1db9e95078017b3489041439420a4a43&amp;type=3#LineTags" />
     <ui:Button text="&lt;-  " parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnGoBack" class="MidButton" style="min-width: 10%; max-width: 20px; margin-bottom: 12px;" />
     <ui:Toggle label="Set component in character" name="tglAddInventory" value="true" class="LineElements" style="-unity-text-align: middle-left;" />
     <ui:Label tabindex="-1" text="The character will start with no items on it." parse-escape-sequences="true" display-tooltip-when-elided="true" name="lblWarning" class="Disable" style="color: rgb(230, 180, 12); -unity-font-style: bold; font-size: 12px; white-space: normal;" />

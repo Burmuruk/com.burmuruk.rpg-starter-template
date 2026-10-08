@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Collections;
-using UnityEditor;
 using UnityEngine;
 
 namespace Burmuruk.WorldG.Patrol
@@ -74,7 +73,9 @@ namespace Burmuruk.WorldG.Patrol
             Initialize();
         }
 
-        [DrawGizmo(GizmoType.InSelectionHierarchy)]
+#if UNITY_EDITOR
+        [UnityEditor.DrawGizmo(UnityEditor.GizmoType.InSelectionHierarchy)]
+#endif
         private void OnDrawGizmos()
         {
             if (!isAlive) return;

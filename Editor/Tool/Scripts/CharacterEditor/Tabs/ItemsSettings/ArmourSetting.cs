@@ -13,6 +13,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             base.Initialize(container, nameControl);
 
             EquipmentPlace = new EnumModifierUI<EquipmentType>(container);
+            EquipmentPlace.Name.text = "Equipment Place";
         }
 
         public override void UpdateInfo(InventoryItem data, ItemDataArgs args, ItemType type = ItemType.Armor)
@@ -24,8 +25,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             //if (armour == null) return;
 
-            EquipmentPlace.Value = (EquipmentType)armour.GetEquipLocation();
-            (_changes as ArmourElement).UpdateInfo(EquipmentPlace.Value);
+            EquipmentPlace.Id = (int)armour.GetEquipLocation();
+            (_changes as ArmourElement).UpdateInfo((EquipmentType)EquipmentPlace.Id);
         }
 
         public override void UpdateUIData<T, U>(T data, U args)
@@ -33,7 +34,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             base.UpdateUIData(data, args);
             var armour = data as ArmourElement;
 
-            EquipmentPlace.Value = (EquipmentType)armour.GetEquipLocation();
+            EquipmentPlace.Id = (int)armour.GetEquipLocation();
         }
 
         public override (InventoryItem item, ItemDataArgs args) GetInfo(ItemDataArgs args)
@@ -42,7 +43,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             var (baseInfo, newArgs) = base.GetInfo(args);
             armour.Copy(baseInfo);
 
-            armour.UpdateInfo((EquipmentType)EquipmentPlace.EnumField.value);
+            armour.UpdateInfo((EquipmentType)EquipmentPlace.Id);
 
             return (armour, newArgs);
         }
@@ -54,9 +55,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 if (_changes == null) return CurModificationType = ModificationTypes.Add;
 
                 base.Check_Changes();
-                var location = (EquipmentType)(_changes as ArmourElement).GetEquipLocation();
+                int location = (int)(EquipmentType)(_changes as ArmourElement).GetEquipLocation();
 
-                if (location != EquipmentPlace.Value)
+                if (location != EquipmentPlace.Id)
                 {
                     CurModificationType = ModificationTypes.EditData;
                 }
@@ -77,10 +78,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 return false;
             }
 
-            if (_creationsState == CreationsState.Editing && Check_Changes() == ModificationTypes.None)
+            if (_creationsState == CreationsState.Editing)
             {
-                Notify("No changes were found", BorderColour.HighlightBorder);
-                return false;
+                if (Check_Changes() == ModificationTypes.None)
+                {
+                    Notify("No changes were found", BorderColour.HighlightBorder);
+                    return false;
+                }
             }
             else
                 CurModificationType = ModificationTypes.Add;
@@ -96,7 +100,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             base.Clear();
 
-            EquipmentPlace.Value = EquipmentType.None;
+            EquipmentPlace.Clear();
             _changes = null;
             _args = null;
         }
@@ -106,7 +110,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             base.Load_Changes();
 
             var changes = _changes as ArmourElement;
-            EquipmentPlace.Value = (EquipmentType)changes.GetEquipLocation();
+            EquipmentPlace.Id = (int)(EquipmentType)changes.GetEquipLocation();
         }
     }
 

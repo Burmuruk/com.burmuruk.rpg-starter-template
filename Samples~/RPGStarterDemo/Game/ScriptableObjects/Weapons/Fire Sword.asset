@@ -30,11 +30,13 @@ MonoBehaviour:
   _buffs:
   - name: Fire
     stat: 1
-    value: 1
+    effectType: 1
+    value: -2
     duration: 60
     rate: 1
     percentage: 0
     probability: 1
+    visual: {fileID: 11400000, guid: a4dfc68c7ef5a8f4086daa6598c83b2b, type: 2}
   equipment:
     body: {fileID: 0}
     spawnPoints: []

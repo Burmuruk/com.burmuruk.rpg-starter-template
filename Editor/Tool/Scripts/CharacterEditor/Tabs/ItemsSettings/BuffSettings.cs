@@ -160,9 +160,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             result &= _nameControl.VerifyData(out errors);
 
-            result &= isValid = Value.value <= 0;
+            result &= isValid = Value.value > 0;
             _highlighted[Value] = Value.tooltip;
-            Utilities.UtilitiesUI.Set_ErrorTooltip(Value, "The number can't be less than 1", ref errors, isValid);
+            Utilities.UtilitiesUI.Set_ErrorTooltip(Value, "The number can't be less than 0", ref errors, isValid);
 
             result &= isValid = (ModifiableStat)Stat.value != ModifiableStat.None;
             _highlighted[Stat] = Stat.tooltip;
@@ -184,10 +184,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             try
             {
-                if (_creationsState == CreationsState.Editing && Check_Changes() == ModificationTypes.None)
+                if (_creationsState == CreationsState.Editing)
                 {
-                    Utilities.UtilitiesUI.Notify("No changes were found", BorderColour.HighlightBorder);
-                    return false;
+                    if (Check_Changes() == ModificationTypes.None)
+                    {
+                        Utilities.UtilitiesUI.Notify("No changes were found", BorderColour.HighlightBorder);
+                        return false;
+                    }
                 }
                 else
                     CurModificationType = ModificationTypes.Add;

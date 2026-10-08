@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 {
@@ -18,9 +15,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public static string AddVariables(string scriptText, List<VariableEntry> newVariables)
         {
-            if (newVariables.Count <= 0) return scriptText;
+            if (newVariables.Count <= 0)
+                return scriptText;
 
-            foreach (var group in newVariables.GroupBy(v => v.Header))
+            foreach (IGrouping<string, VariableEntry> group in newVariables.GroupBy(v => v.Header))
             {
                 string headerPattern = $@"(?s)\[.*?Header\s*?\(.*?{Regex.Escape(group.Key)}.*?\).*?\](?-s)(\s*?\[SerializeField\].*?;)+";
                 Match headerMatch = Regex.Match(scriptText, headerPattern);
@@ -54,14 +52,15 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             var lines = scriptText.Split("\r\n");
             var result = new List<string>();
-            var (headerIdx, headerCount) = (-1, 0);
+            (int headerIdx, int headerCount) = (-1, 0);
 
             for (int i = 0; i < lines.Length; i++)
             {
                 string trimmed = lines[i].Trim();
                 if (trimmed.StartsWith("[SerializeField]") && i + 1 < lines.Length)
                 {
-                    if (headerIdx > 0) ++headerCount;
+                    if (headerIdx > 0)
+                        ++headerCount;
                     string nextLine = lines[i].Trim();
                     bool toRemove = variableNames.Any(name => nextLine.Contains($" {name};"));
 

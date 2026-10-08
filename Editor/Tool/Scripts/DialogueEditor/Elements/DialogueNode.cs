@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -28,7 +29,12 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             base.Initilize(graph, startPosition, prev);
             TFMessage = AddTextField(GraphViewNode.AlwaysVisibleContainer, "Message");
+            TFMessage.RegisterValueChangedCallback(OnMessageChanged);
+        }
 
+        private void OnMessageChanged(ChangeEvent<string> evt)
+        {
+            GraphViewNode.NotifyVisualChange();
         }
 
         public override void Save()

@@ -10,9 +10,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
     {
         const string INFO_INVENTORY_SETTINGS_NAME = "InventorySettings";
         Inventory _changes = default;
-        Dictionary<(string name, string type), string> _DropDownIds = new();
-        string _selectedType;
+        Dictionary<(string name, int type), string> _DropDownIds = new();
+        int _selectedType;
         private Label _warning;
+        EnumRegistry _registry;
 
         ElementType[] inventoryChoices = new ElementType[]
         {
@@ -24,16 +25,17 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             ElementType.Ability,
         };
 
-        public event Action<ComponentType> OnElementClicked;
+        public event Action<ElementType> OnElementClicked;
 
         public Button btnBackInventorySettings { get; private set; }
         public Toggle TglAddInventory { get; private set; }
-        public ComponentsListUI<ElementCreation> MClInventoryElements { get; private set; }
+        public ComponentsListUI<ListElementUI<ElementType>> MClInventoryElements { get; private set; }
 
         public override void Initialize(VisualElement container)
         {
             _instance = UtilitiesUI.CreateDefaultTab(INFO_INVENTORY_SETTINGS_NAME);
             container.Add(_instance);
+            _registry = SavingSystem.LoadEnumRegistry();
             base.Initialize(_instance);
 
             _warning = _instance.Q<Label>("lblWarning");
@@ -41,7 +43,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             btnBackInventorySettings = _instance.Q<Button>();
             btnBackInventorySettings.clicked += () => GoBack?.Invoke();
             _instance.Q<VisualElement>(ComponentsList.CONTAINER_NAME);
-            MClInventoryElements = new ComponentsListUI<ElementCreation>(_instance);
+            MClInventoryElements = new ComponentsListUI<ListElementUI<ElementType>>(_instance);
             Setup_ComponentsList();
 
             Populate_DDFType();
@@ -58,18 +60,17 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             MClInventoryElements.OnElementCreated += Setup_Element;
             MClInventoryElements.AddElementExtraData += Add_ElementId;
-            MClInventoryElements.DeletionValidator += TryRemove_Element;
             MClInventoryElements.OnComponentClicked += (idx) =>
             {
-                var type = (ComponentType)MClInventoryElements.Components[idx].Type;
-                OnElementClicked(type);
+                var type = (ElementType)MClInventoryElements.Components[idx].Type;
+                OnElementClicked?.Invoke(type);
             };
 
             MClInventoryElements.DDFType.RegisterValueChangedCallback((evt) => OnValueChanged_EFInventoryType(evt));
             MClInventoryElements.DDFElement.RegisterValueChangedCallback((evt) => OnValueChanged_DDFInventoryElement(evt.newValue));
         }
 
-        private void Setup_Element(ElementCreation creation)
+        private void Setup_Element(ListElementUI<ElementType> creation)
         {
             EnableContainer(creation.IFAmount, true);
             creation.IFAmount.RegisterValueChangedCallback(evt => Update_ElementAmount(evt, creation));
@@ -78,19 +79,19 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             creation.NameButton.SetEnabled(false);
         }
 
-        private void Check_InvalidAmount(ElementCreation creation, FocusOutEvent evt)
+        private void Check_InvalidAmount(ListElementUI<ElementType> creation, FocusOutEvent evt)
         {
             if (string.IsNullOrEmpty(creation.IFAmount.text))
                 creation.IFAmount.SetValueWithoutNotify(MClInventoryElements.Amounts[creation.idx]);
         }
 
-        private void Update_ElementAmount(ChangeEvent<int> evt, ElementCreation creation)
+        private void Update_ElementAmount(ChangeEvent<int> evt, ListElementUI<ElementType> creation)
         {
             if (!string.IsNullOrEmpty(creation.IFAmount.text))
                 Update_ElementAmount(evt.newValue, creation);
         }
 
-        private void Update_ElementAmount(int value, ElementCreation creation)
+        private void Update_ElementAmount(int value, ListElementUI<ElementType> creation)
         {
             if (value <= 0)
             {
@@ -99,7 +100,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             else
             {
                 var data = SavingSystem.Load(creation.Id);
-                if (string.IsNullOrEmpty(data.Id)) return;
+                if (string.IsNullOrEmpty(data.Id))
+                    return;
 
                 switch (data)
                 {
@@ -132,9 +134,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             }
         }
 
-        private void Add_ElementId(ElementCreation element)
+        private void Add_ElementId(ListElementUI<ElementType> element)
         {
-            element.Id = _DropDownIds[(element.NameButton.text, element.Type.ToString())];
+            element.Id = _DropDownIds[(element.NameButton.text, element.Type)];
             element.IFAmount.value = 1;
         }
 
@@ -198,12 +200,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         private void OnValueChanged_EFInventoryType(ChangeEvent<string> evt)
         {
             Populate_DDFElement();
-            _selectedType = evt.newValue;
+            _selectedType = _registry.GetId<ElementType>(evt.newValue);
         }
 
         private void OnValueChanged_DDFInventoryElement(string name)
         {
-            if (name == "None") return;
+            if (name == "None")
+                return;
 
             int? elementIdx = Check_HasInventoryComponent(name);
 
@@ -213,7 +216,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 Update_ElementAmount(component.IFAmount.value + 1, component);
             }
             else
-                MClInventoryElements.AddElement(name, MClInventoryElements.DDFType.value);
+                MClInventoryElements.AddElement(name, _selectedType);
 
             MClInventoryElements.DDFElement.SetValueWithoutNotify("None");
         }
@@ -229,14 +232,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 if (!SavingSystem.Data.creations.ContainsKey(type))
                     continue;
 
-                string typeName = type.ToString();
-                MClInventoryElements.DDFType.choices.Add(type.ToString());
+                MClInventoryElements.DDFType.choices.Add(_registry.GetName<ElementType>((int)type));
 
                 foreach (var creation in SavingSystem.Data.creations[type])
                 {
-                    if (creation.Value == null) continue;
+                    if (creation.Value == null)
+                        continue;
 
-                    _DropDownIds.Add((creation.Value.Id, typeName), creation.Key);
+                    _DropDownIds.Add((creation.Value.Id, (int)type), creation.Key);
                 }
             }
 
@@ -276,27 +279,31 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             if (string.IsNullOrEmpty(value) || value == "None")
                 return false;
 
-            if (!Enum.TryParse(value, out type)) return false;
+            int id = _registry.GetId<ElementType>(value);
+            if (id == EnumRegistry.NoneId)
+                return false;
+            type = (ElementType)id;
 
-            if (!SavingSystem.Data.creations.ContainsKey(type)) return false;
+            if (!SavingSystem.Data.creations.ContainsKey(type))
+                return false;
 
             return true;
         }
 
         private string Get_SelectedType()
         {
-            if (string.IsNullOrEmpty(_selectedType) || _selectedType == "None")
+            if (_selectedType == EnumRegistry.NoneId)
                 return "None";
 
             foreach (var item in _DropDownIds)
             {
-                if (item.Key.type.ToString() == _selectedType)
+                if (item.Key.type == _selectedType)
                 {
-                    return item.Key.type.ToString();
+                    return _registry.GetName<ElementType>(item.Key.type);
                 }
             }
 
-            _selectedType = string.Empty;
+            _selectedType = EnumRegistry.NoneId;
             return "None";
         }
 
@@ -314,8 +321,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public Inventory GetInventory()
         {
-            var inventory = new Inventory();
-            inventory.items = new();
+            var inventory = new Inventory
+            {
+                items = new()
+            };
 
             for (int i = 0; i < MClInventoryElements.Components.Count; i++)
             {
@@ -323,8 +332,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                     continue;
 
                 var curElement = MClInventoryElements[i];
-                string type = curElement.Type.ToString();
-                string id = _DropDownIds[(curElement.NameButton.text, type)];
+                string id = _DropDownIds[(curElement.NameButton.text, curElement.Type)];
                 inventory.items[id] = MClInventoryElements.Amounts[i];
             }
 
@@ -337,27 +345,38 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             var elements = MClInventoryElements;
             elements.RestartValues();
-            var newInventory = inventory;
             TglAddInventory.value = inventory.addInventory;
 
             if (inventory.items != null)
+            {
                 foreach (var item in inventory.items)
                 {
-                    int amount = item.Value;
-
-                    if (!SavingSystem.Data.TryGetCreation(item.Key, out var data, out var type))
+                    if (!SavingSystem.Data.TryGetCreation(item.Key, out var data, out ElementType type))
                         continue;
 
-                    Action<ElementCreation> ChangeValue = (e) => elements.ChangeAmount(e.idx, item.Value);
+                    void ChangeValue(ListElementUI<ElementType> element)
+                    {
+                        elements.ChangeAmount(element.idx, item.Value);
+                    }
+
                     elements.OnElementAdded += ChangeValue;
 
-                    if (!elements.AddElement(data.Id, type.ToString()))
-                        newInventory.items.Remove(item.Key);
+                    if (!elements.AddElement(data.Id, (int)type))
+                    {
+                        // No modifiques inventory.items mientras lo recorres.
+                    }
 
                     elements.OnElementAdded -= ChangeValue;
                 }
+            }
 
-            _changes = newInventory;
+            _changes = new Inventory
+            {
+                addInventory = inventory.addInventory,
+                items = inventory.items != null
+                    ? new Dictionary<string, int>(inventory.items)
+                    : null
+            };
         }
 
         public void UpdateUIData<T>(in T inventory) where T : Inventory
@@ -371,14 +390,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 {
                     int amount = item.Value;
 
-                    if (!SavingSystem.Data.TryGetCreation(item.Key, out var data, out var type))
+                    if (!SavingSystem.Data.TryGetCreation(item.Key, out var data, out ElementType type))
                         continue;
 
-                    Action<ElementCreation> ChangeValue = (e) => elements.ChangeAmount(e.idx, item.Value);
+                    Action<ListElementUI<ElementType>> ChangeValue = (e) => elements.ChangeAmount(e.idx, item.Value);
                     elements.OnElementAdded += ChangeValue;
                     elements.OnElementCreated += ChangeValue;
 
-                    elements.AddElement(data.Id, type.ToString());
+                    elements.AddElement(data.Id, (int)type);
 
                     elements.OnElementAdded -= ChangeValue;
                     elements.OnElementCreated -= ChangeValue;
@@ -387,20 +406,17 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
         public override void Clear()
         {
-            if (_changes != null)
-                _changes.items = null;
             MClInventoryElements.Clear();
-            _selectedType = null;
+            _selectedType = EnumRegistry.NoneId;
             TglAddInventory.value = false;
             EnableContainer(_warning, false);
+
+            _changes = null;
         }
 
         public override void Remove_Changes()
         {
-            if (_changes == null) return;
-
-            _changes.items = null;
-            _changes.addInventory = false;
+            _changes = null;
         }
 
         public override bool VerifyData(out List<string> errors)
@@ -413,7 +429,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         {
             var inventory = GetInventory();
 
-            if (_changes == null) return ModificationTypes.Add;
+            if (_changes == null)
+                return ModificationTypes.Add;
 
             if (_changes?.items == null ^ inventory?.items == null)
                 return ModificationTypes.EditData;
@@ -438,29 +455,5 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             LoadInventoryItems(newData);
         }
 
-        #region Components List
-
-        private bool TryRemove_Element(int idx)
-        {
-            if (((ComponentType)MClInventoryElements[idx].Type) == ComponentType.Inventory)
-            {
-                foreach (var component in MClInventoryElements.Components)
-                {
-                    if (!component.element.ClassListContains("Disable"))
-                    {
-                        if ((ComponentType)component.Type == ComponentType.Equipment)
-                        {
-                            Notify("Equipment requires an Inventory component to store the items", BorderColour.Error);
-                            return false;
-                        }
-                    }
-                    else
-                        break;
-                }
-            }
-
-            return true;
-        }
-        #endregion
     }
 }

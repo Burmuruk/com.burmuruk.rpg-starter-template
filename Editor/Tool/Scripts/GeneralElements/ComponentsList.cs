@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         public const string CONTAINER_NAME = "infoComponents";
     }
 
-    public class ComponentsList<T> : ComponentsList, IClearable where T : ElementCreationUI, new()
+    public class ComponentsList<T> : ComponentsList, IClearable where T : ListElementUI, new()
     {
         const string DEFAULT_ELEMENT_PATH = "Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/CharacterEditor/Elements/ElementComponent.uxml";
         List<int> _amounts;
@@ -57,7 +57,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 {
                     if (IsDisabled(component.element))
                         return i;
-                    
+
                     i++;
                 }
 
@@ -153,6 +153,15 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             return true;
         }
 
+        public bool AddElement(string name, int typeId)
+        {
+            if (!AddNewElement(name, typeId, out int? componentIdx))
+                return false;
+
+            OnElementAdded(Components[componentIdx.Value]);
+            return true;
+        }
+
         public bool AddElement(string name)
         {
             if (!AddNewElement(name, name, out int? componentIdx))
@@ -165,7 +174,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         private bool AddNewElement(string name, string type, out int? componentIdx)
         {
             componentIdx = null;
-            if (name == "None") return false;
+            if (name == "None")
+                return false;
 
             if (CreationValidator == null)
             {
@@ -188,6 +198,32 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             Components[componentIdx.Value].SetType(type);
             EnableContainer(Components[componentIdx.Value].element, true);
 
+            AddElementExtraData?.Invoke(Components[componentIdx.Value]);
+
+            return true;
+        }
+
+        private bool AddNewElement(string name, int typeId, out int? componentIdx)
+        {
+            componentIdx = null;
+            if (typeId == EnumRegistry.NoneId)
+                return false;
+
+            componentIdx = CreationValidator == null
+                ? DefaultCreationValidator()
+                : CreationValidator(Components, name);
+
+            if (componentIdx == -1)
+            {
+                CreateNewComponent(name, typeId, out int newIdx);
+                componentIdx = newIdx;
+            }
+            else if (!componentIdx.HasValue)
+                return false;
+
+            Components[componentIdx.Value].NameButton.text = name;
+            Components[componentIdx.Value].SetType(typeId);
+            EnableContainer(Components[componentIdx.Value].element, true);
             AddElementExtraData?.Invoke(Components[componentIdx.Value]);
 
             return true;
@@ -234,11 +270,36 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             return component;
         }
 
+        protected virtual T CreateNewComponent(string value, int typeId, out int idx)
+        {
+            idx = Components.Count;
+
+            VisualTreeAsset element = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ElementPath);
+            var component = new T();
+            component.Initialize(element.Instantiate(), idx);
+            component.SetType(typeId);
+
+            Components.Add(component);
+            Container.Add(component.element);
+            Amounts.Add(idx);
+
+            if (component.NameButton != null)
+            {
+                component.OnNameClicked = _ => OnComponentClicked(component.idx);
+                component.NameButton.RegisterCallback<ClickEvent>(component.OnNameClicked);
+            }
+
+            StartAmount(component, idx);
+            OnElementCreated(component);
+            return component;
+        }
+
         public virtual void RemoveComponent(int idx)
         {
             if (DeletionValidator != null)
             {
-                if (!DeletionValidator(idx)) return;
+                if (!DeletionValidator(idx))
+                    return;
             }
             else if (IsDisabled(Components[idx].element))
                 return;

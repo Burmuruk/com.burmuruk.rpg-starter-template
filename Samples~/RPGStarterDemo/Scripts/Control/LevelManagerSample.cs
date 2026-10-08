@@ -18,8 +18,8 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
         protected override void Start()
         {
             base.Start();
-            AddItemToDestroy(FindObjectOfType<SavingUI>(true).gameObject);
-            FindObjectOfType<HUDManager>()?.Init();
+            AddItemToDestroy(FindAnyObjectByType<SavingUI>(FindObjectsInactive.Include).gameObject);
+            FindAnyObjectByType<HUDManager>(FindObjectsInactive.Include)?.Init();
         }
 
         public void Update()
@@ -40,7 +40,12 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
 
         public void ChangeMenu()
         {
-            savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), true);
+            RefreshRuntimeReferences();
+
+            if (gameManager == null || !gameManager.CanChangeToUI() || playerManager == null || playerManager.CurPlayer == null)
+                return;
+
+            savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), false);
 
             gameManager.EnableUI(true);
             SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -48,12 +53,12 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
 
         public override void ToggleSavingOptions()
         {
-            FindObjectOfType<SavingUI>().ToggleSlots();
+            FindAnyObjectByType<SavingUI>().ToggleSlots();
         }
 
         public override void HideSavingOptions()
         {
-            FindObjectOfType<SavingUI>().ShowSlots(false);
+            FindAnyObjectByType<SavingUI>().ShowSlots(false);
         }
 
         public override void ExitUI()
@@ -64,7 +69,17 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
             GetComponentInChildren<Camera>(true).gameObject.SetActive(true);
 
             gameManager.ExitUI();
-            Task.Delay(200).GetAwaiter().OnCompleted(() => savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), false));
+            StartCoroutine(SaveAfterLeavingInventory());
+        }
+
+        private System.Collections.IEnumerator SaveAfterLeavingInventory()
+        {
+            yield return new WaitForSecondsRealtime(.2f);
+
+            RefreshRuntimeReferences();
+
+            if (savingWrapper != null)
+                savingWrapper.AddNewAutoSaveSlot(CaptureLevelData(), false);
         }
 
         public void EndGame()
@@ -100,26 +115,11 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
         {
 #if UNITY_EDITOR
             NavSaver.Restart();
-            string assetsSamplePath = Path.Combine(
-                Directory.GetParent(Application.dataPath).FullName,
-                "Assets/com.burmuruk.rpg-starter-template/Samples/RPGStarterDemo/NavigationMaps"
-            );
-
-            if (!Directory.Exists(assetsSamplePath))
-            {
-                assetsSamplePath = Path.Combine(
-                  Directory.GetParent(Application.dataPath).FullName,
-                  "Packages/com.burmuruk.rpg-starter-template/Samples~/RPGStarterDemo/NavigationMaps"
-                );
-            }
-
-            if (!Directory.Exists(assetsSamplePath))
-            {
-                assetsSamplePath = Path.Combine(
-                    Application.dataPath,
-                    "Samples/RPGStarterDemo/NavigationMaps"
-                );
-            }
+            // Resolve relative to this imported sample, including its versioned folder.
+            string scriptPath = UnityEditor.AssetDatabase.GetAssetPath(
+                UnityEditor.MonoScript.FromMonoBehaviour(this));
+            string assetsSamplePath = Path.GetFullPath(Path.Combine(
+                Path.GetDirectoryName(scriptPath), "..", "..", "NavigationMaps"));
 
             if (!Directory.Exists(assetsSamplePath)) return;
 
@@ -138,9 +138,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
                 Time.timeScale = 0;
                 SceneManager.SetActiveScene(scene);
                 var rootItems = SceneManager.GetSceneByBuildIndex(1).GetRootGameObjects();
-                FindObjectOfType<LevelManager>().
+                FindAnyObjectByType<LevelManager>().
                 GetComponentInChildren<Camera>().gameObject.SetActive(false);
-                var uiController = FindObjectOfType<UICharactersController>();
+                var uiController = FindAnyObjectByType<UICharactersController>();
 
                 foreach (var item in rootItems)
                 {
@@ -148,7 +148,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
 
                     if (menuCharacters != null)
                     {
-                        var pm = FindObjectOfType<PlayerManager>();
+                        var pm = FindAnyObjectByType<PlayerManager>();
                         menuCharacters.SetPlayers(pm.Players);
                         menuCharacters.SetInventory(pm.MainInventory);
                         menuCharacters.SetPlayerManager(pm);
@@ -165,14 +165,16 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
         protected override void UpdateGameState(GameManager.State state)
         {
             base.UpdateGameState(state);
+            HUDManager hud = FindAnyObjectByType<HUDManager>(FindObjectsInactive.Include);
 
             switch (state)
             {
                 case GameManager.State.Playing:
-                    FindObjectOfType<HUDManager>(true).gameObject.SetActive(true);
+                    hud?.gameObject.SetActive(true);
+                    hud.SetVisible(true);
                     break;
                 case GameManager.State.UI:
-                    FindObjectOfType<HUDManager>().gameObject.SetActive(false);
+                    hud?.SetVisible(false);
                     break;
                 default:
                     break;

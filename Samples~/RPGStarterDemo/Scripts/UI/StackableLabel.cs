@@ -22,6 +22,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
 
         public void Initialize()
         {
+            if (pool != null) return;
             pool = new ObjectPool<StackableNode>(CreateElement, GetElement, ReleaseElement, RemoveElement, defaultCapacity: amount, maxSize: maxAmount);
             activeNodes = new List<StackableNode>();
         }
@@ -50,6 +51,8 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
 
         public void Release(StackableNode node)
         {
+            if (!activeNodes.Contains(node)) return;
+
             pool.Release(node);
             activeNodes.Remove(node);
         }
@@ -77,7 +80,9 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             }
 
             var all = newLabel.GetComponentsInChildren<Image>(true);
+
             Image newImage = null;
+
             foreach (var image in all)
                 if (image.transform.name == "MainItemImage")
                 {
@@ -87,7 +92,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
 
             StackableNode newNode = node with
             {
-                label = newLabel.GetComponentInChildren<TextMeshProUGUI>(),
+                label = newLabel.GetComponentInChildren<TextMeshProUGUI>(true),
                 image = newImage
             };
 
@@ -96,7 +101,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
 
         private void RemoveElement(StackableNode node)
         {
-            UnityEngine.MonoBehaviour.Destroy(node.label);
+            UnityEngine.MonoBehaviour.Destroy(node.label.transform.parent.gameObject);
         }
     }
 

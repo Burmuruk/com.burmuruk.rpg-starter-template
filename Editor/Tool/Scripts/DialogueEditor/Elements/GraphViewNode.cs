@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -16,8 +16,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         public event Action OnDeselected;
         public event Action OnConnect;
         public event Action OnDisconnect;
+        public event Action OnVisualStateChanged;
 
-        private readonly Color unreachableColor = new (0.8235294f, 0.8235294f, 0.8235294f, 1);
+        public readonly Color unreachableColor = new (0.8235294f, 0.8235294f, 0.8235294f, 1);
         private bool collapsed = false;
         private DialogueGraphView graph;
 
@@ -29,6 +30,24 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         public TextField TxtOnEnterAction { get; private set; }
         public TextField TxtOnExitAction { get; private set; }
         public VisualElement AlwaysVisibleContainer { get; set; }
+        public Color BaseColour
+        {
+            get
+            {
+                var border = this.Q<VisualElement>("node-border");
+
+                if (border.style.backgroundColor.keyword == StyleKeyword.Undefined)
+                    return border.style.backgroundColor.value;
+
+                var colour = border.resolvedStyle.backgroundColor;
+                return colour.a > 0 ? colour : new Color(0.2f, 0.2f, 0.2f, 1f);
+            }
+            set
+            {
+                this.Q<VisualElement>("node-border").style.backgroundColor = value;
+                NotifyVisualChange();
+            }
+        }
 
         public GraphViewNode(DialogueGraphView graphView, BaseNode parent)
         {
@@ -95,6 +114,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         public void ShowButton(Button button, bool shouldShow)
         {
             button.style.display = shouldShow ? DisplayStyle.Flex : DisplayStyle.None;
+            OnVisualStateChanged?.Invoke();
         }
 
         public void ColorButton(Button button, bool shouldColor)
@@ -103,6 +123,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 button.style.backgroundColor = button.style.borderTopColor;
             else
                 button.style.backgroundColor = new Color(0.345098f, 0.345098f, 0.345098f);
+
+            OnVisualStateChanged?.Invoke();
         }
 
         protected override void ToggleCollapse()
@@ -122,6 +144,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             base.OnUnselected();
             OnDeselected?.Invoke();
+        }
+
+        public void NotifyVisualChange()
+        {
+            OnVisualStateChanged?.Invoke();
         }
 
         private Button MakeColorButton(Color color, string tooltip)
@@ -152,7 +179,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 tooltip = "Pin node",
                 name = PIN_BUTTON_NAME
             };
-            Texture2D pinIcon = (Texture2D)AssetDatabase.LoadAssetAtPath("Packages/com.burmuruk.rpg-starter-template/Tool/Art/Editor/Pin.png", typeof(Texture2D));
+            Texture2D pinIcon = (Texture2D)AssetDatabase.LoadAssetAtPath("Packages/com.burmuruk.rpg-starter-template/Editor/Tool/Art/Pin.png", typeof(Texture2D));
             button.style.backgroundImage = new StyleBackground(pinIcon);
             button.style.unityBackgroundImageTintColor = new Color(0.5169811f, 0.5169811f, 0.5169811f);
             button.style.marginLeft = 1;
@@ -208,6 +235,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
                 style.borderTopLeftRadius = 5f;
                 style.borderTopRightRadius = 5f;
             }
+            OnVisualStateChanged?.Invoke();
         }
     }
 

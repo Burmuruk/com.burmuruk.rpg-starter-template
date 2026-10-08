@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/Node.uss?fileID=7433441132597879392&amp;guid=1c7a9ec9ca23a9448940524cf01bc1e8&amp;type=3#Node" />
+    <Style src="project://database/Packages/com.burmuruk.rpg-starter-template/Tool/UIToolkit/Styles/BasicSS.uss?fileID=7433441132597879392&amp;guid=2693b02dba201b24e87668e3aaaa0fc1&amp;type=3#BasicSS" />
+    <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="PinNodeContainer" style="min-height: 80px; padding-top: 3px; padding-right: 3px; padding-bottom: 3px; padding-left: 3px; max-width: 200px; flex-basis: 80px; width: 130px; background-color: rgb(8, 8, 8); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(42, 42, 42); border-right-color: rgb(42, 42, 42); border-top-color: rgb(42, 42, 42); border-bottom-color: rgb(42, 42, 42); max-height: 150px; flex-shrink: 1; flex-grow: 1;">
+        <ui:VisualElement name="state" class="dialogue-node" style="flex-grow: 0; flex-shrink: 1; flex-direction: row; align-items: center; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; width: 100%;">
+            <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnStart" class="statusButton statusBorder" style="border-left-color: rgb(155, 38, 38); border-right-color: rgb(155, 38, 38); border-top-color: rgb(155, 38, 38); border-bottom-color: rgb(155, 38, 38);" />
+            <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnDialogue" class="statusButton statusBorder" style="border-left-color: rgb(4, 146, 159); border-right-color: rgb(4, 146, 159); border-top-color: rgb(4, 146, 159); border-bottom-color: rgb(4, 146, 159);" />
+            <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnMission" class="statusButton statusBorder" />
+            <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnPin" class="statusButton" />
+        </ui:VisualElement>
+        <ui:VisualElement class="LineContainer" style="margin-top: 2px;">
+            <ui:TextField multiline="true" tooltip="Add note to remember this pin!" name="txtNote" />
+        </ui:VisualElement>
+        <ui:VisualElement class="LineContainer" style="margin-top: 2px;">
+            <ui:Label tabindex="-1" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lblMessage" tooltip="Node dialogue" style="flex-grow: 1; overflow: hidden; align-items: flex-start; -unity-text-align: middle-left; text-overflow: clip; color: rgb(103, 103, 103);" />
+        </ui:VisualElement>
+    </ui:Button>
+</ui:UXML>

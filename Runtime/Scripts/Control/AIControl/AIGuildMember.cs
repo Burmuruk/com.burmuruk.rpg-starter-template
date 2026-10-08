@@ -18,7 +18,11 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         object formationArgs;
         CoolDownAction cdTeleport;
+        PlayerState stateBeforePause;
+        private float combatDamageUntil = float.NegativeInfinity;
+        public bool IsUnderAttack => Time.time < combatDamageUntil || AIEnemyController.IsThreatening(this);
         public int id = -1;
+        private Animator animator;
 
         #region Enums
 
@@ -56,17 +60,54 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
             get => playerState;
             set
             {
-                if (playerState == PlayerState.Combat && value != PlayerState.Combat)
+                if (playerState == value) return;
+
+                bool wasInCombat = playerState == PlayerState.Combat;
+                playerState = value;
+
+                if (wasInCombat && value != PlayerState.Combat)
                 {
-                    playerState = value;
-                    OnCombatStarted?.Invoke(false);
-                    return;
+                    Target = null;
+                    attackState = AttackState.None;
+                    fighter.StartAutoBasicAttack(false);
                 }
 
-                playerState = value;
+                if (wasInCombat != (value == PlayerState.Combat))
+                    OnCombatStarted?.Invoke(value == PlayerState.Combat);
             }
         }
         public Character Leader { get => mainPlayer; }
+
+        private void OnDestroy()
+        {
+            if (health != null) health.OnDamaged -= HandleDamage;
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+
+            if (animator != null)
+                animator.SetInteger("Health", health.HP);
+        }
+
+        public override void SetStats(BasicStats newStats)
+        {
+            base.SetStats(newStats);
+            health.OnDamaged -= HandleDamage;
+            health.OnDamaged += HandleDamage;
+
+            animator = GetComponent<Animator>();
+        }
+
+        private void HandleDamage(int remainingHealth)
+        {
+            combatDamageUntil = Time.time + 3f;
+            AnalizeDamage();
+
+            if (animator != null)
+                animator.SetBool("Hit", true);
+        }
 
         protected virtual void Start()
         {
@@ -92,26 +133,25 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         private void LateUpdate()
         {
-            if (playerState == PlayerState.Combat && !isTargetFar && !isTargetClose)
+            if (playerState == PlayerState.Combat && !IsUnderAttack && !IsValidTarget(Target) && !isTargetFar && !isTargetClose)
             {
-                List<(Component enemy, float distance)> closestEnemies = new();
+                bool allyInCombat = false;
 
-                foreach (Character character in Fellows)
+                if (Fellows != null)
                 {
-                    if (character.IsTargetClose || character.IsTargetFar)
+                    foreach (Character character in Fellows)
                     {
-                        closestEnemies.Add(GetClosestEnemy(character.CloseEnemies));
+                        if (character != null && character.gameObject.activeInHierarchy &&
+                            (IsValidTarget(character.Target) || character.IsTargetClose || character.IsTargetFar))
+                        {
+                            allyInCombat = true;
+                            break;
+                        }
                     }
                 }
 
-                if (closestEnemies.Count > 0)
-                {
-
-                }
-                else
-                {
-                    OnCombatStarted(false);
-                }
+                if (!allyInCombat)
+                    PlayerState = PlayerState.None;
             }
 
             if (Target)
@@ -142,12 +182,17 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         {
             if (shouldPause)
             {
-                playerState = PlayerState.None;
+                if (playerState != PlayerState.Paused)
+                    stateBeforePause = playerState;
+
+                playerState = PlayerState.Paused;
                 mover.PauseAction();
             }
             else
             {
-                playerState = PlayerState.None;
+                if (playerState == PlayerState.Paused)
+                    playerState = stateBeforePause;
+
                 mover.ContinueAction();
             }
 
@@ -178,7 +223,6 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         {
             Target = enemy.transform;
             PlayerState = PlayerState.Combat;
-            OnCombatStarted?.Invoke(true);
 
             fighter.BasicAttack();
         }
@@ -187,7 +231,6 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         {
             Target = enemy.transform;
             PlayerState = PlayerState.Combat;
-            OnCombatStarted?.Invoke(true);
 
             fighter.StartAutoBasicAttack(true);
         }
@@ -196,7 +239,6 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         {
             Target = null;
             PlayerState = PlayerState.None;
-            OnCombatStarted?.Invoke(false);
         }
 
         public void AnalizeDamage()
@@ -209,6 +251,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         protected override void GetNextTarget(Transform target)
         {
             base.GetNextTarget(target);
+
+            if (Target == null)
+                PlayerState = PlayerState.None;
 
             if (IsControlled)
             {
@@ -241,6 +286,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                 return;
             }
 
+            Transform perceivedTarget = GetPerceivedTarget();
             switch (formation)
             {
                 case Formation.Follow:
@@ -254,9 +300,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
                     if (playerDistance == PlayerDistance.Free || playerDistance == PlayerDistance.Close)
                     {
-                        if ((isTargetFar || isTargetClose) && 
+                        if (perceivedTarget != null &&
                             Vector3.Distance(transform.position, 
-                                GetNearestTarget(eyesPerceibed).position) < freeDistance)
+                                perceivedTarget.position) < freeDistance)
                         {
                             PlayerState = PlayerState.Combat;
                             attackState = AttackState.BasicAttack;
@@ -279,9 +325,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
                     if (playerDistance == PlayerDistance.Close)
                     {
-                        if ((isTargetFar || isTargetClose) &&
+                        if (perceivedTarget != null &&
                             Vector3.Distance(transform.position, 
-                            GetNearestTarget(eyesPerceibed).position) < stats.minDistance)
+                            perceivedTarget.position) < stats.minDistance)
                         {
                             PlayerState = PlayerState.Combat;
                             attackState = AttackState.BasicAttack;
@@ -326,24 +372,25 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                     break;
 
                 case (PlayerState.Combat, AttackState.BasicAttack):
+
                     if (isTargetFar || isTargetClose || Target)
                     {
-                        if (formation == Formation.LockTarget)
+                        if (formation == Formation.LockTarget && formationArgs is Character lockedTarget &&
+                            lockedTarget != null && IsValidTarget(lockedTarget.transform))
                         {
-                            Target = ((Character)formationArgs).transform;
+                            Target = lockedTarget.transform;
                         }
                         else if (Target == null)
                         {
-                            Target = GetNearestTarget(eyesPerceibed);
+                            Target = GetPerceivedTarget();
                         }
 
-                        OnCombatStarted?.Invoke(true);
                         fighter.SetTarget(Target);
                         fighter.BasicAttack();
                     }
                     else if (Target == null)
                     {
-                        Target = GetNearestTarget(eyesPerceibed);
+                        Target = GetPerceivedTarget();
                     }
                     break;
 
@@ -364,11 +411,13 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                     break;
 
                 case (PlayerState.Combat, AttackState.BasicAttack):
-                    if (isTargetFar || isTargetClose)
+
+                    if (IsValidTarget(Target))
                     {
                         if (formation == Formation.Protect) break;
 
                         var dis = stats.minDistance * .8f;
+
                         if (Vector3.Distance(Target.position, transform.position) > dis)
                         {
                             var destiniy = (transform.position - Target.position).normalized * dis;
@@ -380,6 +429,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                     break;
 
                 case (PlayerState.Teleporting, _):
+
                     Invoke("MoveCloseToPlayer", 1);
                     break;
             }
@@ -394,17 +444,21 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         {
             if (Target || isTargetClose || isTargetFar)
             {
-                OnCombatStarted?.Invoke(true);
-
-                playerState = PlayerState.Combat;
+                PlayerState = PlayerState.Combat;
                 attackState = AttackState.BasicAttack;
             }
             else
-                OnCombatStarted?.Invoke(false);
+                PlayerState = PlayerState.None;
         }
 
         public void MoveCloseToPlayer()
         {
+            CancelInvoke(nameof(MoveCloseToPlayer));
+
+            if (mainPlayer == null || mover == null || mover.nodeList == null) return;
+
+            cdTeleport ??= new CoolDownAction(1.5f);
+
             if (!cdTeleport.CanUse) return;
 
             StartCoroutine(cdTeleport.CoolDown());
@@ -412,15 +466,20 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
             Vector3 pos = default;
             var startNode = mover.nodeList.FindNearestNode(mainPlayer.transform.position);
 
-            do
+            for (int attempt = 0; attempt < 16; attempt++)
             {
-                var (x, z) = (Mathf.Cos(UnityEngine.Random.Range(-1, 1)), Mathf.Sin(UnityEngine.Random.Range(-1, .1f)));
-                var dis = freeDistance / 2;
+                Vector2 offset = UnityEngine.Random.insideUnitCircle.normalized * UnityEngine.Random.Range(closeDistance, freeDistance);
+                pos = new Vector3(offset.x, 0, offset.y);
 
-                pos = new Vector3(x * dis, mainPlayer.transform.position.y, z * dis);
-                pos = pos.normalized * UnityEngine.Random.Range(closeDistance, freeDistance);
+                if (mover.ChangePositionCloseToNode(startNode, mainPlayer.transform.position + pos))
+                {
+                    playerDistance = PlayerDistance.Free;
+                    PlayerState = PlayerState.FollowPlayer;
+
+                    mover.ContinueAction();
+                    return;
+                }
             }
-            while (!mover.ChangePositionCloseToNode(startNode, mainPlayer.transform.position + pos));
         }
 
         private void FollowPlayer()

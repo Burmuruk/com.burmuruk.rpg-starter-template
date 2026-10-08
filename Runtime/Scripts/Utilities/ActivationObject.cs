@@ -48,7 +48,7 @@ namespace Burmuruk.RPGStarterTemplate.Utilities
 
         public JToken CaptureAsJToken(out SavingExecution execution)
         {
-            execution = SavingExecution.Admin;
+            execution = SavingExecution.System;
             JObject state = new JObject();
 
             state["Enabled"] = _enable;

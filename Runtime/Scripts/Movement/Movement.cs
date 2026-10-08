@@ -25,8 +25,9 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         [SerializeField] float m_maxSteerForce = 5;
         [SerializeField] float m_threshold = 1;
         [SerializeField] float m_slowingRadious = 1.5f;
+        [SerializeField] bool smoothPathCorners = true;
 
-        Rigidbody m_rb;
+        protected Rigidbody _rb;
         Func<BasicStats> stats;
         InventoryEquipDecorator m_inventory;
         ActionScheduler m_scheduler;
@@ -45,6 +46,9 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         MovementState m_state = MovementState.None;
         Vector3 colYExtents = Vector3.zero;
         Vector3 destiny = Vector3.zero;
+        Vector3 requestedDestination;
+        float? arrivalDistance;
+        public Transform FacingTarget { get; set; }
         Vector3 target = Vector3.zero;
         IPathNode m_pathNodeTarget;
         IPathNode curNodePosition = null;
@@ -52,12 +56,13 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
         public INodeListSupplier nodeList;
         LinkedList<IPathNode> m_curPath;
+        Vector3[] pathTargets;
         IEnumerator<IPathNode> enumerator;
 
         public event Action OnFinished = delegate { };
 
         public Vector3 CurDirection { get; private set; }
-        public Vector3 Veloctiy { get => m_rb.velocity; }
+        public Vector3 Veloctiy { get => _rb.velocity; }
         public bool IsWorking
         {
             get
@@ -111,18 +116,23 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         #region Unity mehthods
         private void Awake()
         {
-            m_rb = GetComponent<Rigidbody>();
+            _rb = GetComponent<Rigidbody>();
             col = GetComponent<Collider>();
         }
 
-        private void FixedUpdate()
+        protected virtual void FixedUpdate()
         {
             Move();
-
+            if (m_canMove && FacingTarget != null)
+            {
+                Vector3 direction = Vector3.ProjectOnPlane(FacingTarget.position - transform.position, Vector3.up);
+                if (direction.sqrMagnitude > 0.0001f)
+                    _rb.MoveRotation(Quaternion.LookRotation(direction));
+            }
         }
         #endregion
 
-        public void Initialize(InventoryEquipDecorator inventory, ActionScheduler scheduler, Func<BasicStats> stats)
+        public virtual void Initialize(InventoryEquipDecorator inventory, ActionScheduler scheduler, Func<BasicStats> stats)
         {
             this.stats = stats;
             this.m_inventory = inventory;
@@ -131,6 +141,11 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
         public void SetConnections(INodeListSupplier nodeList)
         {
+            ResetRoute();
+
+            if (m_pathFinder != null) 
+                m_pathFinder.OnPathCalculated -= SetPath;
+
             m_pathFinder = new PathFinder(nodeList);
             this.nodeList = nodeList;
 
@@ -174,11 +189,13 @@ namespace Burmuruk.RPGStarterTemplate.Movement
             }
         }
 
-        public void MoveTo(Vector3 point, bool abortWhenLarger = false)
+        public void MoveTo(Vector3 point, bool abortWhenLarger = false, float? stoppingDistance = null)
         {
             if (IsWorking || !CanMove) return;
 
             m_state = MovementState.Calculating;
+            requestedDestination = point;
+            arrivalDistance = stoppingDistance.HasValue ? Mathf.Max(0.01f, stoppingDistance.Value) : (float?)null;
 
             if (abortWhenLarger)
             {
@@ -221,20 +238,19 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
         public bool ChangePositionCloseToNode(IPathNode node, Vector3 point)
         {
-            if (IsWorking) m_scheduler.CancelAll();
-
-            m_state = MovementState.Calculating;
+            if (nodeList == null || node == null) return false;
 
             var nextNode = nodeList.FindNearestNodeAround(node, point);
 
             if (nextNode == null)
             {
-                m_state = MovementState.None;
                 return false;
             }
 
+            ResetRoute();
             curNodePosition = nextNode;
-            transform.position = nextNode.Position + Vector3.up * col.bounds.extents.y;
+            _rb.position = nextNode.Position + Vector3.up * col.bounds.extents.y;
+            _rb.velocity = Vector3.zero;
 
             m_state = MovementState.None;
             return true;
@@ -242,19 +258,19 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
         public void ChangePositionTo(Vector3 position)
         {
-            if (IsWorking) m_scheduler.CancelAll();
-            m_state = MovementState.Calculating;
+            if (nodeList == null) return;
 
             var nextNode = nodeList.FindNearestNode(position);
 
             if (nextNode == null)
             {
-                m_state = MovementState.None;
                 return;
             }
 
+            ResetRoute();
             curNodePosition = nextNode;
-            transform.position = nextNode.Position + Vector3.up * col.bounds.extents.y;
+            _rb.position = nextNode.Position + Vector3.up * col.bounds.extents.y;
+            _rb.velocity = Vector3.zero;
 
             m_state = MovementState.None;
             return;
@@ -263,6 +279,28 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         public float GetSpeed()
         {
             return Stats.speed;
+        }
+
+        public void ResetRoute()
+        {
+            m_pathFinder?.CancelPendingRequest();
+            m_scheduler?.Discard(this);
+            m_curPath = null;
+            pathTargets = null;
+            enumerator?.Dispose();
+            enumerator = null;
+            m_pathNodeTarget = null;
+            curNodePosition = null;
+            curNodeIdx = 0;
+            arrivalDistance = null;
+            abortOnLargerPath = false;
+            m_state = MovementState.None;
+            target = destiny = requestedDestination = transform.position;
+            CurDirection = Vector3.zero;
+
+            if (_rb == null) _rb = GetComponent<Rigidbody>();
+            if (col == null) col = GetComponent<Collider>();
+            if (_rb != null) ApplyPlanarVelocity(Vector3.zero);
         }
 
         public float getMaxVel()
@@ -283,7 +321,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         public void PauseAction()
         {
             m_canMove = false;
-            m_rb.velocity = Vector3.zero;
+            ApplyPlanarVelocity(Vector3.zero);
         }
 
         public void ContinueAction()
@@ -302,7 +340,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement
                     FinishAction();
                     break;
                 case MovementState.Calculating:
-                    m_state = MovementState.None;
+                    ResetRoute();
                     break;
                 case MovementState.None:
                 default:
@@ -318,17 +356,18 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
         public void FinishAction()
         {
-            m_rb.velocity = new Vector3(0, m_rb.velocity.y, 0);
+            ApplyPlanarVelocity(Vector3.zero);
             m_curPath = null;
+            pathTargets = null;
             enumerator = null;
             m_pathNodeTarget = null;
             abortOnLargerPath = false;
             detachRotation = false;
-
-            OnFinished?.Invoke();
+            arrivalDistance = null;
 
             m_state = MovementState.None;
             m_scheduler.Finished(this);
+            OnFinished?.Invoke();
         }
 
         public void Flee(Vector3 target)
@@ -368,8 +407,10 @@ namespace Burmuruk.RPGStarterTemplate.Movement
             if (!m_canMove || !IsMoving) return;
 
             float adaptiveThreshold = Mathf.Max(Threshold, (nodeList?.NodeDistance ?? 1f) * 0.3f);
+            if (m_state == MovementState.Moving && arrivalDistance.HasValue)
+                adaptiveThreshold = arrivalDistance.Value;
 
-            m_rb.velocity = SteeringBehaviours.Seek2D(this, target);
+            ApplyPlanarVelocity(SteeringBehaviours.Seek2D(this, target));
             var pos1 = transform.position + colYExtents;
             var pos2 = target;
             float d = Vector3.Distance(pos1, pos2);
@@ -380,7 +421,14 @@ namespace Burmuruk.RPGStarterTemplate.Movement
                 {
                     if (!GetNextNode())
                     {
-                        FinishAction();
+                        if (arrivalDistance.HasValue)
+                        {
+                            target = requestedDestination + colYExtents;
+                            destiny = target;
+                            m_state = MovementState.Moving;
+                        }
+                        else
+                            FinishAction();
                         return;
                     }
                     else
@@ -397,26 +445,26 @@ namespace Burmuruk.RPGStarterTemplate.Movement
                 (m_state == MovementState.Moving ||
                 (m_state == MovementState.FollowingPath && curNodeIdx >= nodeIdxSlowingRadious)))
             {
-                if (detachRotation)
-                {
-                    m_rb.velocity = Vector3.ProjectOnPlane(SteeringBehaviours.Arrival(this, destiny, SlowingRadious, adaptiveThreshold), new Vector3(0, 1, 0));
-                }
-                else
-                {
-                    m_rb.velocity = SteeringBehaviours.Arrival(this, destiny, SlowingRadious, adaptiveThreshold);
-                }
-
-                CurDirection = m_rb.velocity.sqrMagnitude > 0.0001f ? m_rb.velocity.normalized : CurDirection;
-            }
-            else
-            {
-                CurDirection = m_rb.velocity.sqrMagnitude > 0.0001f ? m_rb.velocity.normalized : CurDirection;
+                ApplyPlanarVelocity(SteeringBehaviours.Arrival(this, destiny, SlowingRadious, adaptiveThreshold));
             }
 
-            if (!detachRotation)
+            Vector3 planarVelocity = Vector3.ProjectOnPlane(_rb.velocity, Vector3.up);
+            CurDirection = planarVelocity.sqrMagnitude > 0.0001f ? planarVelocity.normalized : CurDirection;
+
+            if (!detachRotation && FacingTarget == null)
             {
-                SteeringBehaviours.LookAt(transform, m_rb.velocity, m_maxSteerForce);
+                if (planarVelocity.sqrMagnitude > 0.01f)
+                {
+                    Quaternion rotation = Quaternion.LookRotation(planarVelocity.normalized);
+                    _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, rotation, Time.fixedDeltaTime * m_maxSteerForce));
+                }
             }
+        }
+
+        private void ApplyPlanarVelocity(Vector3 velocity)
+        {
+            velocity.y = _rb.velocity.y;
+            _rb.velocity = velocity;
         }
 
         private bool GetNextNode()
@@ -431,8 +479,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
                 if (enumerator.MoveNext())
                 {
-                    // --- IMPORTANT: use node position directly (no intermediate moving target) ---
-                    target = enumerator.Current.Position;
+                    target = pathTargets != null ? pathTargets[curNodeIdx] : enumerator.Current.Position;
 
                     m_pathNodeTarget = enumerator.Current;
                     curNodeIdx++;
@@ -446,6 +493,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
         private void SetPath()
         {
+            if (m_state != MovementState.Calculating) return;
             if (m_pathFinder.BestRoute == null || m_pathFinder.BestRoute.Count == 0)
             { Cancel(); return; }
 
@@ -457,6 +505,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement
                 return;
             }
 
+            pathTargets = CreatePathTargets();
             if (!GetNextNode()) { Cancel(); return; }
             if (abortOnLargerPath && m_curPath.Count * .5f > maxDistance + .5f * 5)
             {
@@ -493,6 +542,44 @@ namespace Burmuruk.RPGStarterTemplate.Movement
                 FinishAction();
                 return;
             }
+        }
+
+        private Vector3[] CreatePathTargets()
+        {
+            if (!smoothPathCorners || m_curPath.Count < 3) return null;
+
+            var points = new Vector3[m_curPath.Count];
+            var node = m_curPath.First;
+
+            for (int i = 0; node != null; i++, node = node.Next)
+            {
+                points[i] = node.Value.Position;
+                
+                if (node.Previous != null && node.Next != null &&
+                    Mathf.Abs(node.Previous.Value.Position.y - node.Value.Position.y) < 0.01f &&
+                    Mathf.Abs(node.Next.Value.Position.y - node.Value.Position.y) < 0.01f)
+                {
+                    points[i] = Vector3.Lerp(node.Previous.Value.Position, node.Value.Position, 0.5f);
+                }
+            }
+
+            var bounds = col.bounds;
+            float radius = Mathf.Max(0.01f, Mathf.Min(bounds.extents.x, bounds.extents.z));
+            float top = Mathf.Max(radius, bounds.size.y - radius);
+
+            for (int i = 1; i < points.Length; i++)
+            {
+                Vector3 delta = points[i] - points[i - 1];
+                Vector3 bottomPoint = points[i - 1] + Vector3.up * (radius + 0.05f);
+                Vector3 topPoint = points[i - 1] + Vector3.up * (top + 0.05f);
+
+                if (Physics.CheckCapsule(bottomPoint, topPoint, radius, 1 << 9, QueryTriggerInteraction.Ignore) ||
+                    (delta.sqrMagnitude > 0.0001f && Physics.CapsuleCast(bottomPoint, topPoint, radius,
+                        delta.normalized, delta.magnitude, 1 << 9, QueryTriggerInteraction.Ignore)))
+                    return null;
+            }
+
+            return points;
         }
     }
 }
