@@ -13,6 +13,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: 2H_Sword
       objectReference: {fileID: 0}
+    - target: {fileID: 1522771958866816908, guid: c2016abb5e0578c469e036cf94598d26,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1522771958866816908, guid: c2016abb5e0578c469e036cf94598d26,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: eaf3062ea22856b409e95b327b42c42a, type: 2}
     - target: {fileID: 6897138138018841651, guid: c2016abb5e0578c469e036cf94598d26,
         type: 3}
       propertyPath: m_LocalPosition.x

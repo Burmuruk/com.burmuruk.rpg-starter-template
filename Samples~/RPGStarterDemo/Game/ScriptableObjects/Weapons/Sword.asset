@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Sword
   m_EditorClassIdentifier: 
   m_name: Knight Sword
-  m_description: The ultimate sword.
+  m_description: basic sword
   _type: 4
   m_sprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   pickup: {fileID: 3636312307774390648, guid: ddd3a47c894ceae4eab13698fd000154, type: 3}
@@ -27,14 +27,7 @@ MonoBehaviour:
   m_maxDistance: 1.5
   reloadTime: 0
   maxAmmo: 0
-  m_buffsData:
-  - stat: 0
-    value: 0
-    duration: 0
-    rate: 0
-    percentage: 0
-    affectAll: 0
-    probability: 0
+  _buffs: []
   equipment:
-    Body: {fileID: 0}
+    body: {fileID: 0}
     spawnPoints: []

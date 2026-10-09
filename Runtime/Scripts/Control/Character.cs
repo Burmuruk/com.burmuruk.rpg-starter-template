@@ -97,14 +97,14 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         protected virtual void Update()
         {
-            if (health.HP <= 0) return;
+            if (health != null && health.HP <= 0) return;
 
             DecisionManager();
         }
 
         protected virtual void FixedUpdate()
         {
-            if (health.HP <= 0) return;
+            if (health != null && health.HP <= 0) return;
 
             eyesPerceibed = hasFarPerception ? Physics.OverlapSphere(farPercept != null ? farPercept.position : transform.position, stats.farDectection, 1 << 10) : Array.Empty<Collider>();
             earsPerceibed = hasClosePerception ? Physics.OverlapSphere(closePercept != null ? closePercept.position : transform.position, stats.closeDetection, 1 << 10) : Array.Empty<Collider>();
@@ -469,7 +469,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
         }
         #endregion
 
-        public void Select()
+        public virtual void Select()
         {
             foreach (Renderer rend in GetComponentsInChildren<Renderer>())
             {

@@ -19,6 +19,12 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
             return _mainList[itemId];
         }
 
+        public bool TryGet(int itemId, out InventoryItem item)
+        {
+            Initialize();
+            return _mainList.TryGetValue(itemId, out item);
+        }
+
         public List<InventoryItem> GetList(ItemType type)
         {
             Initialize();

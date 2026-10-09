@@ -286,7 +286,7 @@ PrefabInstance:
     - target: {fileID: 2785978298475701983, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.68
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 3204290459126204707, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
@@ -297,12 +297,12 @@ PrefabInstance:
     - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
       propertyPath: _hp
-      value: 30
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
       propertyPath: _maxHp
-      value: 30
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 4817401017363074416, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
@@ -451,12 +451,11 @@ MonoBehaviour:
     damage: 3
     damageRate: 1.5
     color: {r: 0, g: 0, b: 0, a: 0}
-    farDectection: 2.78
+    farDectection: 7
     closeDetection: 2.43
     minDistance: 3
   mover: {fileID: 0}
   fighter: {fileID: 0}
-  animator: {fileID: 0}
   itemsToDrop: []
   patrolController: {fileID: 0}
   playerAction: 0

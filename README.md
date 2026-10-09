@@ -47,8 +47,10 @@ El demo y varios materiales usan URP.
 2. Selecciona Add package from Git URL…
 
 ```json
-  "https://github.com/Burmuruk/com.burmuruk.rpg-starter-template.git"
+  https://github.com/Burmuruk/com.burmuruk.rpg-starter-template.git"
 ```
+
+  O bien, descarga este proyecto y selecciona Add package from disk
 3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar los assets básicos
 4. Seleccionar Yes si se desea copiar los archivos muestra
 5. (Opcional) Importa la escena demo desde la sección Samples del Package Manager
@@ -67,24 +69,20 @@ Para abrir es demo incluido debes seguir los siguientes pasos:
 
 ### Errores conocidos
 
-- **Navegación del demo en ejecutables**: los overrides de carga de mapas del sample actualmente se ejecutan únicamente en el editor. La compilación de scripts para Player no implica que la navegación del demo esté validada en una build.
-
-- **Pérdida de datos al editar diálogos**
-  Al abrir un mismo archivo de diálogo varias veces, el editor limpia ciertos campos y los cambios pueden perderse.
-  
-  *solución alternativa:* cerrar y volver a abrir la ventana antes de editar de nuevo.
-
-- **Datos del inventario se sobrescriben**
-  Si se realizan acciones que recargan datos sin guardar, la información actual puede sobrescribirse.
-  
-  *solución alternativa:* asegúrate de guardar los cambios antes de ejecutar operaciones que recarguen datos.
-
 - **Modificar enums no actualiza referencias existentes**
   Renombrar, eliminar o reordenar valores de enums usados por el sistema puede causar pérdida de referencias en ScriptableObjects y escenas.
   
   *solución alternativa:* modificar enums únicamente al inicio del proyecto o solo agregar nuevos valores, no reordenarlos.
 
+  - **No es posible navegar por escaleras o pendientes muy inclinadas**
+  No se detectan bien las esquinas de escaleras o las resultantes de juntar colliders.
+  
+  *solución alternativa:* Reducir la pendiente o modificar la densidad de la malla.
+
 - **Limitación en sistema de Buffs**
-  Solo puede estar activo un buff del mismo tipo por caller.
-  (Comportamiento actual por diseño; sujeto a expansión futura.)
+  Buffs desconectados del sistema de guardado.
+  (Comportamiento desconectado por cambio en proceso.)
+
+  - **No hay Carga de datos temporales en demo**
+  No todos los valores se cargan al regresar a una escena ya completada.
   

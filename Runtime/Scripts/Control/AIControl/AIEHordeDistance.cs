@@ -311,11 +311,11 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                 if (member == null) continue;
 
                 member.Restart();
-                member.gameObject.SetActive(false);
+                member.GetComponent<Health>()?.ApplyDamage(member.Health.MaxHp);
             }
 
-            if (horde != null) 
-                horde.SetActive(false);
+            //if (horde != null) 
+            //    horde.SetActive(false);
 
             troopsDeployed = false;
             phase = EncounterPhase.Patrol;

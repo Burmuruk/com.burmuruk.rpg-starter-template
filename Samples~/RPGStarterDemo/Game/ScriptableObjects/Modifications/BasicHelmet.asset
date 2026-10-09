@@ -22,4 +22,4 @@ MonoBehaviour:
   m_bodyPart: 2
   modifications:
   - ModsStat: 1
-    value: 5
+    value: 20

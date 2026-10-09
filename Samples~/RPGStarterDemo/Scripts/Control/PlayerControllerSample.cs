@@ -1,6 +1,7 @@
 ﻿using Burmuruk.RPGStarterTemplate.Inventory;
 using Burmuruk.RPGStarterTemplate.Stats;
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,6 +17,36 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
         private void OnEnable()
         {
             OnItemPicked += ItemPickedTrigger;
+            OnInteract += ItemInteractTrigger;
+            OnPickableEnter += SelectPickup;
+            OnPickableExit += SelectPickup;
+
+            if (selectedPickup != null) 
+                Select(selectedPickup.gameObject, true);
+        }
+
+        private void OnDisable()
+        {
+            if (selectedPickup != null) 
+                Select(selectedPickup.gameObject, false);
+
+            OnItemPicked -= ItemPickedTrigger;
+            OnInteract -= ItemInteractTrigger;
+            OnPickableEnter -= SelectPickup;
+            OnPickableExit -= SelectPickup;
+        }
+
+        private void SelectPickup(bool shouldSelect, string label, GameObject item)
+        {
+            Select(item, shouldSelect);
+        }
+
+        private void ItemInteractTrigger()
+        {
+            if (playerAnimator != null && player != null)
+            {
+                playerAnimator.SetTrigger("Interact");
+            }
         }
 
         protected override void FixedUpdate()
@@ -33,7 +64,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
         {
             if (playerAnimator != null && player != null)
             {
-                playerAnimator.SetBool("PickUp", true);
+                playerAnimator.SetTrigger("PickUp");
             }
         }
 
@@ -127,6 +158,24 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
         protected void ChangeItem(int v)
         {
 
+        }
+
+        public void Select(GameObject item, bool shouldSelect)
+        {
+            if (item == null)
+                return;
+            
+            foreach (Renderer rend in item.GetComponentsInChildren<Renderer>())
+            {
+                foreach (Material material in rend.materials)
+                {
+                    if (!material.shader.name.Contains("Outliner"))
+                        continue;
+
+                    material.SetFloat("_Enabled", shouldSelect ? 1 : 0);
+                    break;
+                }
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Burmuruk.RPGStarterTemplate.Combat;
+using Burmuruk.RPGStarterTemplate.Combat;
 using Burmuruk.RPGStarterTemplate.Control.AI;
 using Burmuruk.RPGStarterTemplate.Interaction;
 using Burmuruk.RPGStarterTemplate.Inventory;
@@ -25,6 +25,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
         protected List<IInteractable> m_interactables = new List<IInteractable>();
         protected int interactableIdx = 0;
         protected bool detachRotation = false;
+        protected Pickup selectedPickup;
         
         enum Interactions
         {
@@ -34,8 +35,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
             Interact
         }
 
-        public event Action<bool, string> OnPickableEnter;
-        public event Action<bool, string> OnPickableExit;
+        public event Action<bool, string, GameObject> OnPickableEnter;
+        public event Action<bool, string, GameObject> OnPickableExit;
         public event Action<string, Vector3> OnItemPicked;
         public event Action<bool, string> OnInteractableEnter;
         public event Action<bool, string> OnInteractableExit;
@@ -46,7 +47,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
         {
             get
             {
-                if (m_pickables.Count > 0)
+                if (selectedPickup != null && !selectedPickup.IsPicked)
                 {
                     return true;
                 }
@@ -59,46 +60,66 @@ namespace Burmuruk.RPGStarterTemplate.Control
         {
             gameManager = GetComponent<GameManager>();
             levelManager = GetComponent<LevelManager>();
+
+            gameManager.onStateChange += OnGameStateChanged;
+        }
+
+        private void OnDisable()
+        {
+            if (gameManager != null)
+                gameManager.onStateChange -= OnGameStateChanged;
+        }
+
+        protected virtual void OnGameStateChanged(GameManager.State state)
+        {
+            if ((state == GameManager.State.Cinematic || state == GameManager.State.Playing) && player != null)
+            {
+                player.mover.CancelAll();
+                player.mover?.ResetRoute();
+            }
         }
 
         protected virtual void FixedUpdate()
         {
             if (!player) return;
 
+            UpdateFacingTarget();
+
             if (m_shouldMove && player && GameManager.Instance.GameState == GameManager.State.Playing)
             {
-                try
-                {
-                    if (player.Target)
-                    {
-                        if (detachRotation)
-                            player.mover.DetachRotation = true;
-
-                        if (player.Target != Target) //Asssigns new target
-                            Target = player.Target.gameObject.GetComponent<Character>();
-
-                        player.transform.LookAt(Target.transform);
-                    }
-                    else
-                        detachRotation = false;
-
-                    player.mover.MoveTo(player.transform.position + m_direction * 2, true);
-                }
-                catch (NullReferenceException)
-                {
-
-                    throw;
-                }
+                player.mover.MoveTo(player.transform.position + m_direction * 2, true);
             }
 
             DetectItems();
             DetectInteractables();
         }
 
+        private void UpdateFacingTarget()
+        {
+            var target = player.Target;
+            Target = target != null && target.gameObject.activeInHierarchy &&
+                target.TryGetComponent<Health>(out var targetHealth) && targetHealth.IsAlive
+                ? target.GetComponent<Character>() : null;
+
+            player.mover.FacingTarget = Target != null &&
+                (GameManager.Instance == null || GameManager.Instance.GameState == GameManager.State.Playing)
+                ? Target.transform : null;
+
+            if (Target == null) 
+                detachRotation = false;
+        }
+
         public virtual void SetPlayer(Character player)
         {
+            if (this.player != null && this.player.mover != null)
+                this.player.mover.FacingTarget = null;
+
+            SetSelectedPickup(null);
+            m_pickables.Clear();
             var vollider = player.GetComponent<CapsuleCollider>();
             this.player = player;
+
+            UpdateFacingTarget();
         }
 
         #region Inputs
@@ -139,6 +160,10 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 if (enemy)
                 {
                     var newTarget = enemy.GetComponent<Character>();
+
+                    if (newTarget == null || newTarget.Health == null || !newTarget.Health.IsAlive) 
+                        return;
+
                     var playerRef = (AIGuildMember)player;
 
                     if (Target != null && Target == newTarget)
@@ -157,6 +182,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
                         //playerRef.AttackEnemy(Target);
                         detachRotation = true;
                     }
+
+                    UpdateFacingTarget();
                 }
             }
         }
@@ -173,8 +200,10 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
             if (HavePickable)
             {
-                var pickedUpItem = m_pickables.First().Value;
-                player.Inventory.Add(pickedUpItem.ID);
+                var pickedUpItem = selectedPickup;
+
+                if (!player.Inventory.Add(pickedUpItem.ID)) 
+                    return;
                 //var inventory = GetComponent<InventoryEquipDecorator>();
                 //inventory.AddVariable(pickedUpItem.itemType, pickedUpItem);
                 //inventory.TryEquip(player, pickedUpItem.itemType, pickedUpItem.GetSubType());
@@ -184,6 +213,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
                 var itemName = player.Inventory.GetItem(pickedUpItem.ID).Name;
                 OnItemPicked?.Invoke(itemName, pickedUpItem.transform.position);
+                DetectItems();
             }
             else if (m_interactables.Count > 0)
             {
@@ -293,37 +323,41 @@ namespace Burmuruk.RPGStarterTemplate.Control
         protected void DetectItems()
         {
             var items = Physics.OverlapSphere(player.transform.position, 1.5f, 1 << 11);
-            var hadItem = m_pickables.Count > 0;
-            //m_pickables.Clear();
-            Dictionary<Transform, Pickup> newList = new();
-            List<Pickup> newPickables = new();
+            m_pickables.Clear();
+            Pickup first = null;
 
             foreach (var item in items)
             {
-                var cmp = item.GetComponent<Pickup>();
-                if (cmp)
-                {
-                    if (!m_pickables.ContainsKey(cmp.transform))
-                    {
-                        newPickables.Add(cmp);
-                    }
-                    else
-                    {
-                        m_pickables.Remove(cmp.transform);
-                    }    
-                    
-                    newList.Add(cmp.transform, cmp);
-                }
+                var pickup = item.GetComponent<Pickup>();
+
+                if (pickup == null || pickup.IsPicked)
+                    continue;
+
+                m_pickables[pickup.transform] = pickup;
+
+                if (first == null) 
+                    first = pickup;
             }
 
-            if (newList.Count <= 0)
-                foreach (var item in m_pickables)
-                    OnPickableExit?.Invoke(false, "");
+            if (selectedPickup != null && m_pickables.ContainsKey(selectedPickup.transform)) 
+                return;
 
-            foreach (var item in newPickables)
-                OnPickableEnter?.Invoke(true, "Tomar"/* + m_items[0].modifiableStat.ToString()*/);
+            SetSelectedPickup(first);
+        }
 
-            m_pickables = newList;
+        private void SetSelectedPickup(Pickup pickup)
+        {
+            if (ReferenceEquals(selectedPickup, pickup)) 
+                return;
+
+            var previous = selectedPickup;
+            selectedPickup = pickup;
+
+            if (!ReferenceEquals(previous, null))
+                OnPickableExit?.Invoke(false, "", previous != null ? previous.gameObject : null);
+
+            if (pickup != null)
+                OnPickableEnter?.Invoke(true, "Pick up", pickup.gameObject);
         }
 
         protected void DetectInteractables()
@@ -335,6 +369,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
             foreach (var item in items)
             {
                 var cmp = item.GetComponent<IInteractable>();
+
                 if (cmp != null)
                 {
                     m_interactables.Add(cmp);
@@ -343,11 +378,11 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
             if (hadItem && m_interactables.Count <= 0)
             {
-                OnPickableExit?.Invoke(false, "");
+                OnInteractableExit?.Invoke(false, "");
             }
             else if (m_interactables.Count > 0)
             {
-                OnPickableEnter?.Invoke(true, "Interact");
+                OnInteractableEnter?.Invoke(true, "Interact");
             }
         }
 

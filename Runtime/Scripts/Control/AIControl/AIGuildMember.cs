@@ -118,6 +118,11 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         protected override void FixedUpdate()
         {
+            if (mover != null && !IsControlled)
+                mover.FacingTarget = playerState == PlayerState.Combat && IsValidTarget(Target) &&
+                    (GameManager.Instance == null || GameManager.Instance.GameState != GameManager.State.Cinematic)
+                    ? Target : null;
+
             if (mainPlayer == null) return;
 
             playerDistance = Vector3.Distance(mainPlayer.transform.position, transform.position) switch
@@ -268,6 +273,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         protected override void DecisionManager()
         {
             if (PlayerState == PlayerState.Paused) return;
+            if (GameManager.Instance != null && GameManager.Instance.GameState == GameManager.State.Cinematic) return;
 
             if (IsControlled)
             {
@@ -451,7 +457,20 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                 PlayerState = PlayerState.None;
         }
 
-        public void MoveCloseToPlayer()
+        public void RecoverFromFall()
+        {
+            CancelInvoke(nameof(MoveCloseToPlayer));
+            mover.ResetRoute();
+
+            if (IsControlled)
+                mover.ReturnToNavigationStart();
+            else
+                TeleportCloseToPlayer(true);
+        }
+
+        public void MoveCloseToPlayer() => TeleportCloseToPlayer(false);
+
+        private void TeleportCloseToPlayer(bool force)
         {
             CancelInvoke(nameof(MoveCloseToPlayer));
 
@@ -459,9 +478,11 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
             cdTeleport ??= new CoolDownAction(1.5f);
 
-            if (!cdTeleport.CanUse) return;
+            if (!force && !cdTeleport.CanUse) 
+                return;
 
-            StartCoroutine(cdTeleport.CoolDown());
+            if (cdTeleport.CanUse) 
+                StartCoroutine(cdTeleport.CoolDown());
 
             Vector3 pos = default;
             var startNode = mover.nodeList.FindNearestNode(mainPlayer.transform.position);
@@ -480,6 +501,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
                     return;
                 }
             }
+
+            if (force) 
+                mover.ChangePositionTo(mainPlayer.transform.position);
         }
 
         private void FollowPlayer()

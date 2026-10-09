@@ -74,6 +74,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: afea6343ca217f84baf451ef1fa8a18e,
         type: 2}
+    - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: _hp
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
+        type: 3}
+      propertyPath: _maxHp
+      value: 60
+      objectReference: {fileID: 0}
     - target: {fileID: 4817401017363074416, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
       propertyPath: shouldGetClose
@@ -208,7 +218,6 @@ MonoBehaviour:
     minDistance: 7
   mover: {fileID: 0}
   fighter: {fileID: 0}
-  animator: {fileID: 0}
   itemsToDrop:
   - {fileID: 11400000, guid: 75619ae22d649fa48a3f533efd8bce31, type: 2}
   - {fileID: 11400000, guid: d10504a0fbc69c741867b7fe641e0eef, type: 2}

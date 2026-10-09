@@ -446,9 +446,9 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
             try
             {
-                FindObjectOfType<PickupSpawner>().AddItem(itemsToDrop[rand], transform.position);
+                FindObjectOfType<PickupSpawner>()?.AddItem(itemsToDrop[rand], transform.position);
             }
-            catch (ArgumentException)
+            catch (NullReferenceException)
             {
                 Debug.Log("No prefab detected to drop");
             }

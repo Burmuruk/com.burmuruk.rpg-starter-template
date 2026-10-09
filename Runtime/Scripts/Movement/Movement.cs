@@ -52,6 +52,8 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         Vector3 target = Vector3.zero;
         IPathNode m_pathNodeTarget;
         IPathNode curNodePosition = null;
+        IPathNode navigationStart;
+        Vector3 recoveryPosition;
         int curNodeIdx;
 
         public INodeListSupplier nodeList;
@@ -118,6 +120,7 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         {
             _rb = GetComponent<Rigidbody>();
             col = GetComponent<Collider>();
+            recoveryPosition = transform.position;
         }
 
         protected virtual void FixedUpdate()
@@ -151,11 +154,16 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
             m_pathFinder.OnPathCalculated += SetPath;
             curNodePosition = nodeList.FindNearestNode(transform.position);
+            navigationStart = null;
+            recoveryPosition = transform.position;
+            RememberNavigationStart();
         }
 
         public void MoveToDirection(Vector3 direction, bool abortWhenLarger = true)
         {
             if (IsWorking || !CanMove) return;
+
+            RememberNavigationStart();
 
             m_state = MovementState.Calculating;
 
@@ -193,6 +201,8 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         {
             if (IsWorking || !CanMove) return;
 
+            RememberNavigationStart();
+
             m_state = MovementState.Calculating;
             requestedDestination = point;
             arrivalDistance = stoppingDistance.HasValue ? Mathf.Max(0.01f, stoppingDistance.Value) : (float?)null;
@@ -219,6 +229,8 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         public void FollowWithDistance(Movement target, float gap, params Character[] fellows)
         {
             if (IsWorking || !CanMove) return;
+
+            RememberNavigationStart();
 
             m_state = MovementState.Calculating;
             Vector3 point = SteeringBehaviours.GetFollowPosition(target, this, gap, fellows);
@@ -249,6 +261,8 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
             ResetRoute();
             curNodePosition = nextNode;
+            navigationStart = nextNode;
+            recoveryPosition = nextNode.Position + Vector3.up * col.bounds.extents.y;
             _rb.position = nextNode.Position + Vector3.up * col.bounds.extents.y;
             _rb.velocity = Vector3.zero;
 
@@ -269,11 +283,39 @@ namespace Burmuruk.RPGStarterTemplate.Movement
 
             ResetRoute();
             curNodePosition = nextNode;
+            navigationStart = nextNode;
+            recoveryPosition = nextNode.Position + Vector3.up * col.bounds.extents.y;
             _rb.position = nextNode.Position + Vector3.up * col.bounds.extents.y;
             _rb.velocity = Vector3.zero;
 
             m_state = MovementState.None;
             return;
+        }
+
+        private void RememberNavigationStart()
+        {
+            if (nodeList == null || col == null) return;
+            if (_rb != null && Mathf.Abs(_rb.velocity.y) > 0.5f) return;
+
+            Vector3 feet = new Vector3(col.bounds.center.x, col.bounds.min.y, col.bounds.center.z);
+            var node = nodeList.FindNearestNode(feet);
+            // Keep the previous safe floor when a movement request arrives during a fall.
+            if (node != null && node.IsEnabled && Mathf.Abs(feet.y - node.Position.y) <= 0.5f &&
+                Vector3.ProjectOnPlane(feet - node.Position, Vector3.up).sqrMagnitude <=
+                Mathf.Pow(Mathf.Max(nodeList.NodeDistance, 0.5f), 2))
+            {
+                navigationStart = node;
+                recoveryPosition = node.Position + Vector3.up * (transform.position.y - col.bounds.min.y + 0.05f);
+            }
+        }
+
+        public void ReturnToNavigationStart()
+        {
+            ResetRoute();
+            curNodePosition = navigationStart;
+            _rb.position = recoveryPosition;
+            _rb.velocity = Vector3.zero;
+            _rb.angularVelocity = Vector3.zero;
         }
 
         public float GetSpeed()
@@ -373,6 +415,8 @@ namespace Burmuruk.RPGStarterTemplate.Movement
         public void Flee(Vector3 target)
         {
             if (!m_canMove && !IsMoving) return;
+
+            RememberNavigationStart();
 
             m_state = MovementState.Calculating;
 

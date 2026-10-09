@@ -301,6 +301,8 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
                 controller.OnFormationHold += ShowFormations;
                 controller.OnPickableEnter += ShowInteractionButton;
                 controller.OnPickableExit += ShowInteractionButton;
+                controller.OnInteractableEnter += ShowInteractionButton;
+                controller.OnInteractableExit += ShowInteractionButton;
                 controller.OnItemPicked += ShowNotification;
 
                 removeSubscriptions.Add(() =>
@@ -308,6 +310,8 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
                     controller.OnFormationHold -= ShowFormations;
                     controller.OnPickableEnter -= ShowInteractionButton;
                     controller.OnPickableExit -= ShowInteractionButton;
+                    controller.OnInteractableEnter -= ShowInteractionButton;
+                    controller.OnInteractableExit -= ShowInteractionButton;
                     controller.OnItemPicked -= ShowNotification;
                 });
 
@@ -535,11 +539,11 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
         {
             var newText = playerManager.CurFormation.value switch
             {
-                Formation.Protect => "Protejer",
-                Formation.Free => "Libre",
-                Formation.LockTarget => "Fija objetivo",
-                Formation.Follow => "Seguir",
-                _ => "Libre"
+                Formation.Protect => "Protect",
+                Formation.Free => "Free",
+                Formation.LockTarget => "Lock Target",
+                Formation.Follow => "Follow",
+                _ => "Free"
             };
 
             StackableNode node;
@@ -605,8 +609,18 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
             pDialogueTitle.text = string.Empty;
         }
 
+        private void ShowInteractionButton(bool shouldShow, string name, GameObject pickup)
+        {
+            ShowInteractionButton(shouldShow, name);
+        }
+
         private void ShowInteractionButton(bool shouldShow, string name)
         {
+            if (playerController != null && playerController.HavePickable)
+            {
+                shouldShow = true;
+                name = "Pick up";
+            }
             if (shouldShow)
             {
                 StackableNode node;

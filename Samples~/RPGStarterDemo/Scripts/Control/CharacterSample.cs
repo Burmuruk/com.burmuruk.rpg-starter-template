@@ -20,5 +20,22 @@ namespace Burmuruk.RPGStarterTemplate.Control.Samples
 
             animator ??= GetComponent<Animator>();
         }
+
+        public override void Select()
+        {
+            base.Select();
+
+            foreach (Renderer rend in GetComponentsInChildren<Renderer>())
+            {
+                foreach (Material material in rend.materials)
+                {
+                    if (!material.shader.name.Contains("Outliner"))
+                        continue;
+
+                    material.SetFloat("_Enabled", 1);
+                    break;
+                }
+            }
+        }
     }
 }

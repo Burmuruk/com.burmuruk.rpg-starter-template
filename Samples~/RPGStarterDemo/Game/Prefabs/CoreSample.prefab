@@ -18,7 +18,6 @@ GameObject:
   - component: {fileID: 5728265933875378333}
   - component: {fileID: 6149285230375399081}
   - component: {fileID: 4622204313868417319}
-  - component: {fileID: 6751477745854890823}
   - component: {fileID: 3175059253946540389}
   - component: {fileID: 1158804079918892147}
   - component: {fileID: 9219894056484960566}
@@ -350,6 +349,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   pauseMenu: {fileID: 0}
+  endScreen: {fileID: 0}
   sceneName: MenuCharactersScene
 --- !u!114 &7493981944047968894
 MonoBehaviour:
@@ -403,19 +403,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b11d9312cee96449d892e053f9c0d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &6751477745854890823
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 255471479627065568}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 457be7f3ba1b99f4aa3646ee7bcc6e42, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  list: {fileID: 11400000, guid: 0a3f3d7e1f9d8704e976c5edafce273f, type: 2}
 --- !u!114 &3175059253946540389
 MonoBehaviour:
   m_ObjectHideFlags: 0

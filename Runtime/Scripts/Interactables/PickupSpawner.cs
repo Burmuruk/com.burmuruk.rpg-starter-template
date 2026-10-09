@@ -62,7 +62,6 @@ namespace Burmuruk.RPGStarterTemplate.Interaction
                 itemState["Picked"] = item.Value.picked;
 
                 state[i++.ToString()] = itemState;
-                item.Value.pickup.OnPickedUp += RemoveItem;
             }
 
             return state;
@@ -97,7 +96,13 @@ namespace Burmuruk.RPGStarterTemplate.Interaction
                     id = curItemState["Id"].ToObject<int>(),
                 };
 
-                var item = list.Get(curItemState["Id"].ToObject<int>());
+                if (!list.TryGet(itemData.id, out var item) || item == null || item.Pickup == null)
+                {
+                    Debug.LogWarning($"Cannot restore pickup with item ID {itemData.id}: missing item or pickup prefab. Skipping saved pickup.", this);
+                    i++;
+                    continue;
+                }
+
                 Pickup inst = Instantiate(item.Pickup, itemData.position, itemData.rotation, parent.transform);
 
                 itemData.pickup = inst;
@@ -138,10 +143,12 @@ namespace Burmuruk.RPGStarterTemplate.Interaction
                 position = pos,
                 rotation = pickup.transform.rotation,
                 picked = false,
-                pickup = pickup
+                pickup = pickup,
+                id = item.ID,
             };
 
             items.Add(pickup.gameObject, itemData);
+            pickup.OnPickedUp += RemoveItem;
         }
 
         private void RemoveItem(GameObject itemToRemove)

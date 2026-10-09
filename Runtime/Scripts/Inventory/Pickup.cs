@@ -11,10 +11,13 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
         public event Action<GameObject> OnPickedUp;
 
         public int ID { get => inventoryItem.ID; }
+        public bool IsPicked { get; private set; }
         public GameObject Prefab { get => prefab; set => prefab = value; }
 
         public int PickUp()
         {
+            if (IsPicked) return ID;
+            IsPicked = true;
             OnPickedUp?.Invoke(gameObject);
             Invoke("DestroyItem", .1f);
             return ID;

@@ -77,12 +77,12 @@ PrefabInstance:
     - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
       propertyPath: _hp
-      value: 8
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4417388710563994346, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
       propertyPath: _maxHp
-      value: 8
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7197814264841399882, guid: 8309bf9444a004e4b854038f1c57a905,
         type: 3}
@@ -212,7 +212,6 @@ MonoBehaviour:
     minDistance: 12
   mover: {fileID: 0}
   fighter: {fileID: 0}
-  animator: {fileID: 0}
   itemsToDrop:
   - {fileID: 11400000, guid: 75619ae22d649fa48a3f533efd8bce31, type: 2}
   patrolController: {fileID: 0}
@@ -250,6 +249,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 741558170174310451}
     m_Modifications:
+    - target: {fileID: -8753333483642116288, guid: ce18c53dd77d05e47a6421ad0f04a8c4,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8753333483642116288, guid: ce18c53dd77d05e47a6421ad0f04a8c4,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: f68d266fb92ffd04597989926c400e58, type: 2}
     - target: {fileID: -8679921383154817045, guid: ce18c53dd77d05e47a6421ad0f04a8c4,
         type: 3}
       propertyPath: m_LocalPosition.x

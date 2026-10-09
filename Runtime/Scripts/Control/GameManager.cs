@@ -22,6 +22,17 @@ namespace Burmuruk.RPGStarterTemplate.Control
                 if (state == value) return;
 
                 state = value;
+
+                if (value == State.Cinematic)
+                {
+                    foreach (var member in FindObjectsOfType<AI.AIGuildMember>())
+                    {
+                        if (member.IsControlled) continue;
+
+                        member.CancelInvoke(nameof(AI.AIGuildMember.MoveCloseToPlayer));
+                        member.mover?.ResetRoute();
+                    }
+                }
                 onStateChange?.Invoke(value);
             }
         }
