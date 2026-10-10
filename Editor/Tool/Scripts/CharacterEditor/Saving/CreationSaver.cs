@@ -16,33 +16,34 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 {
     public class CreationSaver
     {
-        const string BASE_PICKUP_PATH = "Packages/com.burmuruk.rpg-starter-template/CoreAssets/Game/Prefabs/Pickables/PickUpBase.prefab";
-        const string ITEMS_LIST_NAME = "GeneralItemsList.asset";
-        const string PROGRESS_NAME = "CharactersProgress.asset";
-        const string ASSET_EXTENSION = ".asset";
-        const string RESULT_PATH = "RPGResults";
-        const string ITEMS_FOLDER = "Items";
-        const string ARMOUR_FOLDER = "Armour";
-        const string PICKUPS_FOLDER = "Pickups";
-        const string CHARACTERS_FOLDER = "Characters";
-        const string WEAPONS_FOLDER = "Weapons";
+        const string BasePickUpPath = "Packages/com.burmuruk.rpg-starter-template/CoreAssets/Game/Prefabs/Pickables/PickUpBase.prefab";
+        const string ItemsListName = "GeneralItemsList.asset";
+        const string ProgressName = "CharactersProgress.asset";
+        const string AssetExtension = ".asset";
+        const string ResultPath = "RPGResults";
+        const string ItemsFolder = "Items";
+        const string ArmourtFolder = "Armour";
+        const string PickUpsFolder = "Pickups";
+        const string CharactersFolder = "Characters";
+        const string WeaponsFolder = "Weapons";
         ItemsList _itemsList;
         List<GameObject> garbage = new();
         CharacterProgress _progress;
-
+        int enemiesCount = 0;
+        
         CharacterProgress Progress
         {
             get
             {
                 if (_progress == null)
                 {
-                    _progress = AssetDatabase.LoadAssetAtPath<CharacterProgress>(Path + "/" + PROGRESS_NAME);
+                    _progress = AssetDatabase.LoadAssetAtPath<CharacterProgress>(Path + "/" + ProgressName);
 
                     if (_progress == null)
                     {
-                        AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<CharacterProgress>(), Path + "/" + PROGRESS_NAME);
+                        AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<CharacterProgress>(), Path + "/" + ProgressName);
                         AssetDatabase.Refresh();
-                        _progress = AssetDatabase.LoadAssetAtPath<CharacterProgress>(Path + "/" + PROGRESS_NAME);
+                        _progress = AssetDatabase.LoadAssetAtPath<CharacterProgress>(Path + "/" + ProgressName);
                     }
                 }
 
@@ -56,13 +57,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             {
                 if (_itemsList == null)
                 {
-                    _itemsList = AssetDatabase.LoadAssetAtPath<ItemsList>(Path + "/" + ITEMS_LIST_NAME);
+                    _itemsList = AssetDatabase.LoadAssetAtPath<ItemsList>(Path + "/" + ItemsListName);
 
                     if (_itemsList == null)
                     {
-                        AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<ItemsList>(), Path + "/" + ITEMS_LIST_NAME);
+                        AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<ItemsList>(), Path + "/" + ItemsListName);
                         AssetDatabase.Refresh();
-                        _itemsList = AssetDatabase.LoadAssetAtPath<ItemsList>(Path + "/" + ITEMS_LIST_NAME);
+                        _itemsList = AssetDatabase.LoadAssetAtPath<ItemsList>(Path + "/" + ItemsListName);
                     }
                 }
 
@@ -80,7 +81,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                     if (!AssetDatabase.IsValidFolder(resultsPath))
                     {
                         string defaultPath = "Assets";
-                        AssetDatabase.CreateFolder(defaultPath, RESULT_PATH);
+                        AssetDatabase.CreateFolder(defaultPath, ResultPath);
                         AssetDatabase.Refresh();
                     }
                     else
@@ -110,7 +111,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             string subFolder = Get_ItemSubFolder(item);
             if (!VerifyFolder(subFolder)) return;
 
-            string itemPath = Path + "/" + subFolder + "/" + item.Name + ASSET_EXTENSION;
+            string itemPath = Path + "/" + subFolder + "/" + item.Name + AssetExtension;
             if (AssetDatabase.LoadAssetAtPath<InventoryItem>(itemPath) != null)
                 AssetDatabase.DeleteAsset(itemPath);
 
@@ -138,13 +139,13 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         private Pickup CreatePickUp(InventoryItem item, ItemDataArgs args, string subFolder)
         {
-            if (!VerifyFolder(PICKUPS_FOLDER)) return null;
+            if (!VerifyFolder(PickUpsFolder)) return null;
 
-            string pickupPath = Path + "/" + PICKUPS_FOLDER + "/" + item.Name + "PickUp" + ".prefab";
+            string pickupPath = Path + "/" + PickUpsFolder + "/" + item.Name + "PickUp" + ".prefab";
             if (AssetDatabase.LoadAssetAtPath<Pickup>(pickupPath) != null)
                 AssetDatabase.DeleteAsset(pickupPath);
 
-            var basePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(BASE_PICKUP_PATH);
+            var basePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(BasePickUpPath);
             GameObject baseInstance = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
             garbage.Add(baseInstance);
 
@@ -175,16 +176,16 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         private string Get_ItemSubFolder(InventoryItem item) =>
             item switch
             {
-                Weapon => WEAPONS_FOLDER,
-                ArmourElement => ARMOUR_FOLDER,
-                _ => ITEMS_FOLDER,
+                Weapon => WeaponsFolder,
+                ArmourElement => ArmourtFolder,
+                _ => ItemsFolder,
             };
 
         public void SavePlayer(CharacterData data)
         {
-            if (!VerifyFolder(CHARACTERS_FOLDER)) return;
+            if (!VerifyFolder(CharactersFolder)) return;
 
-            GameObject player = new GameObject("Player", Get_Components(in data));
+            GameObject player = new GameObject(data.characterName, Get_Components(in data));
             garbage.Add(player);
 
             foreach (var component in data.components)
@@ -194,7 +195,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             Setup_Character(player, in data);
             Set_Progression(in data);
 
-            GameObject instance = PrefabUtility.SaveAsPrefabAsset(player, Path + "/" + CHARACTERS_FOLDER + "/" + data.characterName + ".prefab");
+            GameObject instance = PrefabUtility.SaveAsPrefabAsset(player, Path + "/" + CharactersFolder + "/" + data.characterName + ".prefab");
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             RemoveGarbage();
@@ -248,6 +249,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         {
             player.GetComponent<RPGStarterTemplate.Control.Character>();
 
+            int? layer = LayerCreator.EnsureLayer("Character");
+            if (layer.HasValue)
+                player.layer = layer.Value;
+
             var typeF = typeof(RPGStarterTemplate.Control.Character).GetField("characterType", BindingFlags.Instance | BindingFlags.NonPublic);
             if (typeF != null)
                 typeF.SetValue(player.GetComponent<RPGStarterTemplate.Control.Character>(), characterData.characterType);
@@ -259,7 +264,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             Setup_Drops(player, characterData);
             Setup_BasicStats(player, characterData);
             Set_DetectionPoints(player, characterData);
-            Set_Enemy(player, characterData.enemyTag);
+            Set_CharacterTags(player, characterData.enemyTag, characterData.characterTag);
         }
 
         private void Setup_Drops(GameObject player, CharacterData characterData)
@@ -286,32 +291,11 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             player.GetComponent<RPGStarterTemplate.Control.Character>().stats = characterData.basicStats;
         }
 
-        private void Set_Enemy(GameObject player, in string enemyTag)
+        private void Set_CharacterTags(GameObject player, in string enemyTag, string playerTag)
         {
-            AddTag(enemyTag);
-            player.tag = enemyTag;
-        }
-
-        public void AddTag(string newTag)
-        {
-            if (string.IsNullOrEmpty(newTag)) return;
-
-            SerializedObject tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
-            SerializedProperty tagsProp = tagManager.FindProperty("tags");
-
-            // Checks if tag already exists
-            for (int i = 0; i < tagsProp.arraySize; i++)
-            {
-                SerializedProperty t = tagsProp.GetArrayElementAtIndex(i);
-                if (t.stringValue.Equals(newTag)) return; // Ya existe
-            }
-
-            // Adds new tag
-            tagsProp.InsertArrayElementAtIndex(tagsProp.arraySize);
-            tagsProp.GetArrayElementAtIndex(tagsProp.arraySize - 1).stringValue = newTag;
-
-            tagManager.ApplyModifiedProperties();
-            Debug.Log($"Tag \"{newTag}\" añadido exitosamente.");
+            TagCreator.CreateTag(enemyTag);
+            TagCreator.CreateTag(playerTag);
+            player.tag = playerTag;
         }
 
         private void Set_DetectionPoints(GameObject player, CharacterData characterData)

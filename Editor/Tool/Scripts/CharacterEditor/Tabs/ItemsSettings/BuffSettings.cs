@@ -1,4 +1,4 @@
-﻿using Burmuruk.RPGStarterTemplate.Stats;
+using Burmuruk.RPGStarterTemplate.Stats;
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
@@ -160,9 +160,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             result &= _nameControl.VerifyData(out errors);
 
-            result &= isValid = Value.value > 0;
+            result &= isValid = Value.value != 0;
             _highlighted[Value] = Value.tooltip;
-            Utilities.UtilitiesUI.Set_ErrorTooltip(Value, "The number can't be less than 0", ref errors, isValid);
+            Utilities.UtilitiesUI.Set_ErrorTooltip(Value, "The number can't be 0", ref errors, isValid);
 
             result &= isValid = (ModifiableStat)Stat.value != ModifiableStat.None;
             _highlighted[Stat] = Stat.tooltip;

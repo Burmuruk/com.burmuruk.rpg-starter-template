@@ -42,6 +42,10 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         {
             yield return Fade(0, 1);
 
+            // Dissolve is an extra material pass; hide it once the spawn effect ends
+            // so the original textured materials are visible again.
+            SetDissolve(0);
+
             appearing = false;
             transition = null;
 
@@ -173,6 +177,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
         protected override void OnDisable()
         {
             base.OnDisable();
+            SetDissolve(0);
             transition = null;
             appearing = withdrawing = false;
         }

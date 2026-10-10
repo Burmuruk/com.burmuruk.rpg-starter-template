@@ -1,4 +1,4 @@
-﻿using Burmuruk.RPGStarterTemplate.Control;
+using Burmuruk.RPGStarterTemplate.Control;
 using Burmuruk.RPGStarterTemplate.Stats;
 using System;
 using System.Collections.Generic;
@@ -23,6 +23,8 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
 
         public override void Equip(Character character)
         {
+            if (character == null || Characters.Contains(character)) return;
+
             base.Equip(character);
 
             foreach (var mod in modifications)
@@ -33,10 +35,14 @@ namespace Burmuruk.RPGStarterTemplate.Inventory
 
         public override void Unequip(Character character)
         {
+            if (character == null || !Characters.Contains(character)) return;
+
             foreach (var mod in modifications)
             {
                 ModsList.RemoveModification(character, mod.ModsStat, mod.value);
             }
+
+            base.Unequip(character);
         }
 
         public override object GetEquipLocation()

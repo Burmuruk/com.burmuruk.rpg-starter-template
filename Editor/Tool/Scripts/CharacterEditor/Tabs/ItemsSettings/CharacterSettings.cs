@@ -1,18 +1,14 @@
 using Burmuruk.RPGStarterTemplate.Editor.Dialogue;
-using Burmuruk.RPGStarterTemplate.Inventory;
 using Burmuruk.RPGStarterTemplate.Stats;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using UnityEditor;
 using UnityEditor.Compilation;
-using UnityEditor.PackageManager;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -139,8 +135,10 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         public Toggle TglSave { get; private set; }
         public ComponentsListUI<ListElementUI<ComponentType>> ComponentsList { get; private set; }
         public EnumModifierUI<CharacterType> EMCharacterType { get; private set; }
+        public DropdownField DDFCharacterTag { get; private set; }
         public DropdownField DDFEnemyTag { get; private set; }
-        public TextField TxtTagName { get; private set; }
+        public TextField TxtCharacterTag { get; private set; }
+        public TextField TxtEnemyTag { get; private set; }
         public ObjectField OFModel { get; private set; }
         public TreeViewList<DropElementData> DropsList { get; private set; }
         public PopupField<string> PUBaseClass { get; private set; }
@@ -169,12 +167,14 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             VisualElement pBaseClass = container.Q<VisualElement>("PBaseClass");
             BtnApplyStats = container.Q<Button>("btnApplyStats");
             BtnApplyStats.clicked += OnClick_ApplyStats;
+            DDFCharacterTag = container.Q<VisualElement>("ddfCharacterTag").Q<DropdownField>();
             DDFEnemyTag = container.Q<VisualElement>("ddfEnemyTag").Q<DropdownField>();
             OFModel = container.Q<ObjectField>("ofModel");
-            TxtTagName = container.Q<VisualElement>("txtTagName").Q<TextField>();
+            TxtEnemyTag = container.Q<VisualElement>("txtEnemyTag").Q<TextField>();
+            TxtCharacterTag = container.Q<VisualElement>("txtCharacterTag").Q<TextField>();
             Setup_Model();
             Setup_DropsList();
-            Setup_EnemyTag();
+            Setup_Tags();
             Setup_PUBaseClass(pBaseClass);
 
             ComponentsList = new ComponentsListUI<ListElementUI<ComponentType>>(container);
@@ -204,7 +204,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
         private void Setup_DropsList()
         {
             DropsList = new TreeViewList<DropElementData>(Container);
-            DropsList.Foldout.text = "Drops";
+            DropsList.Foldout.text = "Items to drop";
         }
 
         private void Setup_Model()
@@ -222,54 +222,80 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             }
         }
 
-        private void Setup_EnemyTag()
+        private void Setup_Tags()
         {
-            TxtTagName.RegisterCallback<KeyUpEvent>(OnValueChanged_TagName);
+            TxtEnemyTag.RegisterCallback<KeyUpEvent>(OnValueAdded_EnemyTag);
+            TxtCharacterTag.RegisterCallback<KeyUpEvent>(OnValueAdded_CharcterTag);
+
             DDFEnemyTag.RegisterValueChangedCallback(evt =>
             {
-                if (evt.newValue == "New")
-                {
-                    EnableContainer(TxtTagName.parent, true);
-                    TxtTagName.SetValueWithoutNotify(string.Empty);
-                    TxtTagName.Focus();
-                }
-                else
-                {
-                    EnableContainer(TxtTagName.parent, false);
-                }
+                OnTagChanged_DDFCharacter(evt, TxtEnemyTag);
             });
-            DDFEnemyTag.choices.Clear();
-            DDFEnemyTag.choices.Add("New");
-
-            SerializedObject tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
-            SerializedProperty tagsProp = tagManager.FindProperty("tags");
-
-            for (int i = 0; i < tagsProp.arraySize; i++)
+            DDFCharacterTag.RegisterValueChangedCallback(evt =>
             {
-                SerializedProperty t = tagsProp.GetArrayElementAtIndex(i);
-                DDFEnemyTag.choices.Add(t.stringValue);
+                OnTagChanged_DDFCharacter(evt, TxtCharacterTag);
+            });
+            Update_TagChoices();
+        }
+
+        private void OnTagChanged_DDFCharacter(ChangeEvent<string> evt, TextField textField)
+        {
+            if (evt.newValue == "New")
+            {
+                EnableContainer(textField.parent, true);
+                textField.SetValueWithoutNotify(string.Empty);
+                textField.Focus();
+            }
+            else
+            {
+                EnableContainer(textField.parent, false);
             }
         }
 
-        private void OnValueChanged_TagName(KeyUpEvent evt)
+        private void Update_TagChoices()
+        {
+            foreach (var dropDown in new DropdownField[] { DDFEnemyTag, DDFCharacterTag })
+            {
+                dropDown.choices.Clear();
+                dropDown.choices.Add("New");
+
+                dropDown.choices.AddRange(UnityEditorInternal.InternalEditorUtility.tags);
+                SerializedObject tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+                SerializedProperty tagsProp = tagManager.FindProperty("tags");
+
+                for (int i = 0; i < tagsProp.arraySize; i++)
+                {
+                    SerializedProperty t = tagsProp.GetArrayElementAtIndex(i);
+                    dropDown.choices.Add(t.stringValue);
+                }
+            }
+        }
+
+        private void OnValueAdded_CharcterTag(KeyUpEvent evt) => OnValueChanged_TagName(evt, TxtCharacterTag, DDFCharacterTag);
+        private void OnValueAdded_EnemyTag(KeyUpEvent evt) => OnValueChanged_TagName(evt, TxtEnemyTag, DDFEnemyTag);
+
+        private void OnValueChanged_TagName(KeyUpEvent evt, TextField textField, DropdownField dropDownField)
         {
             if (evt.keyCode != KeyCode.Return)
                 return;
 
             if (VerifyVariableName(TxtName.value))
             {
-                string tagName = TxtTagName.value.Trim();
+                string tagName = textField.value.Trim();
+
                 if (string.IsNullOrEmpty(tagName))
                 {
                     Notify("Tag name cannot be empty", BorderColour.Error);
                     return;
                 }
-                if (!DDFEnemyTag.choices.Contains(tagName))
+
+                if (!dropDownField.choices.Contains(tagName))
                 {
-                    DDFEnemyTag.choices.Add(tagName);
-                    DDFEnemyTag.SetValueWithoutNotify(tagName);
+                    TagCreator.CreateTag(tagName);
+                    Update_TagChoices();
+                    dropDownField.SetValueWithoutNotify(tagName);
                     Notify($"Tag '{tagName}' added", BorderColour.Success);
-                    EnableContainer(TxtTagName.parent, false);
+                    EnableContainer(textField.parent, false);
                 }
                 else
                 {
@@ -1143,6 +1169,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             EMCharacterType.Clear();
             DDFEnemyTag.value = null;
+            DDFCharacterTag.value = null;
             TglSave.value = false;
             OFModel.SetValueWithoutNotify(null);
             DropsList.Clear();
@@ -1165,12 +1192,17 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             //Character type
             result &= isValid = EMCharacterType.Id != EnumRegistry.NoneId;
             _highlighted[EMCharacterType.EnumField] = EMCharacterType.EnumField.tooltip;
-            Set_ErrorTooltip(EMCharacterType.EnumField, "Invalid value", ref errors, isValid);
+            Set_ErrorTooltip(EMCharacterType.EnumField, "Invalid character type", ref errors, isValid);
+
+            //Character tag
+            result &= isValid = DDFCharacterTag.value != "New" || !string.IsNullOrEmpty(DDFCharacterTag.value.Trim());
+            _highlighted[DDFCharacterTag] = DDFCharacterTag.tooltip;
+            Set_ErrorTooltip(DDFCharacterTag, "Invalid character tag", ref errors, isValid);
 
             //Enemy tag
             result &= isValid = DDFEnemyTag.value != "New" || !string.IsNullOrEmpty(DDFEnemyTag.value.Trim());
             _highlighted[DDFEnemyTag] = DDFEnemyTag.tooltip;
-            Set_ErrorTooltip(DDFEnemyTag, "Invalid tag", ref errors, isValid);
+            Set_ErrorTooltip(DDFEnemyTag, "Invalid enemy tag", ref errors, isValid);
 
             //Model
             result &= isValid = OFModel.value != null;
@@ -1261,6 +1293,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                 if (DDFEnemyTag.value != _characterData.Value.enemyTag)
                     CurModificationType = ModificationTypes.EditData;
 
+                //Character tag
+                if (DDFCharacterTag.value != _characterData.Value.characterTag)
+                    CurModificationType = ModificationTypes.EditData;
                 return CurModificationType;
             }
             catch (InvalidDataExeption e)
@@ -1683,6 +1718,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             newData.characterType = (CharacterType)EMCharacterType.Id;
             newData.model = SavingSystem.GetAssetReference(OFModel.value);
             newData.enemyTag = DDFEnemyTag.value;
+            newData.characterTag = DDFCharacterTag.value;
             newData.drops = Get_DropsInfo();
             _progression.Get_Info(out newData.progress, out newData.basicStats);
 
@@ -1705,6 +1741,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
             DropsList.UpdateInfo(Convert_DropsInfo(_characterData.Value.drops));
             TglSave.value = _characterData.Value.shouldSave;
             DDFEnemyTag.value = _characterData.Value.enemyTag ?? "";
+            DDFCharacterTag.value = _characterData.Value.characterTag ?? "";
             EMCharacterType.Id = (int)_characterData.Value.characterType;
             ComponentsList.DDFElement.value = "None";
             UpdateComponentChoices();
@@ -1746,6 +1783,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
 
             TglSave.value = newData.shouldSave;
             DDFEnemyTag.value = newData.enemyTag ?? "";
+            DDFCharacterTag.value = newData.characterTag ?? "";
             EMCharacterType.Id = (int)newData.characterType;
             ComponentsList.DDFElement.value = "None";
             UpdateComponentChoices();

@@ -16,6 +16,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
         public Color color;
         public CharacterType characterType;
         public string enemyTag;
+        public string characterTag;
         public bool shouldSave;
         public List<string> drops;
         public Dictionary<ComponentType, CharacterComponent> components;

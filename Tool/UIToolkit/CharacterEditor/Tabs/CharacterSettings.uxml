@@ -24,11 +24,18 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:Instance template="TypeAdder" name="TypeAdder" style="margin-top: 10px;" />
-        <ui:VisualElement name="ddfEnemyTag" class="LineContainer" style="flex-grow: 1;">
-            <ui:Label tabindex="-1" text="EnemyTag" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="flex-basis: 118px;" />
+        <ui:VisualElement name="ddfCharacterTag" class="LineContainer" style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="Character tag" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="flex-basis: 118px;" />
             <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" style="flex-grow: 1; flex-shrink: 1;" />
         </ui:VisualElement>
-        <ui:VisualElement name="txtTagName" class="LineContainer Disable" style="flex-grow: 1; flex-direction: row-reverse;">
+        <ui:VisualElement name="txtCharacterTag" class="LineContainer Disable" style="flex-grow: 1; flex-direction: row-reverse;">
+            <ui:TextField picking-mode="Ignore" value="New tag" class="LineElements" style="flex-grow: 0; flex-shrink: 1; flex-basis: 80%;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="ddfEnemyTag" class="LineContainer" style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="Enemy tag" parse-escape-sequences="true" display-tooltip-when-elided="true" class="LineElements" style="flex-basis: 118px;" />
+            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" style="flex-grow: 1; flex-shrink: 1;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="txtEnemyTag" class="LineContainer Disable" style="flex-grow: 1; flex-direction: row-reverse;">
             <ui:TextField picking-mode="Ignore" value="New tag" class="LineElements" style="flex-grow: 0; flex-shrink: 1; flex-basis: 80%;" />
         </ui:VisualElement>
         <ui:VisualElement class="LineContainer" style="flex-grow: 1;">

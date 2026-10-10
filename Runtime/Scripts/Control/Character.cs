@@ -106,10 +106,21 @@ namespace Burmuruk.RPGStarterTemplate.Control
         {
             if (health != null && health.HP <= 0) return;
 
-            eyesPerceibed = hasFarPerception ? Physics.OverlapSphere(farPercept != null ? farPercept.position : transform.position, stats.farDectection, 1 << 10) : Array.Empty<Collider>();
-            earsPerceibed = hasClosePerception ? Physics.OverlapSphere(closePercept != null ? closePercept.position : transform.position, stats.closeDetection, 1 << 10) : Array.Empty<Collider>();
-            isTargetFar = isTargetClose = false;
+            eyesPerceibed = (from enemy in Physics.OverlapSphere(
+                                position: farPercept != null ? farPercept.position : transform.position,
+                                radius: stats.farDectection,
+                                layerMask: 1 << LayerMask.NameToLayer("Character"))
+                             where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
+                             select enemy).ToArray();
 
+            earsPerceibed = (from enemy in Physics.OverlapSphere(
+                                position: closePercept != null ? closePercept.position : transform.position,
+                                radius: stats.closeDetection,
+                                layerMask: 1 << LayerMask.NameToLayer("Character"))
+                             where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
+                             select enemy).ToArray();
+
+            isTargetFar = isTargetClose = false;
             PerceptionManager();
         }
 
@@ -244,11 +255,9 @@ namespace Burmuruk.RPGStarterTemplate.Control
 
         protected virtual void GetNextTarget(Transform target)
         {
-            var nearEnemies = (from enemy in Physics.OverlapSphere(transform.position, 12, 1 << 10)
-                                 where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
-                                 select enemy).ToArray();
+            var nearEnemies = (eyesPerceibed ??= new Collider[0]).Union(earsPerceibed ??= new Collider[0]);
 
-            var result = GetClosestEnemy(nearEnemies);
+            var result = GetClosestEnemy(nearEnemies.ToArray());
 
             if (result.obj == null)
             {

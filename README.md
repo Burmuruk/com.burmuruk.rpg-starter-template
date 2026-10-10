@@ -50,7 +50,7 @@ El demo y varios materiales usan URP.
   https://github.com/Burmuruk/com.burmuruk.rpg-starter-template.git"
 ```
 
-  O bien, descarga este proyecto y selecciona Add package from disk
+  O bien, descarga este proyecto y selecciona Add package from disk. Abre "package.json" de la raíz
 3. Al abrir Unity por primera vez tras la instalación, aparecerá un mensaje preguntando si deseas copiar los assets básicos
 4. Seleccionar Yes si se desea copiar los archivos muestra
 5. (Opcional) Importa la escena demo desde la sección Samples del Package Manager

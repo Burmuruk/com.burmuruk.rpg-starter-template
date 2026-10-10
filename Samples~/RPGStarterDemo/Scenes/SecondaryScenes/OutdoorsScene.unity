@@ -1392,7 +1392,7 @@ PrefabInstance:
     - target: {fileID: 3404936685087386193, guid: c88e93753dabdf24d84807df4a458e41,
         type: 3}
       propertyPath: stats.minDistance
-      value: 1.5
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 3404936685087386193, guid: c88e93753dabdf24d84807df4a458e41,
         type: 3}
@@ -1418,17 +1418,17 @@ PrefabInstance:
     - target: {fileID: 4298743759333508998, guid: c88e93753dabdf24d84807df4a458e41,
         type: 3}
       propertyPath: _hp
-      value: 20
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 4298743759333508998, guid: c88e93753dabdf24d84807df4a458e41,
         type: 3}
       propertyPath: _maxHp
-      value: 20
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 4917750195098521628, guid: c88e93753dabdf24d84807df4a458e41,
         type: 3}
       propertyPath: detectionRadious
-      value: 9
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4997109064463004526, guid: c88e93753dabdf24d84807df4a458e41,
         type: 3}

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77ef1b6c010ebe438dded9187084dbd, type: 3}
   m_Name: SkeletonSword
   m_EditorClassIdentifier: 
-  m_name: Knight Sword
-  m_description: The ultimate sword.
+  m_name: Skeleton sword
+  m_description: Forgotten sword
   _type: 4
   m_sprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   pickup: {fileID: 3636312307774390648, guid: 9cc33f897473a4244a4a4e6243adaf6c, type: 3}
