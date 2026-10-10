@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Burmuruk.RPGStarterTemplate.Dialogue
 {
-    [CustomEditor(typeof(AIConversant))]
+    [CustomEditor(typeof(DialogueCharacter))]
     public class AIConversantEditor : UnityEditor.Editor
     {
         private ObjectField dialogue;

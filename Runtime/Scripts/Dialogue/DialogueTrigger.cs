@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Dialogue
@@ -25,5 +25,5 @@ namespace Burmuruk.RPGStarterTemplate.Dialogue
                     entry.action?.Invoke();
             }
         }
-    } 
+    }
 }

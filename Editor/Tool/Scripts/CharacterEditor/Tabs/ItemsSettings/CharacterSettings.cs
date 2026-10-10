@@ -1846,8 +1846,9 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Controls
                     case ComponentType.None:
                         break;
 
-                    //case ComponentType.Dialogue:
-                    //    break;
+                    case ComponentType.Dialogue:
+                        characterData.components[ComponentType.Dialogue] = null;
+                        break;
 
                     default:
                         characterData.components[(ComponentType)component.Type] = null;

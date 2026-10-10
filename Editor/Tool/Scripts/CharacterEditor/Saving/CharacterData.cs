@@ -63,6 +63,19 @@ namespace Burmuruk.RPGStarterTemplate.Editor
     }
 
     [Serializable]
+    public class Dialogues : CharacterComponent
+    {
+        [Serializable]
+        public class DialogueData
+        {
+            public string graph;
+            public List<string> conversations;
+        }
+
+        public List<DialogueData> dialogues;
+    }
+
+    [Serializable]
     public struct EquipData
     {
         public ElementType type;

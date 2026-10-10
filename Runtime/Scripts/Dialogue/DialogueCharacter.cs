@@ -3,19 +3,24 @@ using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Dialogue
 {
-    public class AIConversant : MonoBehaviour, IInteractable
+    public class DialogueCharacter : MonoBehaviour, IInteractable
     {
         [SerializeField] private string conversantName;
         [SerializeField] private Dialogue dialogue;
-        [SerializeField] private PlayerConversant dialogueController;
+        [SerializeField] private DialogueController dialogueController;
         [SerializeField] private DialogueTrigger dialogueTriggers;
 
         public Dialogue Dialogue => dialogue;
 
         private void Awake()
         {
+            Invoke(nameof(Init), 1);
+        }
+
+        private void Init()
+        {
             if (dialogueController == null)
-                dialogueController = FindObjectOfType<PlayerConversant>();
+                dialogueController = FindObjectOfType<DialogueController>();
 
             if (dialogueTriggers == null)
                 dialogueTriggers = GetComponent<DialogueTrigger>();

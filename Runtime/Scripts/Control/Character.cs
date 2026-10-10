@@ -113,7 +113,7 @@ namespace Burmuruk.RPGStarterTemplate.Control
                                         radius: stats.farDectection,
                                         layerMask: 1 << LayerMask.NameToLayer("Character"))
                                  where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
-                                 select enemy).ToArray(); 
+                                 select enemy).ToArray();
             }
 
             if (closePercept != null)
@@ -123,11 +123,8 @@ namespace Burmuruk.RPGStarterTemplate.Control
                                         radius: stats.closeDetection,
                                         layerMask: 1 << LayerMask.NameToLayer("Character"))
                                  where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
-                                 select enemy).ToArray(); 
+                                 select enemy).ToArray();
             }
-
-            isTargetFar = isTargetClose = false;
-            PerceptionManager();
         }
 
         private void OnDrawGizmosSelected()

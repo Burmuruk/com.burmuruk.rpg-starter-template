@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Dialogue
 {
-    public class PlayerConversant : MonoBehaviour
+    public class DialogueController : MonoBehaviour
     {
         [SerializeField] private PlayerController playerController;
         [SerializeField] private GameManager gameManager;

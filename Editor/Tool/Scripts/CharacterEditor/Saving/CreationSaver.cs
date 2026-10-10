@@ -399,7 +399,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                 case ComponentType.Dialogue:
 
                     if (character.characterType != CharacterType.Player)
-                        player.AddComponent<RPGStarterTemplate.Dialogue.AIConversant>();
+                        player.AddComponent<RPGStarterTemplate.Dialogue.DialogueCharacter>();
                     break;
 
                 //case ComponentType.Patrolling:

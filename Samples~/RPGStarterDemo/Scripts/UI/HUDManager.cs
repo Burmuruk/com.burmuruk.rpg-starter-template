@@ -1,4 +1,4 @@
-﻿using Burmuruk.RPGStarterTemplate.Combat;
+using Burmuruk.RPGStarterTemplate.Combat;
 using Burmuruk.RPGStarterTemplate.Control;
 using Burmuruk.RPGStarterTemplate.Control.AI;
 using Burmuruk.RPGStarterTemplate.Control.Samples;
@@ -315,7 +315,7 @@ namespace Burmuruk.RPGStarterTemplate.UI.Samples
                     controller.OnItemPicked -= ShowNotification;
                 });
 
-                if (controller.TryGetComponent<PlayerConversant>(out var conversant))
+                if (controller.TryGetComponent<DialogueController>(out var conversant))
                 {
                     conversant.OnConversationUpdated += ShowDialogues;
                     conversant.OnConversationEnded += HideDialogues;

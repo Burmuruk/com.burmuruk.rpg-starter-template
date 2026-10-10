@@ -11067,12 +11067,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 2100387534}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdedc77df1d83ff42aa13407bf8d7f8b, type: 3}
+  m_Script: {fileID: 11500000, guid: 51b9a3698ac77a340b37c8f44b24f473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  conversantName: Mer
   dialogue: {fileID: 6912045089893574680, guid: 0e79c2d8fa93548459cdb2d787a843c4,
     type: 2}
-  conversantName: Mer
+  dialogueController: {fileID: 0}
+  dialogueTriggers: {fileID: 0}
 --- !u!135 &2100387543
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -11106,35 +11108,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bedf55c959671904c81a0e7403bcc5bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  action: addPlayer
-  onTrigger:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 155459023}
-        m_TargetAssemblyTypeName: Burmuruk.RPGStarterTemplate.Interaction.NPCDialogue,
-          Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 2100387543}
-        m_TargetAssemblyTypeName: UnityEngine.Collider, UnityEngine
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  actions:
+  - name: addPlayer
+    action:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 2100387543}
+          m_TargetAssemblyTypeName: UnityEngine.Collider, UnityEngine
+          m_MethodName: set_enabled
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 155459023}
+          m_TargetAssemblyTypeName: Burmuruk.RPGStarterTemplate.Interaction.NPCDialogue,
+            Burmuruk.RPGStarterTemplate.Runtime
+          m_MethodName: Interact
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &2133313793
 GameObject:
   m_ObjectHideFlags: 0

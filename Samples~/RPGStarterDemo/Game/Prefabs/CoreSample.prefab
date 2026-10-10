@@ -20,7 +20,7 @@ GameObject:
   - component: {fileID: 4622204313868417319}
   - component: {fileID: 3175059253946540389}
   - component: {fileID: 1158804079918892147}
-  - component: {fileID: 9219894056484960566}
+  - component: {fileID: 5850933842905236667}
   - component: {fileID: 8356711158216348088}
   m_Layer: 0
   m_Name: CoreSample
@@ -430,7 +430,7 @@ MonoBehaviour:
   progress: {fileID: 0}
   inventory: {fileID: 0}
   m_enemies: []
---- !u!114 &9219894056484960566
+--- !u!114 &5850933842905236667
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -439,10 +439,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 255471479627065568}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abf87d3afbaff4a4aa46adfaca3b24da, type: 3}
+  m_Script: {fileID: 11500000, guid: 3e18796ddebe03f41841ab8d98d11f0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerName: 
+  playerController: {fileID: 7174540118724622108}
+  gameManager: {fileID: 5728265933875378333}
 --- !u!114 &8356711158216348088
 MonoBehaviour:
   m_ObjectHideFlags: 0

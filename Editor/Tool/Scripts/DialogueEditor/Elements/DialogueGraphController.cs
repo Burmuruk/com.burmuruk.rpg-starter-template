@@ -278,7 +278,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             OFCharacter = new ObjectField();
             OFCharacter.style.flexBasis = 20;
             SettingsContainer.Q<VisualElement>(OF_CHARACTER_NAME).Add(OFCharacter);
-            OFCharacter.objectType = typeof(RPGStarterTemplate.Dialogue.AIConversant);
+            OFCharacter.objectType = typeof(RPGStarterTemplate.Dialogue.DialogueCharacter);
             OFCharacter.RegisterValueChangedCallback(VerifyCharacterSelection);
         }
 
@@ -377,7 +377,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
             TxtCharacterName.SetValueWithoutNotify(node.Title);
             CFNodeColour.SetValueWithoutNotify(node.GraphViewNode.BaseColour);
 
-            var conversants = SceneAsset.FindObjectsByType<RPGStarterTemplate.Dialogue.AIConversant>(FindObjectsSortMode.None);
+            var conversants = SceneAsset.FindObjectsByType<RPGStarterTemplate.Dialogue.DialogueCharacter>(FindObjectsSortMode.None);
             bool found = false;
             foreach (var conversant in conversants)
             {
@@ -398,7 +398,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor.Dialogue
         {
             if (_selectedNode == null) return;
 
-            if (evt.newValue is not RPGStarterTemplate.Dialogue.AIConversant conversant)
+            if (evt.newValue is not RPGStarterTemplate.Dialogue.DialogueCharacter conversant)
             {
                 TxtId.value = null;
                 TxtCharacterName.value = null;
