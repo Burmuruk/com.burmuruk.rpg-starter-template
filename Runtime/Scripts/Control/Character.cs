@@ -106,19 +106,25 @@ namespace Burmuruk.RPGStarterTemplate.Control
         {
             if (health != null && health.HP <= 0) return;
 
-            eyesPerceibed = (from enemy in Physics.OverlapSphere(
-                                position: farPercept != null ? farPercept.position : transform.position,
-                                radius: stats.farDectection,
-                                layerMask: 1 << LayerMask.NameToLayer("Character"))
-                             where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
-                             select enemy).ToArray();
+            if (farPercept != null)
+            {
+                eyesPerceibed = (from enemy in Physics.OverlapSphere(
+                                        position: farPercept.position,
+                                        radius: stats.farDectection,
+                                        layerMask: 1 << LayerMask.NameToLayer("Character"))
+                                 where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
+                                 select enemy).ToArray(); 
+            }
 
-            earsPerceibed = (from enemy in Physics.OverlapSphere(
-                                position: closePercept != null ? closePercept.position : transform.position,
-                                radius: stats.closeDetection,
-                                layerMask: 1 << LayerMask.NameToLayer("Character"))
-                             where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
-                             select enemy).ToArray();
+            if (closePercept != null)
+            {
+                earsPerceibed = (from enemy in Physics.OverlapSphere(
+                                        position: closePercept.position,
+                                        radius: stats.closeDetection,
+                                        layerMask: 1 << LayerMask.NameToLayer("Character"))
+                                 where enemy.TryGetComponent<Character>(out _) && enemy.transform.CompareTag(enemyTag) && IsValidTarget(enemy.transform)
+                                 select enemy).ToArray(); 
+            }
 
             isTargetFar = isTargetClose = false;
             PerceptionManager();

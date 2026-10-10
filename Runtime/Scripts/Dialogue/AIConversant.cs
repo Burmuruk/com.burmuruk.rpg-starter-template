@@ -1,4 +1,3 @@
-using Burmuruk.RPGStarterTemplate.Control;
 using Burmuruk.RPGStarterTemplate.Interaction;
 using UnityEngine;
 
@@ -6,20 +5,20 @@ namespace Burmuruk.RPGStarterTemplate.Dialogue
 {
     public class AIConversant : MonoBehaviour, IInteractable
     {
-        [SerializeField] Dialogue dialogue;
-        [SerializeField] string conversantName;
+        [SerializeField] private string conversantName;
+        [SerializeField] private Dialogue dialogue;
+        [SerializeField] private PlayerConversant dialogueController;
+        [SerializeField] private DialogueTrigger dialogueTriggers;
 
+        public Dialogue Dialogue => dialogue;
 
-        public bool HandleRaycast(Character callingController)
+        private void Awake()
         {
-            if (dialogue == null) return false;
+            if (dialogueController == null)
+                dialogueController = FindObjectOfType<PlayerConversant>();
 
-            if (Input.GetMouseButtonDown(0))
-            {
-                callingController.GetComponent<PlayerConversant>().StartDialogue(this, dialogue);
-            }
-
-            return true;
+            if (dialogueTriggers == null)
+                dialogueTriggers = GetComponent<DialogueTrigger>();
         }
 
         public string GetName()
@@ -29,11 +28,31 @@ namespace Burmuruk.RPGStarterTemplate.Dialogue
 
         public void Interact()
         {
-            if (FindObjectOfType<PlayerConversant>() is var pc && pc != null)
-            {
-                FindObjectOfType<GameManager>().StartCinematic(true);
-                pc.StartDialogue(this, dialogue);
-            }
+            if (dialogueController == null || dialogue == null)
+                return;
+
+            if (!dialogueController.IsActive)
+                dialogueController.StartDialogue(dialogue, dialogueTriggers);
+            else if (dialogueController.IsChoosing)
+                dialogueController.SelectChoice(0);
+            else
+                dialogueController.Next();
+        }
+
+        public void StartDialogue(Dialogue dialogue)
+        {
+            if (dialogueController == null || dialogue == null)
+                return;
+
+            this.dialogue = dialogue;
+            dialogueController.StartDialogue(dialogue, dialogueTriggers);
+        }
+
+        public void ChangeDialogue(Dialogue newDialogue)
+        {
+            if (newDialogue == null)
+                return;
+            dialogue = newDialogue;
         }
     }
 }

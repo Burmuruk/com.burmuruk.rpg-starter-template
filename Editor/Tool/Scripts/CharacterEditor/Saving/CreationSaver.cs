@@ -372,6 +372,8 @@ namespace Burmuruk.RPGStarterTemplate.Editor
 
         private void Setup_Components(ComponentType type, GameObject player, object component, in CharacterData character)
         {
+            SetPlayerModel(player, character.model, out var body);
+
             switch (type)
             {
                 case ComponentType.Health:
@@ -391,7 +393,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
                     Setup_Inventory(player, inventory2);
 
                     var equipment = (Equipment)character.components[ComponentType.Equipment];
-                    Setup_Equipment(player, equipment, (Inventory)character.components[ComponentType.Inventory]);
+                    Setup_Equipment(player, body, equipment, (Inventory)character.components[ComponentType.Inventory]);
                     break;
 
                 case ComponentType.Dialogue:
@@ -472,7 +474,7 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             itemsListF.SetValue(inventoryComp, this.ItemsList);
         }
 
-        private void Setup_Equipment(GameObject instance, Equipment equipment, in Inventory inventory)
+        private void Setup_Equipment(GameObject instance, GameObject body, Equipment equipment, in Inventory inventory)
         {
             var equipperComp = instance.GetComponent<InventoryEquipDecorator>();
 
@@ -501,16 +503,18 @@ namespace Burmuruk.RPGStarterTemplate.Editor
             }
 
             initialItemsF.SetValue(equipperComp, initialItems);
-            SetPlayerModel(instance, equipperComp, in equipment);
+            SetEquipment(instance, body, equipperComp, in equipment);
         }
 
-
-        private void SetPlayerModel(GameObject player, InventoryEquipDecorator inventory, in Equipment equipment)
+        private void SetPlayerModel(GameObject player, string modelPath, out GameObject body)
         {
-            var model = SavingSystem.GetAsset<GameObject>(equipment.modelPath);
-            var body = GameObject.Instantiate(model, Vector3.zero, Quaternion.identity, player.transform);
+            var model = SavingSystem.GetAsset<GameObject>(modelPath);
+            body = GameObject.Instantiate(model, Vector3.zero, Quaternion.identity, player.transform);
             garbage.Add(body);
+        }
 
+        private void SetEquipment(GameObject player, GameObject body, InventoryEquipDecorator inventory, in Equipment equipment)
+        {
             var spawnPoints = new List<SpawnPointData>();
 
             if (equipment.spawnPoints != null)

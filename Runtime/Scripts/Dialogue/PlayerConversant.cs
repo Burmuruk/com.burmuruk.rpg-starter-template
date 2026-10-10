@@ -1,155 +1,174 @@
-using Burmuruk.RPGStarterTemplate.Control;
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using Burmuruk.RPGStarterTemplate.Control;
 using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Dialogue
 {
     public class PlayerConversant : MonoBehaviour
     {
-        [SerializeField] string playerName;
-        Dialogue currentDialogue;
-        DialogueNode currentNode = null;
-        AIConversant currentConversant = null;
-        PlayerController playerController;
+        [SerializeField] private PlayerController playerController;
+        [SerializeField] private GameManager gameManager;
 
+        private Dialogue currentDialogue;
+        private DialogueNode currentNode;
+        private DialogueTrigger currentTriggers;
+
+        public bool IsActive => currentDialogue != null;
         public bool IsChoosing { get; private set; }
-        public bool IsActive { get => currentDialogue != null; }
 
         public event Action<DialogueNode> OnConversationUpdated;
         public event Action OnConversationEnded;
-        //private void Awake()
-        //{
-        //    currentNode = currentDialogue.GetRootNode();
-        //}
 
         private void OnEnable()
         {
-            playerController = FindObjectOfType<PlayerController>();
-            playerController.OnInteract += Next;
+            if (playerController == null)
+                playerController = FindObjectOfType<PlayerController>();
+
+            if (gameManager == null)
+                gameManager = FindObjectOfType<GameManager>();
+
+            if (playerController != null)
+                playerController.OnInteract += Next;
         }
 
         private void OnDisable()
         {
-            if (playerController == null) return;
+            if (playerController != null)
+                playerController.OnInteract -= Next;
 
-            playerController.OnInteract -= Next;
+            Quit();
         }
 
-        public void StartDialogue(AIConversant newConversant, Dialogue newDialogue)
+        public void StartDialogue(Dialogue dialogue, DialogueTrigger triggers = null)
         {
-            currentConversant = newConversant;
-            currentDialogue = newDialogue;
-            currentNode = newDialogue.dialogueNode;
-            TriggerEnterAction();
-            OnConversationUpdated?.Invoke(currentNode);
-        }
+            if (dialogue == null || dialogue.dialogueNode == null)
+                return;
 
-        public void Quit()
-        {
-            currentDialogue = null;
-            TriggerExitAction();
-            currentNode = null;
+            if (IsActive)
+                return;
+
+            currentDialogue = dialogue;
+            currentTriggers = triggers;
             IsChoosing = false;
-            currentConversant = null;
-            FindObjectOfType<GameManager>().StartCinematic(false);
-            OnConversationEnded?.Invoke();
-        }
 
-        public string GetText()
-        {
-            if (currentNode == null)
-            {
-                return "";
-            }
+            if (gameManager != null)
+                gameManager.StartCinematic(true);
 
-            return currentNode.Message;
-        }
-
-        //public IEnumerable<DialogueNodeOld> GetChoices()
-        //{
-        //    return currentDialogue.GetPlayerChildren(currentNode);
-        //}
-
-        public string GetCurrentConversantName()
-        {
-            if (IsChoosing)
-            {
-                return playerName;
-            }
-            else
-            {
-                return currentConversant.GetName();
-            }
-        }
-
-        public void SelectChoice(int idx)
-        {
-            currentNode = currentNode.Children[idx];
-            TriggerEnterAction();
-            IsChoosing = false;
-            Next();
+            EnterNode(dialogue.dialogueNode);
         }
 
         public void Next()
         {
-            if (!IsActive) return;
-
-            int numPlayerResponses = currentNode.Children.Count();
-            if (numPlayerResponses > 1)
-            {
-                IsChoosing = true;
-                TriggerExitAction();
-                OnConversationUpdated?.Invoke(currentNode);
+            if (!IsActive || IsChoosing || currentNode == null)
                 return;
-            }
-            else if (numPlayerResponses == 0)
+
+            var children = currentNode.Children;
+
+            if (children == null || children.Count == 0)
             {
                 Quit();
                 return;
             }
 
-            var children = currentNode.Children;
-            int randomIndex = UnityEngine.Random.Range(0, children.Count());
-            TriggerExitAction();
+            if (children.Count > 1)
+            {
+                IsChoosing = true;
+                OnConversationUpdated?.Invoke(currentNode);
+                return;
+            }
 
-            currentNode = children[randomIndex];
-            TriggerEnterAction();
-            OnConversationUpdated?.Invoke(currentNode);
+            MoveToNode(children[0]);
+        }
+
+        public void SelectChoice(int index)
+        {
+            if (!IsActive || !IsChoosing || currentNode == null)
+                return;
+
+            var children = currentNode.Children;
+
+            if (children == null || index < 0 || index >= children.Count)
+                return;
+
+            var selectedNode = children[index];
+
+            if (selectedNode == null)
+                return;
+
+            IsChoosing = false;
+            MoveToNode(selectedNode);
+        }
+
+        public IReadOnlyList<DialogueNode> GetChoices()
+        {
+            if (IsChoosing && currentNode?.Children != null)
+                return currentNode.Children;
+
+            return Array.Empty<DialogueNode>();
+        }
+
+        public string GetText()
+        {
+            return currentNode?.Message ?? string.Empty;
+        }
+
+        public string GetCurrentConversantName()
+        {
+            return currentNode?.characterName ?? string.Empty;
         }
 
         public bool HasNext()
         {
-            return currentNode.Children.Count() > 0;
+            return currentNode?.Children != null
+                && currentNode.Children.Count > 0;
         }
 
-        private void TriggerEnterAction()
+        public void Quit()
         {
-            if (currentNode != null)
-            {
-                TriggerAction(currentNode.GetOnEnterAction());
-            }
+            if (!IsActive)
+                return;
+
+            var exitAction = currentNode?.onExitAction;
+            var triggers = currentTriggers;
+
+            currentDialogue = null;
+            currentNode = null;
+            currentTriggers = null;
+            IsChoosing = false;
+
+            triggers?.Execute(exitAction);
+
+            if (gameManager != null)
+                gameManager.StartCinematic(false);
+
+            OnConversationEnded?.Invoke();
         }
 
-        private void TriggerExitAction()
+        private void MoveToNode(DialogueNode nextNode)
         {
-            if (currentNode != null)
+            if (nextNode == null)
             {
-                TriggerAction(currentNode.GetOnExitAction());
+                Quit();
+                return;
             }
+
+            var previousNode = currentNode;
+            currentTriggers?.Execute(previousNode?.onExitAction);
+
+            if (!IsActive || currentNode != previousNode)
+                return;
+
+            EnterNode(nextNode);
         }
 
-        private void TriggerAction(string action)
+        private void EnterNode(DialogueNode node)
         {
-            if (action == "") return;
+            currentNode = node;
+            currentTriggers?.Execute(node.onEnterAction);
 
-            foreach (var trigger in FindObjectsByType<DialogueTrigger>(FindObjectsSortMode.None))
-            {
-                if (trigger.Action == action)
-                {
-                    trigger.Trigger(action); 
-                }
-            }
+            if (IsActive && currentNode == node)
+                OnConversationUpdated?.Invoke(node);
         }
     }
 }

@@ -1,21 +1,29 @@
-﻿using UnityEngine;
-using UnityEngine.Events;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Burmuruk.RPGStarterTemplate.Dialogue
 {
+    [System.Serializable]
+    public class DialogueAction
+    {
+        public string name;
+        public UnityEngine.Events.UnityEvent action;
+    }
+
     public class DialogueTrigger : MonoBehaviour
     {
-        [SerializeField] string action;
-        [SerializeField] UnityEvent onTrigger;
+        [SerializeField] private List<DialogueAction> actions = new();
 
-        public string Action => action;
-
-        public void Trigger (string actionToTrigger)
+        public void Execute(string actionName)
         {
-            if (actionToTrigger == action)
+            if (string.IsNullOrEmpty(actionName))
+                return;
+
+            foreach (var entry in actions)
             {
-                onTrigger?.Invoke();
+                if (entry.name == actionName)
+                    entry.action?.Invoke();
             }
         }
-    }
+    } 
 }
