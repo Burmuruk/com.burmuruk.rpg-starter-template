@@ -347,7 +347,7 @@ namespace Burmuruk.RPGStarterTemplate.Control.AI
 
         protected virtual bool CheckOwnState()
         {
-            if (health.HP < health.MaxHp * .4f)
+            if (health != null && health.HP < health.MaxHp * .4f)
             {
                 return TryHeal();
             }
